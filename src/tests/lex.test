@@ -1,0 +1,117 @@
+#!/bin/sh
+
+valgrind --leak-check=full ../lexer < parclarg.algo >out
+
+cat >exp <<EOF
+keyword: algorithme
+keyword: procedure
+identifier: parc_larg
+keyword: parametres
+keyword: locaux
+identifier: arbrebinaire
+identifier: b
+keyword: variables
+identifier: entier
+identifier: i
+identifier: file
+identifier: f
+keyword: debut
+identifier: f
+operator: <-
+identifier: filevide
+identifier: f
+operator: <-
+identifier: enfiler
+LPAREN
+identifier: f
+operator: ,
+identifier: b
+RPAREN
+keyword: tant
+keyword: que
+keyword: non
+LPAREN
+identifier: estvide
+LPAREN
+identifier: f
+RPAREN
+RPAREN
+keyword: faire
+identifier: b
+operator: <-
+identifier: premier
+LPAREN
+identifier: f
+RPAREN
+identifier: f
+operator: <-
+identifier: defiler
+LPAREN
+identifier: f
+RPAREN
+identifier: ecrire
+LPAREN
+identifier: contenu
+LPAREN
+identifier: racine
+LPAREN
+identifier: b
+RPAREN
+RPAREN
+RPAREN
+keyword: si
+identifier: g
+LPAREN
+identifier: b
+RPAREN
+operator: <>
+identifier: arbre
+operator: -
+identifier: vide
+keyword: alors
+identifier: f
+operator: <-
+identifier: enfiler
+LPAREN
+identifier: f
+operator: ,
+identifier: g
+LPAREN
+identifier: b
+RPAREN
+RPAREN
+keyword: fin
+keyword: si
+keyword: si
+identifier: d
+LPAREN
+identifier: b
+RPAREN
+operator: <>
+identifier: arbre
+operator: -
+identifier: vide
+keyword: alors
+identifier: f
+operator: <-
+identifier: enfiler
+LPAREN
+identifier: f
+operator: ,
+identifier: d
+LPAREN
+identifier: b
+RPAREN
+RPAREN
+keyword: fin
+keyword: si
+keyword: fin
+keyword: tant
+keyword: que
+keyword: fin
+keyword: algorithme
+keyword: procedure
+identifier: parc_larg
+EOF
+
+diff exp out

@@ -1,11 +1,17 @@
 %{
 #include <stdio.h>
 #define YY_NO_INPUT
+
+void yyerror (char const *s) {
+ fprintf (stderr, "%s\n", s);
+}
+
 %}
 
 %option noyywrap
 %option nounput
 %option yylineno
+%x COMMENT
 
 %%
 
@@ -38,13 +44,15 @@
 "fonction"              printf("keyword: %s\n", yytext);
 "ou"                    printf("keyword: %s\n", yytext);
 "sinon"                 printf("keyword: %s\n", yytext);
+"/*"                    BEGIN(COMMENT);
+<COMMENT>"*/"           BEGIN(INITIAL);
+<COMMENT>(.|\n)         ;
+<COMMENT><<EOF>>        yyerror("Unexpected file end (unterminated comment).\n");
 "<-"                    printf("operator: %s\n", yytext);
 "^"                     printf("operator: %s\n", yytext);
 "."                     printf("operator: %s\n", yytext);
 ","                     printf("operator: %s\n", yytext);
 ":"                     printf("operator: %s\n", yytext);
-"/*"                    printf("COMMENT_BEGIN\n");
-"*/"                    printf("COMMENT_END\n");
 "<"                     printf("operator: %s\n", yytext);
 ">"                     printf("operator: %s\n", yytext);
 "<="                    printf("operator: %s\n", yytext);
@@ -55,16 +63,16 @@
 "-"                     printf("operator: %s\n", yytext);
 "*"                     printf("operator: %s\n", yytext);
 "/"                     printf("operator: %s\n", yytext);
-"("                     printf("LPAREN");
-")"                     printf("RPAREN");
-"["                     printf("LBRACKET");
-"]"                     printf("RBRACKET");
-[a-zA-Z_][a-zA-Z0-9_]+  printf("identifier: %s\n", yytext);
+"("                     printf("LPAREN\n");
+")"                     printf("RPAREN\n");
+"["                     printf("LBRACKET\n");
+"]"                     printf("RBRACKET\n");
+\"[^"]*\"               printf("STRING\n");
+[a-zA-Z_][a-zA-Z0-9_]*  printf("identifier: %s\n", yytext);
 [0-9]+                  printf("number: %s\n", yytext);
 .                       ;
 
 %%
-
 int main(void)
 {
   yylex();

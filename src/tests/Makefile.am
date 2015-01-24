@@ -1,0 +1,1 @@
+TESTS = lex.test
