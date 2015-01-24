@@ -13,14 +13,14 @@ Charles Yaiche (charles.yaiche@epita.fr)
 
 ## Documentation
 
-How use Doxygen ?
+How to use Doxygen ?
 
-You can also find a manuel on the website.
+You can also find a manual on the website.
 
 ## How to compile
 
 ## Contact List
-You can simply send a mail to one of our personnal adresses, or contact us via our website (http://a2c.lucien-boillod.net).
-You can also send us a pull request in Github, if you want to participate.
+You can simply send a mail to one of our personal addresses, or contact us via our website (http://a2c.lucien-boillod.net).
+You can also send us a pull request on Github, if you want to participate.
 
 If you see any error, please let us know.
