@@ -1,0 +1,56 @@
+hashtable: 
+
+type : t_hashtable (* s_hashtable);
+
+function:
+
+make a new hashtable
+  hash_table_init()
+  return: t_hashtable
+
+find a key in the hashtable
+  hash_table_find(t_hashtable t, void *key)
+  return: 1 if found, 0 otherwise
+
+add a key in the hashtable
+  hash_table_add(t_hashtable t, void *key)
+  return: NONE
+
+remove a key in the hashtable
+  hash_table_remove(t_hashtable t, void *key)
+  return: NONE
+
+free a hashtable
+  hash_table_free(t_hashtable t)
+  return: NONE
+  
+
+dictionary: 
+
+type : t_dictionary (t_hashtable);
+
+function:
+
+make a new dictionary
+  dictionary_init()
+  return: t_dictionary
+
+find a key in the dictionary
+  dictionary_find(t_dictionary t, void *key)
+  return: 1 if found, 0 otherwise
+
+add a couple (key, value) in the dictionary
+  dictionary_add(t_dictionary t, void *key, void *value)
+  return: NONE
+
+get a value of a key
+  dictionary_get_value(t_dictionary d, void *key)
+  return: return the value of the given key (void*)
+
+remove a key in the dictionary
+  dictionary_remove(t_dictionary t, void *key)
+  return: NONE
+
+free a dictionary
+  dictionary_free(t_dictionary t)
+  return: NONE
