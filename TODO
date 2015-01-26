@@ -1,12 +1,21 @@
-[Lucien Thibaud]
-* Désambiguiser la grammaire
-* Enlever les conflits de la grammaire
+Grammaire
+- [X] (Thibaud) Lexer
+- [ ] (Lucien & Thibaud) Désambiguiser la grammaire & enlever les conflits de la grammaire & ecrire le fichier bison
+- [ ] (Thibaud) écrire la structure de l'AST
 
-[Lucien Arys]
-* Structures de données
+Structures de données
+- [ ] (Arys) bibliothèque
+- [ ] (Arys) hashtable: fonction de hachage en paramètre
+- [ ] (Maxime) tests à part
+- [ ] (Lucien) listes statiques
 
-[Maxime]
-* Mise en place de Jenkins et Sonar
+Misc
+- (Maxime) Mise en place de Jenkins et Sonar
+- (Tout le monde) Se renseigner sur autotools
 
-[Tout le monde]
-* Analyse sémantique (se renseigner)
+Analyse sémantique
+- [ ] (Tout le monde) se renseigner
+- [ ] (Maxime) Commencer à coder
+
+Site web
+- [ ] (Lucien) faire le site web
