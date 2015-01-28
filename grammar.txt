@@ -1,0 +1,101 @@
+algo -> "algorithme" "procedure" IDENT
+  declarations
+"debut"
+  instructions
+"fin" "algorithme" "procedure" IDENT
+
+algo -> "algorithme" "fonction" IDENT ":" type
+  declarations
+"debut"
+  instructions
+"fin" "algorithme" "fonction" IDENT
+
+############################### DECLARATIONS #################################
+
+declarations ->
+  parametres
+  constantes
+  types
+  variables
+
+parametres -> parametres_globaux parametres_locaux
+  | parametres_locaux parametres_globaux
+
+types -> IDENT = type_def
+
+parametres_globaux -> "parametres" "globaux" decl_var
+
+parametres_locaux -> "parametres" "locaux" decl_var
+
+decl_var -> IDENT identlist
+
+identlist -> IDENT | IDENT "," identlist
+
+variables -> "variables" decl_var
+
+type_def -> enum | tableau | enregistrement | pointeur
+
+enum -> (identlist)
+
+tableau -> IDENT = dimension IDENT
+
+enregistrement -> IDENT = "enregistrement"
+    decl_var
+  "fin" "enregistrement" IDENT
+
+pointeur -> IDENT = "^" IDENT
+
+dimension -> NUM | NUM "x" dimension
+
+############################### EXPRESSIONS #################################
+
+expression -> "NUL" | CHAR | STRING | NUM | IDENT | appel_fonction
+  | expression opbin expression | opun expression | (expression)
+  | expression "[" identlist "]" | expression "." IDENT | expression "^"
+
+exprlist -> expression | expression "," exprlist
+
+binop -> "+" | "-" | "*" | "/" | "div" | "mod" | "et" | "ou" | "oue" | "="
+  | "<>" | "<" | ">" | "<=" | ">="
+
+opun -> "+" | "-" | "non"
+
+############################### INSTRUCTIONS #################################
+
+instruction -> appel_fonction | affectation
+  | si | selon | fairetantque | tantquefaire | pour | retourne
+
+instructions -> instruction | instruction instructions
+
+affectation -> IDENT "<-" expression
+
+appel_fonction -> IDENT "(" exprlist ")"
+
+si -> "si" expression "alors"
+    instructions
+    sinon
+    "fin" "si"
+
+sinon -> | "sinon" instructions
+
+selon -> "selon" expression "faire" liste_cas "fin" "selon"
+
+cas -> exprlist ":" instructions
+
+liste_cas -> cas | cas liste_cas
+
+fairetantque -> "faire"
+    instructions
+  TANTQUE expression
+
+tantquefaire -> TANTQUE expression "faire"
+    instructions
+  "fin" TANTQUE
+
+pour -> "pour" affectation JUSQUA expression decroissant "faire"
+    instructions
+  "fin" "pour"
+
+decroissant -> | "decroissant"
+
+retourne -> "retourne" | "retourne" expression
