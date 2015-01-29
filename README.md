@@ -1,15 +1,15 @@
 # A2C
 
-A compiler for the algorithmic language taught at EPITA. 
+A compiler for the algorithmic language taught at EPITA.
 Copyright ® - 2015 by Ghom Team
 
 ## Ghom
 
-A group of four students at EPITA (French Engineering IT School).  
-Lucien Boillod (lucienboillod@gmail.com)  
-Thibaud Michaud (thibaud.michaud@epita.fr)  
-Maxime Gaudron (maxime.gaudron@epita.fr)  
-Charles Yaiche (charles.yaiche@epita.fr)  
+A group of four students at EPITA (French Engineering IT School).
+Lucien Boillod (lucienboillod@gmail.com)
+Thibaud Michaud (thibaud.michaud@epita.fr)
+Maxime Gaudron (maxime.gaudron@epita.fr)
+Charles Yaiche (charles.yaiche@epita.fr)
 
 ## Documentation
 
