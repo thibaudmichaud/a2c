@@ -1,10 +1,14 @@
 %{
 #include <stdio.h>
+#include <stdlib.h>
+#include "parser.h"
+#include "grammar.h"
+
 #define YY_NO_INPUT
 
-void yyerror (char const *s) {
- fprintf (stderr, "%s\n", s);
-}
+#define SAVE_INT (yylval.expression = intexpr(strtol(yytext, NULL, 10)))
+#define SAVE_REAL (yylval.expression = realexpr(strtof(yytext, NULL)))
+#define yyterminate() return END
 
 %}
 
@@ -59,21 +63,18 @@ void yyerror (char const *s) {
 ">="                    printf("operator: %s\n", yytext);
 "<>"                    printf("operator: %s\n", yytext);
 "="                     printf("operator: %s\n", yytext);
-"+"                     printf("operator: %s\n", yytext);
-"-"                     printf("operator: %s\n", yytext);
-"*"                     printf("operator: %s\n", yytext);
-"/"                     printf("operator: %s\n", yytext);
-"("                     printf("LPAREN\n");
-")"                     printf("RPAREN\n");
+"+"                     return PLUS;
+"-"                     return MINUS;
+"*"                     return MUL;
+"/"                     return DIV;
+"("                     return LPAREN;
+")"                     return RPAREN;
 "["                     printf("LBRACKET\n");
 "]"                     printf("RBRACKET\n");
 \"[^"]*\"               printf("STRING\n");
 [a-zA-Z_][a-zA-Z0-9_]*  printf("identifier: %s\n", yytext);
-[0-9]+                  printf("number: %s\n", yytext);
+[0-9]+                  SAVE_INT; return INT;
+[0-9]+(\.[0-9]+)?       SAVE_REAL; return REAL;
 .                       ;
 
 %%
-int main(void)
-{
-  yylex();
-}
