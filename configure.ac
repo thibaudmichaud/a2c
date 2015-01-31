@@ -5,5 +5,5 @@ AC_PROG_CC
 AC_PROG_LEX
 AC_PROG_YACC
 AC_CONFIG_HEADER([config.h])
-AC_CONFIG_FILES([Makefile src/Makefile src/tests/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile])
 AC_OUTPUT
