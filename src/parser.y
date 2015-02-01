@@ -1,6 +1,7 @@
 %debug
 %error-verbose
 %locations
+%define api.pure full
 
 %code top
 {
@@ -13,10 +14,9 @@ struct expr *expression;
 
 %code provides
 {
-
-int yylex();
-void yyerror (const char* msg);
-
+  #define YY_DECL enum yytokentype yylex(YYSTYPE *yylval, YYLTYPE *yylloc)
+  YY_DECL;
+  void yyerror (YYLTYPE* yylloc, const char* msg);
 }
 
 %token PLUS "+" MINUS "-"
@@ -64,13 +64,8 @@ exp:
 %%
 
 void
-yyerror (char const *s)
+yyerror (YYLTYPE *yylloc, const char* msg)
 {
-  fprintf (stderr, "%s\n", s);
-}
-
-int main(void)
-{
-  expression = malloc(sizeof(struct expr));
-  yyparse();
+  YY_LOCATION_PRINT(stderr, *yylloc);
+  fprintf (stderr, ": %s\n", msg);
 }

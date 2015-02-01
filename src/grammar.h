@@ -3,10 +3,17 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
+#include "parser.h"
 
 /*--------------*/
 /* instructions */
 /*--------------*/
+
+struct funcall
+{
+  char *fun_ident;
+  struct expr *args;
+};
 
 struct elseblock
 {
@@ -23,7 +30,7 @@ struct ifthenelse
 struct assignment
 {
   char *ident;
-  struct expression *expression;
+  struct expr *expression;
 };
 
 struct caseblock
@@ -183,6 +190,46 @@ struct algo
   struct instruction *instructions;
 };
 
+struct binopexpr
+{
+  struct expr *e1;
+  int op; // should use tokens defined in parser.h
+  struct expr *e2;
+};
+
+
+struct arrayexpr
+{
+  // e1[e2]
+  struct expr *e1;
+  struct expr *e2;
+};
+
+struct structelt
+{
+  // e1.ident
+  struct expr *e1;
+  char *ident;
+};
+
+struct deref
+{
+  struct expr *e;
+};
+
+enum unop
+{
+  UPLUS,
+  UMINUS,
+  NOT
+};
+
+struct unopexpr
+{
+  enum unop op;
+  struct expr *e;
+};
+
 struct expr
 {
   enum
@@ -208,58 +255,13 @@ struct expr
     int intval;
     double realval;
     char *ident;
-    struct funcall *funcallval;
-    struct binopexpr *binopexpr;
-    struct unopexpr *unopexpr;
-    struct arrayexpr *arrayexpr;
-    struct structelt *structelt;
-    struct deref *deref;
+    struct funcall funcallval;
+    struct binopexpr binopexpr;
+    struct unopexpr unopexpr;
+    struct arrayexpr arrayexpr;
+    struct structelt structelt;
+    struct deref deref;
   } val;
-};
-
-struct arrayexpr
-{
-  // e1[e2]
-  struct expr *e1;
-  struct expr *e2;
-};
-
-struct structelt
-{
-  // e1.ident
-  struct expr *e1;
-  char *ident;
-};
-
-struct deref
-{
-  struct expr *e;
-};
-
-struct funcall
-{
-  char *fun_ident;
-  struct expr *args;
-};
-
-struct binopexpr
-{
-  struct expr *e1;
-  int op; // should use tokens defined in parser.h
-  struct expr *e2;
-};
-
-enum unop
-{
-  UPLUS,
-  UMINUS,
-  NOT
-};
-
-struct unopexpr
-{
-  enum unop unop;
-  struct expr *e;
 };
 
 // Helper functions
@@ -269,10 +271,9 @@ struct expr *binopexpr(struct expr *e1, int op, struct expr *e2)
 {
   struct expr *e = malloc(sizeof(struct expr));
   e->exprtype = binopexprtype;
-  e->val.binopexpr = malloc(sizeof(struct binopexpr));
-  e->val.binopexpr->e1 = e1;
-  e->val.binopexpr->e2 = e2;
-  e->val.binopexpr->op = op;
+  e->val.binopexpr.e1 = e1;
+  e->val.binopexpr.e2 = e2;
+  e->val.binopexpr.op = op;
   return e;
 }
 
@@ -294,17 +295,32 @@ struct expr *realexpr(int i)
   return e;
 }
 
-#include <stdio.h>
-
 static inline
-struct expr *unopexpr(int unop, struct expr *e1)
+struct expr *unopexpr(int op, struct expr *e1)
 {
   struct expr *e = malloc(sizeof(struct expr));
-  e->exprtype = e1->exprtype;
-  e->val.unopexpr = malloc(sizeof(struct unopexpr));
-  e->val.unopexpr->unop = unop;
-  e->val.unopexpr->e = e1;
+  e->exprtype = unopexprtype;
+  e->val.unopexpr.op = op;
+  e->val.unopexpr.e = e1;
   return e;
+}
+
+static inline
+char *getopstr(int op)
+{
+  switch (op)
+  {
+    case PLUS:
+      return "+";
+    case MINUS:
+      return "-";
+    case MUL:
+      return "*";
+    case DIV:
+      return "/";
+    default:
+      return NULL;
+  }
 }
 
 #endif

@@ -4,22 +4,23 @@
 #include "parser.h"
 #include "grammar.h"
 
-#define YY_NO_INPUT
-
-#define SAVE_INT (yylval.expression = intexpr(strtol(yytext, NULL, 10)))
-#define SAVE_REAL (yylval.expression = realexpr(strtof(yytext, NULL)))
+#define SAVE_INT (yylval->expression = intexpr(strtol(yytext, NULL, 10)))
+#define SAVE_REAL (yylval->expression = realexpr(strtof(yytext, NULL)))
 #define yyterminate() return END
 
 %}
 
+%option noinput
 %option noyywrap
 %option nounput
 %option yylineno
+%option header-file="lexer.h"
 %x COMMENT
 
 %%
 
-[ \n\t]                 ;
+[ \t]                   ;
+"\n"                    yylloc->first_line++;
 "algorithme"            printf("keyword: %s\n", yytext);
 "div"                   printf("keyword: %s\n", yytext);
 "globaux"               printf("keyword: %s\n", yytext);
@@ -51,7 +52,7 @@
 "/*"                    BEGIN(COMMENT);
 <COMMENT>"*/"           BEGIN(INITIAL);
 <COMMENT>(.|\n)         ;
-<COMMENT><<EOF>>        yyerror("Unexpected file end (unterminated comment).\n");
+<COMMENT><<EOF>>        printf("Unexpected file end (unterminated comment).\n");
 "<-"                    printf("operator: %s\n", yytext);
 "^"                     printf("operator: %s\n", yytext);
 "."                     printf("operator: %s\n", yytext);
