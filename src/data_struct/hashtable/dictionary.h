@@ -5,9 +5,9 @@
 
 typedef t_hashtable t_dictionary;
 
-t_dictionary dictionary_init()
+t_dictionary dictionary_init(size_t size, size_t (*h_function)(void*, size_t))
 {
-  return hash_table_init();
+  return hash_table_init(size, h_function);
 }
 
 void dictionary_free(t_dictionary t)

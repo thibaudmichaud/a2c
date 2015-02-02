@@ -20,8 +20,9 @@ struct s_dico_data
 
 struct s_hashtable
 {
-  t_dico_data h_table[MAX];
-  int size;
+  t_dico_data *h_table;
+  size_t size;
+  size_t (*hash_function)(void*, size_t);
 };
 
 int hash_function(void * p, size_t size)
@@ -43,7 +44,7 @@ int is_cell_empty(t_hashtable table, int cell)
 
 void hash_table_print(t_hashtable ht);
 
-t_hashtable hash_table_init();
+t_hashtable hash_table_init(size_t size, size_t (*h_function)(void*, size_t));
 
 void dico_data_free(t_dico_data dd);
 
