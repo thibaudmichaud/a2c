@@ -314,10 +314,20 @@ char *getopstr(int op)
       return "+";
     case MINUS:
       return "-";
-    case MUL:
+    case STAR:
       return "*";
-    case DIV:
+    case SLASH:
       return "/";
+    case DIV:
+      return "div";
+    case OR:
+      return "ou";
+    case AND:
+      return "et";
+    case XOR:
+      return "oue";
+    case MOD:
+      return "mod";
     default:
       return NULL;
   }
