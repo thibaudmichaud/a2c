@@ -1,4 +1,4 @@
-AM_CFLAGS = -Wall -Werror -Wextra -std=c99 -D_DEFAULT_SOURCE
+AM_CFLAGS = -Wall -Werror -Wextra -std=c99 -I$(srcdir)/src -D_DEFAULT_SOURCE
 AM_YFLAGS = -d
 
 bin_PROGRAMS = a2c
