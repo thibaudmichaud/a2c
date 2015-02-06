@@ -9,7 +9,7 @@
 #include "grammar.h"
 #include <stdio.h>
 
-struct expr *expression;
+struct block instructions;
 extern FILE *yyin;
 }
 
@@ -24,13 +24,19 @@ extern FILE *yyin;
 %union
 {
   struct expr *expression;
+  struct instruction *instruction;
+  char *str;
 };
 
 %type <expression> exp
+%type <instruction> instruction
+%type <instruction> assign
 
 /* ################## */
 /* TOKEN DECLARATION */
 /* ################# */
+
+%token <expression> IDENT
 
 /* operands */
 %token PLUS "+" MINUS "-"
@@ -40,7 +46,8 @@ extern FILE *yyin;
        LPAREN "(" RPAREN ")"
        EOL "\n"
 %token AND "et" OR "ou" XOR "oue"
-       NOP "non"
+       NO "non"
+%token ASSIGN "<-"
 %token END 0
 
 
@@ -53,19 +60,18 @@ extern FILE *yyin;
 /* priority */
 %left PLUS MINUS OR XOR
 %left STAR SLASH DIV AND MOD
-%right NOP
+%right NO
 
 %%
 
-input:
+instructions: |
+ instructions instruction { list_push_back(instructions.list, $2); }
 
-| input line
-;
+instruction:
+ assign            { $$ = $1; }
 
-line:
- exp END { expression = $1; }
-| error "\n"
-;
+assign:
+ IDENT "<-" exp    { $$ = assign($1, $3); }
 
 exp:
  exp "+" exp  { $$ = binopexpr($1, PLUS, $3); }
@@ -77,9 +83,10 @@ exp:
 | exp "div" exp  { $$ = binopexpr($1, DIV, $3); }
 | exp "et" exp  { $$ = binopexpr($1, AND, $3); }
 | exp "mod" exp  { $$ = binopexpr($1, MOD, $3); }
-| exp "non" exp  { $$ = binopexpr($1, NOP, $3); }
+| exp "non" exp  { $$ = binopexpr($1, NO, $3); }
 | INT     { $$ = $1; }
 | REAL    { $$ = $1; }
+| IDENT   { $$ = $1; }
 | "(" exp ")"  { $$ = $2; }
 | "+" exp      { $$ = $2; }
 | "-" exp      { $$ = unopexpr(MINUS, $2); }

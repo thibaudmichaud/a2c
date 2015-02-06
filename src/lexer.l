@@ -6,6 +6,7 @@
 
 #define SAVE_INT (yylval->expression = intexpr(strtol(yytext, NULL, 10)))
 #define SAVE_REAL (yylval->expression = realexpr(strtof(yytext, NULL)))
+#define SAVE_STRING (yylval->expression = identexpr(strdup(yytext)))
 #define yyterminate() return END
 
 %}
@@ -56,7 +57,7 @@
 <COMMENT>"*/"           BEGIN(INITIAL);
 <COMMENT>(.|\n)         ;
 <COMMENT><<EOF>>        printf("Unexpected file end (unterminated comment).\n");
-"<-"                    printf("operator: %s\n", yytext);
+"<-"                    return ASSIGN;
 "^"                     printf("operator: %s\n", yytext);
 "."                     printf("operator: %s\n", yytext);
 ","                     printf("operator: %s\n", yytext);
@@ -76,7 +77,7 @@
 "["                     printf("LBRACKET\n");
 "]"                     printf("RBRACKET\n");
 \"[^"]*\"               printf("STRING\n");
-[a-zA-Z_][a-zA-Z0-9_]*  printf("identifier: %s\n", yytext);
+[a-zA-Z_][a-zA-Z0-9_]*  SAVE_STRING; return IDENT;
 [0-9]+                  SAVE_INT; return INT;
 [0-9]+(\.[0-9]+)?       SAVE_REAL; return REAL;
 .                       ;

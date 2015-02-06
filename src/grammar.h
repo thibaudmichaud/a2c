@@ -4,33 +4,120 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "parser.h"
+#include "data_struct/list/list.h"
+
+/*-------------*/
+/* expressions */
+/*-------------*/
+
+struct binopexpr
+{
+  struct expr *e1;
+  int op; // should use tokens defined in parser.h
+  struct expr *e2;
+};
+
+
+struct arrayexpr
+{
+  // e1[e2]
+  struct expr *e1;
+  struct expr *e2;
+};
+
+struct structelt
+{
+  // e1.ident
+  struct expr *e1;
+  char *ident;
+};
+
+struct deref
+{
+  struct expr *e;
+};
+
+enum unop
+{
+  UPLUS,
+  UMINUS,
+  NOT
+};
+
+struct unopexpr
+{
+  enum unop op;
+  struct expr *e;
+};
+
+struct expr
+{
+  enum
+  {
+    nulltype,
+    chartype,
+    stringtype,
+    inttype,
+    realtype,
+    identtype,
+    funcalltype,
+    binopexprtype,
+    unopexprtype,
+    arrayexprtype,
+    structelttype,
+    dereftype
+  } exprtype;
+  union
+  {
+    bool nullval;
+    char charval;
+    char *stringval;
+    int intval;
+    double realval;
+    char *ident;
+    // Anonymous struct to bypass double recursive definition of expr and
+    // funcall.
+    struct { char *fun_ident; struct expr *args; } funcall;
+    struct binopexpr binopexpr;
+    struct unopexpr unopexpr;
+    struct arrayexpr arrayexpr;
+    struct structelt structelt;
+    struct deref deref;
+  } val;
+};
 
 /*--------------*/
 /* instructions */
 /*--------------*/
 
+struct exprlist
+{
+  list_tpl(struct expr *) list;
+};
+
 struct funcall
 {
   char *fun_ident;
-  struct expr *args;
+  struct exprlist exprlist;
 };
 
 struct elseblock
 {
-  struct instruction *instructions;
+  struct block *instructions;
 };
 
 struct ifthenelse
 {
   struct expr *cond;
-  struct instruction *instructions;
+  struct block *instructions;
   struct elseblock *elseblock;
 };
 
 struct assignment
 {
-  char *ident;
-  struct expr *expression;
+  // e1 <- e2
+  struct expr *e1;
+  struct expr *e2;
 };
 
 struct caseblock
@@ -39,22 +126,27 @@ struct caseblock
   struct instruction *instructions;
 };
 
+struct caselist
+{
+  list_tpl(struct caseblock *) caselist;
+};
+
 struct switchcase
 {
   struct expr *cond;
-  struct caseblock *caselist;
+  struct caselist caselist;
 };
 
 struct dowhile
 {
-  struct instruction *instructions;
+  struct block *instructions;
   struct expr *cond;
 };
 
 struct whiledo
 {
   struct expr *cond;
-  struct instruction *instructions;
+  struct block *instructions;
 };
 
 struct forloop
@@ -62,12 +154,17 @@ struct forloop
   struct assignment *assignment;
   struct expr *cond;
   bool decroissant;
-  struct instruction *instructions;
+  struct block *instructions;
 };
 
 struct returnstmt
 {
   struct expr *expr;
+};
+
+struct block
+{
+  list_tpl(struct instruction *) list;
 };
 
 struct instruction
@@ -85,14 +182,14 @@ struct instruction
   } kind;
   union
   {
-    struct funcall *funcall;
-    struct assignment *assignment;
-    struct ifthenelse *ifthenelse;
-    struct switchcase *switchcase;
-    struct dowhile *dowhile;
-    struct whiledo *whiledo;
-    struct forloop *forloop;
-    struct returnstmt *returnstmt;
+    struct funcall funcall;
+    struct assignment assignment;
+    struct ifthenelse ifthenelse;
+    struct switchcase switchcase;
+    struct dowhile dowhile;
+    struct whiledo whiledo;
+    struct forloop forloop;
+    struct returnstmt returnstmt;
   } instr;
 };
 
@@ -190,80 +287,6 @@ struct algo
   struct instruction *instructions;
 };
 
-struct binopexpr
-{
-  struct expr *e1;
-  int op; // should use tokens defined in parser.h
-  struct expr *e2;
-};
-
-
-struct arrayexpr
-{
-  // e1[e2]
-  struct expr *e1;
-  struct expr *e2;
-};
-
-struct structelt
-{
-  // e1.ident
-  struct expr *e1;
-  char *ident;
-};
-
-struct deref
-{
-  struct expr *e;
-};
-
-enum unop
-{
-  UPLUS,
-  UMINUS,
-  NOT
-};
-
-struct unopexpr
-{
-  enum unop op;
-  struct expr *e;
-};
-
-struct expr
-{
-  enum
-  {
-    nulltype,
-    chartype,
-    stringtype,
-    inttype,
-    realtype,
-    identtype,
-    funcalltype,
-    binopexprtype,
-    unopexprtype,
-    arrayexprtype,
-    structelttype,
-    dereftype
-  } exprtype;
-  union
-  {
-    bool nullval;
-    char charval;
-    char *stringval;
-    int intval;
-    double realval;
-    char *ident;
-    struct funcall funcallval;
-    struct binopexpr binopexpr;
-    struct unopexpr unopexpr;
-    struct arrayexpr arrayexpr;
-    struct structelt structelt;
-    struct deref deref;
-  } val;
-};
-
 // Helper functions
 
 static inline
@@ -306,6 +329,15 @@ struct expr *unopexpr(int op, struct expr *e1)
 }
 
 static inline
+struct expr *identexpr(char *ident)
+{
+  struct expr *e = malloc(sizeof(struct expr));
+  e->exprtype = identtype;
+  e->val.ident = ident;
+  return e;
+}
+
+static inline
 char *getopstr(int op)
 {
   switch (op)
@@ -331,6 +363,16 @@ char *getopstr(int op)
     default:
       return NULL;
   }
+}
+
+static inline
+struct instruction *assign(struct expr *e1, struct expr *e2)
+{
+  struct instruction *i = malloc(sizeof(struct instruction));
+  i->kind = assignment;
+  i->instr.assignment.e1 = e1;
+  i->instr.assignment.e2 = e2;
+  return i;
 }
 
 #endif
