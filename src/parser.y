@@ -10,6 +10,7 @@
 #include <stdio.h>
 
 struct expr *expression;
+extern FILE *yyin;
 }
 
 %code provides

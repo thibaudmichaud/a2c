@@ -1,10 +1,13 @@
 #include <stdlib.h>
+#include <unistd.h>
+#include <err.h>
 #include <stdio.h>
 #include "parser.h"
 #include "grammar.h"
 
 // Global variable filled by yyparse().
 extern struct expr *expression;
+extern FILE *yyin;
 
 // This is needed to free the global variables allocated by the lexer.
 int yylex_destroy(void);
@@ -51,8 +54,18 @@ void free_expression(struct expr *e)
   free(e);
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
+  if (argc < 2)
+  {
+    printf("usage: %s FILENAME", argv[0]);
+    _exit(1);
+  }
+
+  yyin = fopen(argv[1], "r");
+  if (yyin == NULL)
+    err(1, "Couldn't open file %s", argv[1]);
+
   expression = NULL;
   yyparse();
   print_expression(expression);
