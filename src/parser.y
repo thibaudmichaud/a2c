@@ -34,7 +34,7 @@ extern FILE *yyin;
 
 /* operands */
 %token PLUS "+" MINUS "-"
-       MUL "*" SLASH "/"
+       STAR "*" SLASH "/"
        DIV "div"
        MOD "mod"
        LPAREN "(" RPAREN ")"

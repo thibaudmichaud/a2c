@@ -69,8 +69,8 @@
 "="                     printf("operator: %s\n", yytext);
 "+"                     return PLUS;
 "-"                     return MINUS;
-"*"                     return MUL;
-"/"                     return DIV;
+"*"                     return STAR;
+"/"                     return SLASH;
 "("                     return LPAREN;
 ")"                     return RPAREN;
 "["                     printf("LBRACKET\n");
