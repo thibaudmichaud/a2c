@@ -5,6 +5,6 @@ bin_PROGRAMS = a2c
 a2c_SOURCES = src/parser.y src/lexer.l src/a2c.c
 
 check_PROGRAMS = tests/list
-tests_list_SOURCES = src/data_struct/list/list.c tests/list.c
+tests_list_SOURCES = tests/list.c
 
 TESTS = tests/parser.test tests/list.test

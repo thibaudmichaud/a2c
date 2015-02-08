@@ -1,35 +1,74 @@
 #ifndef LIST_H_
 #define LIST_H_
 
-#include <stdlib.h>
+#define BASE_CAPACITY 4
 
-typedef struct s_list t_list;
+#define list_tpl(t) \
+struct { \
+  size_t capacity; \
+  size_t size; \
+  size_t elem_size; \
+  t *data; \
+}
 
-struct s_list
-{
-  size_t size_max;
-  size_t size;
-  void ** data;
-};
+#define define_list(t, name) \
+struct name { \
+  size_t capacity; \
+  size_t size; \
+  size_t elem_size; \
+  t *data; \
+}
 
-t_list* list_init(size_t size);
+#define list_init(l) \
+(l).capacity = BASE_CAPACITY; \
+(l).size = 0; \
+(l).data = malloc(sizeof(*(l).data) * (l).capacity)
 
-void list_free(t_list* l);
+#define list_push_back(l, elt) \
+do { \
+  if ((l).size + 1 > (l).capacity) \
+  { \
+    (l).capacity *= 2; \
+    (l).data = realloc((l).data, (l).capacity * (sizeof(*(l).data))); \
+  } \
+  (l).data[(l).size] = (elt); \
+  (l).size++; \
+} while (0)
 
-void list_push_back(t_list* l, void *data);
+#define list_pop_back(l) (l).data[--(l).size]; \
 
-void *list_pop_back(t_list* l);
+#define list_insert(l, i, elt) \
+do { \
+  if ((l).size + 1 > (l).capacity) \
+  { \
+    (l).data = realloc((l).data, (l).capacity * (sizeof(*(l).data)) * 2); \
+    (l).capacity *= 2; \
+  } \
+  size_t tmp = i; \
+  for (size_t j = (l).size; j > (tmp); --j) \
+    (l).data[j] = (l).data[j - 1]; \
+  (l).data[tmp] = elt; \
+  ++(l).size; \
+} while (0)
 
-void list_realloc(t_list *l);
+#define list_del(l, i) \
+do { \
+  assert((l).size > 0); \
+  size_t tmp = i; \
+  for (size_t j = tmp; j < (l).size; ++j) \
+    (l).data[j] = (l).data[j + 1]; \
+  --(l).size; \
+} while(0)
 
-void list_insert(t_list* l, size_t i, void *elt);
+#define list_push_front(l, elt) list_insert(l, 0, elt)
 
-void list_del(t_list *l, size_t i);
+#define list_pop_front(l) list_del(l, 0)
 
-void list_push_front(t_list *l, void *data);
+#define list_nth(l, n) (l).data[n]
 
-void list_pop_front(t_list *l);
-
-void *list_nth(t_list *l, size_t i);
+#define list_free(l) \
+do { \
+  free((l).data); \
+} while(0)
 
 #endif /* LIST_H_ */
