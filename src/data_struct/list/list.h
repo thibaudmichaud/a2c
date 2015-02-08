@@ -12,21 +12,24 @@ struct s_list
   void ** data;
 };
 
-void list_realloc(t_list* l);
-
-void array_move(t_list *l, size_t i);
-
 t_list* list_init(size_t size);
 
 void list_free(t_list* l);
 
-void list_push(t_list* l, void * data);
+void list_push_back(t_list* l, void *data);
 
-void *list_pop(t_list* l);
+void *list_pop_back(t_list* l);
 
-void list_add(t_list* l, void *data);
+void list_realloc(t_list *l);
 
-void list_print(t_list* l);
+void list_insert(t_list* l, size_t i, void *elt);
 
+void list_del(t_list *l, size_t i);
+
+void list_push_front(t_list *l, void *data);
+
+void list_pop_front(t_list *l);
+
+void *list_nth(t_list *l, size_t i);
 
 #endif /* LIST_H_ */

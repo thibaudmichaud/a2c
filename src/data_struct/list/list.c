@@ -1,5 +1,5 @@
-#include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include "list.h"
 
@@ -18,24 +18,17 @@ void list_free(t_list* l)
   free(l);
 }
 
-void list_push(t_list* l, void *data)
+void list_push_back(t_list* l, void *data)
 {
   list_realloc(l);
   l->data[l->size] = data;
   l->size++;
 }
 
-void *list_pop(t_list* l)
+void *list_pop_back(t_list* l)
 {
   l->size--;
   return l->data[l->size];
-}
-
-void list_print(t_list* l)
-{
-  for (size_t i = 0; i < l->size; i++)
-    printf("[%p] ->", l->data[i]);
-  printf("\n");
 }
 
 void list_realloc(t_list *l)
@@ -47,21 +40,38 @@ void list_realloc(t_list *l)
   }
 }
 
-void array_move(t_list* l, size_t i)
-{
-  void* tmp1 = l->data[i];
-  for (size_t j = i; j < l->size; j++)
-  {
-    void* tmp2 = l->data[j+1];
-    l->data[j+1] = tmp1;
-    tmp1 = tmp2;
-  }
-}
-
-void list_add(t_list *l, void *data)
+void list_insert(t_list* l, size_t i, void *elt)
 {
   list_realloc(l);
-  l->size++;
-  array_move(l, 0);
-  l->data[0] = data;
+
+  for (;i < l->size; ++i)
+    l->data[i+1] = l->data[i];
+
+  l->data[i] = elt;
+  ++l->size;
+}
+
+void list_del(t_list *l, size_t i)
+{
+  assert(l->size > 0);
+
+  for (; i < l->size; ++i)
+    l->data[i] = l->data[i + 1];
+
+  --l->size;
+}
+
+void list_push_front(t_list *l, void *data)
+{
+  list_insert(l, 0, data);
+}
+
+void list_pop_front(t_list *l)
+{
+  list_del(l, 0);
+}
+
+void *list_nth(t_list *l, size_t n)
+{
+  return l->data[n];
 }
