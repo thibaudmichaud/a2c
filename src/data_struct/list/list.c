@@ -44,8 +44,8 @@ void list_insert(t_list* l, size_t i, void *elt)
 {
   list_realloc(l);
 
-  for (;i < l->size; ++i)
-    l->data[i+1] = l->data[i];
+  for (size_t tmp = l->size; tmp > i; --tmp)
+    l->data[tmp] = l->data[tmp - 1];
 
   l->data[i] = elt;
   ++l->size;
