@@ -4,4 +4,7 @@ AM_YFLAGS = -d
 bin_PROGRAMS = a2c
 a2c_SOURCES = src/parser.y src/lexer.l src/a2c.c
 
-TESTS = tests/parser.test
+check_PROGRAMS = tests/list
+tests_list_SOURCES = src/data_struct/list/list.c tests/list.c
+
+TESTS = tests/parser.test tests/list.test

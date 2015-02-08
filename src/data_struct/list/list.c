@@ -33,9 +33,9 @@ void *list_pop(t_list* l)
 
 void list_print(t_list* l)
 {
-  int i;
-  for (i = 0; i < l->size; i++)
+  for (size_t i = 0; i < l->size; i++)
     printf("[%p] ->", l->data[i]);
+  printf("\n");
 }
 
 void list_realloc(t_list *l)
@@ -50,7 +50,7 @@ void list_realloc(t_list *l)
 void array_move(t_list* l, size_t i)
 {
   void* tmp1 = l->data[i];
-  for (int j = i; j < l->size; j++)
+  for (size_t j = i; j < l->size; j++)
   {
     void* tmp2 = l->data[j+1];
     l->data[j+1] = tmp1;
@@ -58,7 +58,7 @@ void array_move(t_list* l, size_t i)
   }
 }
 
-void *list_add(t_list *l, void *data)
+void list_add(t_list *l, void *data)
 {
   list_realloc(l);
   l->size++;
