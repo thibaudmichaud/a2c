@@ -9,7 +9,7 @@
 #include "grammar.h"
 #include <stdio.h>
 
-struct block instructions;
+extern struct algo *algorithm;
 extern FILE *yyin;
 }
 
@@ -25,10 +25,14 @@ extern FILE *yyin;
 {
   struct expr *expression;
   struct instruction *instruction;
+  struct block *instructions;
+  struct algo *algo;
   char *str;
 };
 
 %type <expression> exp
+%type <algo> algo
+%type <instructions> instructions
 %type <instruction> instruction
 %type <instruction> assign
 
@@ -36,7 +40,11 @@ extern FILE *yyin;
 /* TOKEN DECLARATION */
 /* ################# */
 
-%token <expression> IDENT
+%token ALGORITHM "algorithme"
+%token PROCEDURE "procedure"
+%token START "debut"
+%token STOP "fin"
+%token <str> IDENT
 
 /* operands */
 %token PLUS "+" MINUS "-"
@@ -48,7 +56,7 @@ extern FILE *yyin;
 %token AND "et" OR "ou" XOR "oue"
        NO "non"
 %token ASSIGN "<-"
-%token END 0
+%token _EOF 0
 
 
 /* expressions */
@@ -64,14 +72,22 @@ extern FILE *yyin;
 
 %%
 
-instructions: |
- instructions instruction { list_push_back(instructions.list, $2); }
+algo:
+ "algorithme" "procedure" IDENT
+ "debut"
+   instructions
+ "fin" "algorithme" "procedure" IDENT
+ { algorithm = algo($3, *($5)); }
+
+instructions:
+  { $$ = malloc(sizeof(struct block)); list_init(($$)->list); }
+| instructions instruction { list_push_back(($1)->list, $2); $$ = $1; }
 
 instruction:
  assign            { $$ = $1; }
 
 assign:
- IDENT "<-" exp    { $$ = assign($1, $3); }
+ exp "<-" exp    { $$ = assign($1, $3); }
 
 exp:
  exp "+" exp  { $$ = binopexpr($1, PLUS, $3); }
@@ -86,7 +102,7 @@ exp:
 | exp "non" exp  { $$ = binopexpr($1, NO, $3); }
 | INT     { $$ = $1; }
 | REAL    { $$ = $1; }
-| IDENT   { $$ = $1; }
+| IDENT   { $$ = identexpr($1); }
 | "(" exp ")"  { $$ = $2; }
 | "+" exp      { $$ = $2; }
 | "-" exp      { $$ = unopexpr(MINUS, $2); }

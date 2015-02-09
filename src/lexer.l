@@ -6,8 +6,8 @@
 
 #define SAVE_INT (yylval->expression = intexpr(strtol(yytext, NULL, 10)))
 #define SAVE_REAL (yylval->expression = realexpr(strtof(yytext, NULL)))
-#define SAVE_STRING (yylval->expression = identexpr(strdup(yytext)))
-#define yyterminate() return END
+#define SAVE_STRING (yylval->str = strdup(yytext))
+#define yyterminate() return _EOF
 
 %}
 
@@ -22,18 +22,18 @@
 
 [ \t]                   ;
 "\n"                    yylloc->first_line++;
-"algorithme"            printf("keyword: %s\n", yytext);
+"algorithme"            return ALGORITHM;
 "alors"                 printf("keyword: %s\n", yytext);
 "autrement"             printf("keyword: %s\n", yytext);
 "constantes"            printf("keyword: %s\n", yytext);
-"debut"                 printf("keyword: %s\n", yytext);
+"debut"                 return START;
 "decroissant"           printf("keyword: %s\n", yytext);
 "div"                   return DIV;
 "enregistrement"        printf("keyword: %s\n", yytext);
 "et"                    return AND;
 "faire"                 printf("keyword: %s\n", yytext);
 "faux"                  return FALSE;
-"fin"                   printf("keyword: %s\n", yytext);
+"fin"                   return STOP;
 "fonction"              printf("keyword: %s\n", yytext);
 "globaux"               printf("keyword: %s\n", yytext);
 "jusqu'a"               printf("keyword: %s\n", yytext);
@@ -44,7 +44,7 @@
 "oue"                   return XOR;
 "parametres"            printf("keyword: %s\n", yytext);
 "pour"                  printf("keyword: %s\n", yytext);
-"procedure"             printf("keyword: %s\n", yytext);
+"procedure"             return PROCEDURE;
 "que"                   printf("keyword: %s\n", yytext);
 "selon"                 printf("keyword: %s\n", yytext);
 "si"                    printf("keyword: %s\n", yytext);

@@ -8,7 +8,7 @@
 #include "data_struct/list/list.h"
 
 // Global variable filled by yyparse().
-struct block instructions;
+struct algo *algorithm;
 extern FILE *yyin;
 
 // This is needed to free the global variables allocated by the lexer.
@@ -26,11 +26,12 @@ int main(int argc, char **argv)
   if (yyin == NULL)
     err(1, "Couldn't open file %s", argv[1]);
 
-  list_init(instructions.list);
+  algorithm = malloc(sizeof(struct algo));
+  list_init(algorithm->instructions.list);
   yyparse();
-  print_instructions(instructions);
+  print_algo(algorithm);
   printf("\n");
   yylex_destroy();
-  free_instructions(instructions);
+  free_algo(algorithm);
   return 0;
 }

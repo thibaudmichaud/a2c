@@ -2,6 +2,20 @@
 #include "grammar.h"
 #include "codegen.h"
 
+void print_algo(struct algo *algo)
+{
+  printf("void ");
+  printf("%s()\n{\n", algo->ident);
+  print_instructions(algo->instructions);
+  printf("\n}");
+}
+
+void free_algo(struct algo *algo)
+{
+  free_instructions(algo->instructions);
+  free(algo);
+}
+
 void print_instructions(struct block instructions)
 {
   for (unsigned i = 0; i < instructions.list.size - 1; ++i)
@@ -21,7 +35,7 @@ void print_instruction(struct instruction *i)
       // TODO print argument list once lists are implemented
     case assignment:
       print_expression(i->instr.assignment.e1);
-      printf(" <- ");
+      printf(" = ");
       print_expression(i->instr.assignment.e2);
       break;
     default:

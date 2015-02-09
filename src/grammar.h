@@ -284,7 +284,7 @@ struct algo
 {
   char *ident;
   struct declarations declarations;
-  struct instruction *instructions;
+  struct block instructions;
 };
 
 // Helper functions
@@ -373,6 +373,15 @@ struct instruction *assign(struct expr *e1, struct expr *e2)
   i->instr.assignment.e1 = e1;
   i->instr.assignment.e2 = e2;
   return i;
+}
+
+static inline
+struct algo *algo(char *ident, struct block instructions)
+{
+  struct algo *a = malloc(sizeof(struct algo));
+  a->ident = ident;
+  a->instructions = instructions;
+  return a;
 }
 
 #endif
