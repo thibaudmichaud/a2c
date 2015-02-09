@@ -1,21 +1,34 @@
-Grammaire
-- [X] (Thibaud) Lexer
-- [ ] (Lucien & Thibaud) Désambiguiser la grammaire & enlever les conflits de la grammaire & ecrire le fichier bison
-- [ ] (Thibaud) écrire la structure de l'AST
+parseur & génération de code
+=======
+[ ] parser booléens, string
+[ ] parser pointeurs
+[ ] parser identifiants
+[ ] parser tableaux
+[ ] parser fonctions
+[ ] parser une liste d'algos
+[ ] parser variables globales et main
+- parser l'en-tête des algos
+ [ ] var
+ [ ] PL
+ [ ] PG
+ [ ] const
+ [ ] type
+[ ] parser structures de controles
+[ ] parser structures conditionnelles
+[ ] ajouter numéros de lignes dans l'ast
 
-Structures de données
-- [ ] (Arys) bibliothèque
-- [ ] (Arys) hashtable: fonction de hachage en paramètre
-- [ ] (Maxime) tests à part
-- [ ] (Lucien) listes statiques
+analyse sémantique
+==================
+[ ] table des symboles
+[ ] lier au parseur
+[ ] reporter les erreurs
+[ ] contextes (portées)
+[ ] lvalue rvalue
+[ ] fonctions prédéfinies
 
-Misc
-- (Maxime) Mise en place de Jenkins et Sonar
-- (Tout le monde) Se renseigner sur autotools
-
-Analyse sémantique
-- [ ] (Tout le monde) se renseigner
-- [ ] (Maxime) Commencer à coder
-
-Site web
-- [ ] (Lucien) faire le site web
+misc
+====
+[ ] site web
+[ ] templates hashtables
+[ ] rajouter tests parseur
+[ ] rajouter tests hashtable
