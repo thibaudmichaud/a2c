@@ -7,7 +7,7 @@ void print_algo(struct algo *algo)
   printf("void ");
   printf("%s(void)\n{\n", algo->ident);
   print_instructions(algo->instructions);
-  printf("\n}");
+  printf("}");
 }
 
 void free_algo(struct algo *algo)
@@ -21,18 +21,14 @@ void print_instructions(struct block instructions)
   for (unsigned i = 0; i < instructions.list.size - 1; ++i)
   {
     print_instruction(list_nth(instructions.list, i));
-    printf(";\n");
   }
   print_instruction(list_nth(instructions.list, instructions.list.size - 1));
-  printf(";");
 }
 
 void print_instruction(struct instruction *i)
 {
   switch (i->kind)
   {
-    case funcall:
-      // TODO print argument list once lists are implemented
     case assignment:
       print_expression(i->instr.assignment.e1);
       printf(" = ");
@@ -41,6 +37,7 @@ void print_instruction(struct instruction *i)
     default:
       printf("instruction not handled yet\n");
   }
+  printf(";\n");
 }
 
 void free_instructions(struct block instructions)
@@ -104,6 +101,11 @@ void print_expression(struct expr *e)
       break;
     case identtype:
       printf("%s", e->val.ident);
+      break;
+    case funcalltype:
+      printf("%s(", e->val.funcall.fun_ident);
+      print_expression(list_nth(e->val.funcall.args->list, 0));
+      printf(")");
       break;
     default:
       printf("expr not handled yet\n");

@@ -50,6 +50,12 @@ struct unopexpr
   struct expr *e;
 };
 
+struct funcall
+{
+  char *fun_ident;
+  struct exprlist *args;
+};
+
 struct expr
 {
   enum
@@ -75,9 +81,7 @@ struct expr
     int intval;
     double realval;
     char *ident;
-    // Anonymous struct to bypass double recursive definition of expr and
-    // funcall.
-    struct { char *fun_ident; struct expr *args; } funcall;
+    struct funcall funcall;
     struct binopexpr binopexpr;
     struct unopexpr unopexpr;
     struct arrayexpr arrayexpr;
@@ -93,12 +97,6 @@ struct expr
 struct exprlist
 {
   list_tpl(struct expr *) list;
-};
-
-struct funcall
-{
-  char *fun_ident;
-  struct exprlist exprlist;
 };
 
 struct elseblock
@@ -334,6 +332,18 @@ struct expr *identexpr(char *ident)
   struct expr *e = malloc(sizeof(struct expr));
   e->exprtype = identtype;
   e->val.ident = ident;
+  return e;
+}
+
+static inline
+struct expr *funcallexpr(char *ident, struct expr *e1)
+{
+  struct expr *e = malloc(sizeof(struct expr));
+  e->exprtype = funcalltype;
+  e->val.funcall.fun_ident = ident;
+  struct exprlist *exprlist = malloc(sizeof(struct exprlist));
+  list_push_back(exprlist->list, e1);
+  e->val.funcall.args = exprlist;
   return e;
 }
 

@@ -106,6 +106,7 @@ exp:
 | "(" exp ")"  { $$ = $2; }
 | "+" exp      { $$ = $2; }
 | "-" exp      { $$ = unopexpr(MINUS, $2); }
+| IDENT "(" exp ")" { $$ = funcallexpr($1, $3); }
 
 ;
 
