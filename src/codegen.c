@@ -5,7 +5,7 @@
 void print_algo(struct algo *algo)
 {
   printf("void ");
-  printf("%s()\n{\n", algo->ident);
+  printf("%s(void)\n{\n", algo->ident);
   print_instructions(algo->instructions);
   printf("\n}");
 }
