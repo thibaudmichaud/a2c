@@ -39,7 +39,7 @@
 "jusqu'a"               printf("keyword: %s\n", yytext);
 "locaux"                printf("keyword: %s\n", yytext);
 "mod"                   return MOD;
-"non"                   return NOT;
+"non"                   return NO;
 "ou"                    return OR;
 "oue"                   return XOR;
 "parametres"            printf("keyword: %s\n", yytext);
