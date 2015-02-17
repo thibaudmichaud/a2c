@@ -27,6 +27,7 @@ extern FILE *yyin;
   struct instruction *instruction;
   struct block *instructions;
   struct algo *algo;
+  struct exprlist *exprlist;
   char *str;
 };
 
@@ -35,6 +36,7 @@ extern FILE *yyin;
 %type <instructions> instructions
 %type <instruction> instruction
 %type <instruction> assign
+%type <exprlist> explist
 
 /* ################## */
 /* TOKEN DECLARATION */
@@ -56,6 +58,7 @@ extern FILE *yyin;
 %token AND "et" OR "ou" XOR "oue"
        NO "non"
 %token ASSIGN "<-"
+%token COMMA ","
 %token _EOF 0
 
 
@@ -106,8 +109,12 @@ exp:
 | "(" exp ")"  { $$ = $2; }
 | "+" exp      { $$ = $2; }
 | "-" exp      { $$ = unopexpr(MINUS, $2); }
-| IDENT "(" exp ")" { $$ = funcallexpr($1, $3); }
+| IDENT "(" explist ")" { $$ = funcallexpr($1, $3); }
 
+explist:
+          { $$ = empty_exprlist(); }
+| exp     { $$ = empty_exprlist(); list_push_back(($$)->list, $1); }
+| explist "," exp { list_push_back(($1)->list, $3); $$ = $1; }
 ;
 
 %%

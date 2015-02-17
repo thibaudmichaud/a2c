@@ -60,7 +60,7 @@
 "<-"                    return ASSIGN;
 "^"                     printf("operator: %s\n", yytext);
 "."                     printf("operator: %s\n", yytext);
-","                     printf("operator: %s\n", yytext);
+","                     return COMMA;
 ":"                     printf("operator: %s\n", yytext);
 "<"                     printf("operator: %s\n", yytext);
 ">"                     printf("operator: %s\n", yytext);

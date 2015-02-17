@@ -336,14 +336,12 @@ struct expr *identexpr(char *ident)
 }
 
 static inline
-struct expr *funcallexpr(char *ident, struct expr *e1)
+struct expr *funcallexpr(char *ident, struct exprlist *e1)
 {
   struct expr *e = malloc(sizeof(struct expr));
   e->exprtype = funcalltype;
   e->val.funcall.fun_ident = ident;
-  struct exprlist *exprlist = malloc(sizeof(struct exprlist));
-  list_push_back(exprlist->list, e1);
-  e->val.funcall.args = exprlist;
+  e->val.funcall.args = e1;
   return e;
 }
 
@@ -392,6 +390,14 @@ struct algo *algo(char *ident, struct block instructions)
   a->ident = ident;
   a->instructions = instructions;
   return a;
+}
+
+static inline
+struct exprlist *empty_exprlist(void)
+{
+  struct exprlist *e = malloc(sizeof(struct exprlist));
+  list_init(e->list);
+  return e;
 }
 
 #endif

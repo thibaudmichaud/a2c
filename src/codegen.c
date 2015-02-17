@@ -104,7 +104,13 @@ void print_expression(struct expr *e)
       break;
     case funcalltype:
       printf("%s(", e->val.funcall.fun_ident);
-      print_expression(list_nth(e->val.funcall.args->list, 0));
+      unsigned i = 0;
+      for (; i < e->val.funcall.args->list.size - 1; ++i)
+      {
+        print_expression(list_nth(e->val.funcall.args->list, 0));
+        printf(", ");
+      }
+      print_expression(list_nth(e->val.funcall.args->list, i));
       printf(")");
       break;
     default:
