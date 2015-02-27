@@ -11,6 +11,7 @@ b <- 3 + 4 * 5
 c <- vrai <> faux ou b
 d <- f(2 + 2, b et c, foo)
 e <- "bla"
+f <- ^c
 fin algorithme procedure foo
 EOF
 
@@ -27,6 +28,7 @@ b = (3 + (4 * 5));
 c = (1 <> (0 || b));
 d = f((2 + 2), (b && c), foo);
 e = "bla";
+f = *c;
 }
 EOF
 

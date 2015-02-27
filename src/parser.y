@@ -48,6 +48,7 @@ extern FILE *yyin;
 %token START "debut"
 %token END "fin"
 %token ASLONG AS DO
+%token DEREF "^"
 %token <str> IDENT
 %token <str> STRING
 
@@ -75,7 +76,7 @@ extern FILE *yyin;
 /* priority */
 %left PLUS MINUS OR XOR
 %left STAR SLASH DIV AND MOD
-%right NO
+%right NO DEREF
 
 %%
 
@@ -119,6 +120,7 @@ exp:
 | "+" exp      { $$ = $2; }
 | "-" exp      { $$ = unopexpr(MINUS, $2); }
 | IDENT "(" explist ")" { $$ = funcallexpr($1, $3); }
+| "^" exp { $$ = derefexpr($2); }
 
 explist:
           { $$ = empty_exprlist(); }

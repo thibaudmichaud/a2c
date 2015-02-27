@@ -113,6 +113,10 @@ void print_expression(struct expr *e)
     case booltype:
       printf("%d", e->val.boolval == true);
       break;
+    case dereftype:
+      printf("*");
+      print_expression(e->val.deref.e);
+      break;
     case funcalltype:
       printf("%s(", e->val.funcall.fun_ident);
       unsigned i = 0;

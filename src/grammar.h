@@ -357,6 +357,15 @@ struct expr *funcallexpr(char *ident, struct exprlist *e1)
 }
 
 static inline
+struct expr *derefexpr(struct expr *e1)
+{
+  struct expr *e = malloc(sizeof(struct expr));
+  e->exprtype = dereftype;
+  e->val.deref.e = e1;
+  return e;
+}
+
+static inline
 char *getopstr(int op)
 {
   switch (op)

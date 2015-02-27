@@ -57,7 +57,7 @@
 <COMMENT>(.|\n)         ;
 <COMMENT><<EOF>>        printf("Unexpected file end (unterminated comment).\n");
 "<-"                    return ASSIGN;
-"^"                     printf("operator: %s\n", yytext);
+"^"                     return DEREF;
 "."                     printf("operator: %s\n", yytext);
 ","                     return COMMA;
 ":"                     printf("operator: %s\n", yytext);
