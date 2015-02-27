@@ -5,6 +5,7 @@ debut
 a <- 2 * 3
 b <- 3 + 4 * 5
 c <- a ou b
+d <- f(2 + 2, b et c, foo)
 fin algorithme procedure foo
 EOF
 
@@ -15,6 +16,7 @@ void foo(void)
 a = (2 * 3);
 b = (3 + (4 * 5));
 c = (a ou b);
+d = f((2 + 2), (b et c), foo);
 }
 EOF
 

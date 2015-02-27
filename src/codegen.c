@@ -107,7 +107,7 @@ void print_expression(struct expr *e)
       unsigned i = 0;
       for (; i < e->val.funcall.args->list.size - 1; ++i)
       {
-        print_expression(list_nth(e->val.funcall.args->list, 0));
+        print_expression(list_nth(e->val.funcall.args->list, i));
         printf(", ");
       }
       print_expression(list_nth(e->val.funcall.args->list, i));
