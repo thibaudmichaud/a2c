@@ -75,7 +75,7 @@
 ")"                     return RPAREN;
 "["                     printf("LBRACKET\n");
 "]"                     printf("RBRACKET\n");
-\"[^"]*\"               printf("STRING\n");
+\"[^"]*\"               SAVE_STRING; return STRING;
 [a-zA-Z_][a-zA-Z0-9_]*  SAVE_STRING; return IDENT;
 [0-9]+                  SAVE_INT; return INT;
 [0-9]+(\.[0-9]+)?       SAVE_REAL; return REAL;

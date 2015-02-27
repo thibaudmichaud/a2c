@@ -107,6 +107,9 @@ void print_expression(struct expr *e)
     case identtype:
       printf("%s", e->val.ident);
       break;
+    case stringtype:
+      printf("%s", e->val.stringval);
+      break;
     case funcalltype:
       printf("%s(", e->val.funcall.fun_ident);
       unsigned i = 0;

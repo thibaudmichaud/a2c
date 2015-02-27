@@ -336,6 +336,15 @@ struct expr *identexpr(char *ident)
 }
 
 static inline
+struct expr *stringexpr(char *str)
+{
+  struct expr *e = malloc(sizeof(struct expr));
+  e->exprtype = stringtype;
+  e->val.stringval = str;
+  return e;
+}
+
+static inline
 struct expr *funcallexpr(char *ident, struct exprlist *e1)
 {
   struct expr *e = malloc(sizeof(struct expr));

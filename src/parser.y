@@ -48,6 +48,7 @@ extern FILE *yyin;
 %token END "fin"
 %token ASLONG AS DO
 %token <str> IDENT
+%token <str> STRING
 
 /* operands */
 %token PLUS "+" MINUS "-"
@@ -108,6 +109,7 @@ exp:
 | INT     { $$ = $1; }
 | REAL    { $$ = $1; }
 | IDENT   { $$ = identexpr($1); }
+| STRING { $$ = stringexpr($1); }
 | "(" exp ")"  { $$ = $2; }
 | "+" exp      { $$ = $2; }
 | "-" exp      { $$ = unopexpr(MINUS, $2); }
