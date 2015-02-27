@@ -73,8 +73,8 @@
 "/"                     return SLASH;
 "("                     return LPAREN;
 ")"                     return RPAREN;
-"["                     printf("LBRACKET\n");
-"]"                     printf("RBRACKET\n");
+"["                     return LBRACKET;
+"]"                     return RBRACKET;
 \"[^"]*\"               SAVE_STRING; return STRING;
 [a-zA-Z_][a-zA-Z0-9_]*  SAVE_STRING; return IDENT;
 [0-9]+                  SAVE_INT; return INT;

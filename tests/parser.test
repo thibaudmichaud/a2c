@@ -12,6 +12,7 @@ c <- vrai <> faux ou b
 d <- f(2 + 2, b et c, foo)
 e <- "bla"
 f <- ^c
+g <- e[a + 5]
 fin algorithme procedure foo
 EOF
 
@@ -29,6 +30,7 @@ c = (1 <> (0 || b));
 d = f((2 + 2), (b && c), foo);
 e = "bla";
 f = *c;
+g = e[(a + 5)];
 }
 EOF
 

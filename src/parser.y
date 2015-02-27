@@ -59,6 +59,7 @@ extern FILE *yyin;
        MOD "mod"
        EQ "=" NEQ "<>"
        LPAREN "(" RPAREN ")"
+       LBRACKET "[" RBRACKET "]"
        EOL "\n"
 %token AND "et" OR "ou" XOR "oue"
        NO "non"
@@ -121,6 +122,7 @@ exp:
 | "-" exp      { $$ = unopexpr(MINUS, $2); }
 | IDENT "(" explist ")" { $$ = funcallexpr($1, $3); }
 | "^" exp { $$ = derefexpr($2); }
+| exp "[" exp "]" { $$ = arrayexpr($1, $3); }
 
 explist:
           { $$ = empty_exprlist(); }

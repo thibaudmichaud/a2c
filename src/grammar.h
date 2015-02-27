@@ -366,6 +366,16 @@ struct expr *derefexpr(struct expr *e1)
 }
 
 static inline
+struct expr *arrayexpr(struct expr *e1, struct expr *e2)
+{
+  struct expr *e = malloc(sizeof(struct expr));
+  e->exprtype = arrayexprtype;
+  e->val.arrayexpr.e1 = e1;
+  e->val.arrayexpr.e2 = e2;
+  return e;
+}
+
+static inline
 char *getopstr(int op)
 {
   switch (op)

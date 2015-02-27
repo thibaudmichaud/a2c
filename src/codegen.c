@@ -104,6 +104,12 @@ void print_expression(struct expr *e)
       print_expression(e->val.unopexpr.e);
       printf(")");
       break;
+    case arrayexprtype:
+      print_expression(e->val.arrayexpr.e1);
+      printf("[");
+      print_expression(e->val.arrayexpr.e2);
+      printf("]");
+      break;
     case identtype:
       printf("%s", e->val.ident);
       break;
