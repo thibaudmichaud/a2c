@@ -65,8 +65,8 @@
 ">"                     printf("operator: %s\n", yytext);
 "<="                    printf("operator: %s\n", yytext);
 ">="                    printf("operator: %s\n", yytext);
-"<>"                    printf("operator: %s\n", yytext);
-"="                     printf("operator: %s\n", yytext);
+"<>"                    return NEQ;
+"="                     return EQ;
 "+"                     return PLUS;
 "-"                     return MINUS;
 "*"                     return STAR;

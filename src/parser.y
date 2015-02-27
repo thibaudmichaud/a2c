@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include "grammar.h"
 #include <stdio.h>
+#include <stdbool.h>
 
 extern struct algo *algorithm;
 extern FILE *yyin;
@@ -55,6 +56,7 @@ extern FILE *yyin;
        STAR "*" SLASH "/"
        DIV "div"
        MOD "mod"
+       EQ "=" NEQ "<>"
        LPAREN "(" RPAREN ")"
        EOL "\n"
 %token AND "et" OR "ou" XOR "oue"
@@ -105,11 +107,14 @@ exp:
 | exp "div" exp  { $$ = binopexpr($1, DIV, $3); }
 | exp "et" exp  { $$ = binopexpr($1, AND, $3); }
 | exp "mod" exp  { $$ = binopexpr($1, MOD, $3); }
-| exp "non" exp  { $$ = binopexpr($1, NO, $3); }
+| exp "=" exp  { $$ = binopexpr($1, EQ, $3); }
+| exp "<>" exp  { $$ = binopexpr($1, NEQ, $3); }
 | INT     { $$ = $1; }
 | REAL    { $$ = $1; }
 | IDENT   { $$ = identexpr($1); }
 | STRING { $$ = stringexpr($1); }
+| TRUE { $$ = boolexpr(true); }
+| FALSE { $$ = boolexpr(false); }
 | "(" exp ")"  { $$ = $2; }
 | "+" exp      { $$ = $2; }
 | "-" exp      { $$ = unopexpr(MINUS, $2); }

@@ -66,6 +66,7 @@ struct expr
     inttype,
     realtype,
     identtype,
+    booltype,
     funcalltype,
     binopexprtype,
     unopexprtype,
@@ -81,6 +82,7 @@ struct expr
     int intval;
     double realval;
     char *ident;
+    bool boolval;
     struct funcall funcall;
     struct binopexpr binopexpr;
     struct unopexpr unopexpr;
@@ -370,13 +372,17 @@ char *getopstr(int op)
     case DIV:
       return "div";
     case OR:
-      return "ou";
+      return "||";
     case AND:
-      return "et";
+      return "&&";
     case XOR:
       return "oue";
     case MOD:
       return "mod";
+    case EQ:
+      return "=";
+    case NEQ:
+      return "<>";
     default:
       return NULL;
   }
@@ -417,6 +423,15 @@ struct instruction *whileblock(struct expr *cond, struct block *b)
   i->instr.whiledo.cond = cond;
   i->instr.whiledo.instructions = b;
   return i;
+}
+
+static inline
+struct expr *boolexpr(bool b)
+{
+  struct expr *e = malloc(sizeof(struct expr));
+  e->exprtype = booltype;
+  e->val.boolval = b;
+  return e;
 }
 
 #endif

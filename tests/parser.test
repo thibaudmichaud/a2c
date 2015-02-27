@@ -8,7 +8,7 @@ tant que (1 + 1) faire
 fin tant que
 a <- 2 * 3
 b <- 3 + 4 * 5
-c <- a ou b
+c <- vrai <> faux ou b
 d <- f(2 + 2, b et c, foo)
 e <- "bla"
 fin algorithme procedure foo
@@ -24,8 +24,8 @@ c = (4 + 4);
 }
 a = (2 * 3);
 b = (3 + (4 * 5));
-c = (a ou b);
-d = f((2 + 2), (b et c), foo);
+c = (1 <> (0 || b));
+d = f((2 + 2), (b && c), foo);
 e = "bla";
 }
 EOF
