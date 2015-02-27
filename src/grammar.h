@@ -282,7 +282,7 @@ struct algo
 {
   char *ident;
   struct declarations declarations;
-  struct block instructions;
+  struct block *instructions;
 };
 
 // Helper functions
@@ -384,7 +384,7 @@ struct instruction *assign(struct expr *e1, struct expr *e2)
 }
 
 static inline
-struct algo *algo(char *ident, struct block instructions)
+struct algo *algo(char *ident, struct block *instructions)
 {
   struct algo *a = malloc(sizeof(struct algo));
   a->ident = ident;
@@ -398,6 +398,16 @@ struct exprlist *empty_exprlist(void)
   struct exprlist *e = malloc(sizeof(struct exprlist));
   list_init(e->list);
   return e;
+}
+
+static inline
+struct instruction *whileblock(struct expr *cond, struct block *b)
+{
+  struct instruction *i = malloc(sizeof(struct instruction));
+  i->kind = whiledo;
+  i->instr.whiledo.cond = cond;
+  i->instr.whiledo.instructions = b;
+  return i;
 }
 
 #endif

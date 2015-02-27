@@ -26,8 +26,6 @@ int main(int argc, char **argv)
   if (yyin == NULL)
     err(1, "Couldn't open file %s", argv[1]);
 
-  algorithm = malloc(sizeof(struct algo));
-  list_init(algorithm->instructions.list);
   yyparse();
   print_algo(algorithm);
   printf("\n");

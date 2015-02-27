@@ -2,6 +2,10 @@
 cat <<EOF >input
 algorithme procedure foo
 debut
+tant que (1 + 1) faire
+  b <- 3
+  c <- 4 + 4
+fin tant que
 a <- 2 * 3
 b <- 3 + 4 * 5
 c <- a ou b
@@ -13,6 +17,10 @@ valgrind --leak-check=full --show-leak-kinds=all ./a2c input >out
 cat <<EOF >exp
 void foo(void)
 {
+while ((1 + 1)) {
+b = 3;
+c = (4 + 4);
+}
 a = (2 * 3);
 b = (3 + (4 * 5));
 c = (a ou b);

@@ -45,7 +45,8 @@ extern FILE *yyin;
 %token ALGORITHM "algorithme"
 %token PROCEDURE "procedure"
 %token START "debut"
-%token STOP "fin"
+%token END "fin"
+%token ASLONG AS DO
 %token <str> IDENT
 
 /* operands */
@@ -80,7 +81,7 @@ algo:
  "debut"
    instructions
  "fin" "algorithme" "procedure" IDENT
- { algorithm = algo($3, *($5)); }
+ { algorithm = algo($3, $5); }
 
 instructions:
   { $$ = malloc(sizeof(struct block)); list_init(($$)->list); }
@@ -88,6 +89,7 @@ instructions:
 
 instruction:
  assign            { $$ = $1; }
+| ASLONG AS exp DO instructions END ASLONG AS { $$ = whileblock($3, $5); }
 
 assign:
  exp "<-" exp    { $$ = assign($1, $3); }

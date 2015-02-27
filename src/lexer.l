@@ -20,7 +20,6 @@
 
 %%
 
-[ \t]                   ;
 "\n"                    yylloc->first_line++;
 "algorithme"            return ALGORITHM;
 "alors"                 printf("keyword: %s\n", yytext);
@@ -31,9 +30,9 @@
 "div"                   return DIV;
 "enregistrement"        printf("keyword: %s\n", yytext);
 "et"                    return AND;
-"faire"                 printf("keyword: %s\n", yytext);
+"faire"                 return DO;
 "faux"                  return FALSE;
-"fin"                   return STOP;
+"fin"                   return END;
 "fonction"              printf("keyword: %s\n", yytext);
 "globaux"               printf("keyword: %s\n", yytext);
 "jusqu'a"               printf("keyword: %s\n", yytext);
@@ -45,11 +44,11 @@
 "parametres"            printf("keyword: %s\n", yytext);
 "pour"                  printf("keyword: %s\n", yytext);
 "procedure"             return PROCEDURE;
-"que"                   printf("keyword: %s\n", yytext);
 "selon"                 printf("keyword: %s\n", yytext);
 "si"                    printf("keyword: %s\n", yytext);
 "sinon"                 printf("keyword: %s\n", yytext);
-"tant"                  printf("keyword: %s\n", yytext);
+"tant"                  return ASLONG;
+"que"                   return AS;
 "types"                 printf("keyword: %s\n", yytext);
 "variables"             printf("keyword: %s\n", yytext);
 "vrai"                  return TRUE;

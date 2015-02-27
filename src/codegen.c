@@ -16,13 +16,11 @@ void free_algo(struct algo *algo)
   free(algo);
 }
 
-void print_instructions(struct block instructions)
+void print_instructions(struct block *instructions)
 {
-  for (unsigned i = 0; i < instructions.list.size - 1; ++i)
-  {
-    print_instruction(list_nth(instructions.list, i));
-  }
-  print_instruction(list_nth(instructions.list, instructions.list.size - 1));
+  for (unsigned i = 0; i < instructions->list.size - 1; ++i)
+    print_instruction(list_nth(instructions->list, i));
+  print_instruction(list_nth(instructions->list, instructions->list.size - 1));
 }
 
 void print_instruction(struct instruction *i)
@@ -33,18 +31,25 @@ void print_instruction(struct instruction *i)
       print_expression(i->instr.assignment.e1);
       printf(" = ");
       print_expression(i->instr.assignment.e2);
+      printf(";\n");
+      break;
+    case whiledo:
+      printf("while (");
+      print_expression(i->instr.whiledo.cond);
+      printf(") {\n");
+      print_instructions(i->instr.whiledo.instructions);
+      printf("}\n");
       break;
     default:
       printf("instruction not handled yet\n");
   }
-  printf(";\n");
 }
 
-void free_instructions(struct block instructions)
+void free_instructions(struct block *instructions)
 {
-  for (unsigned i = 0; i < instructions.list.size; ++i)
-    free_instruction(list_nth(instructions.list, i));
-  list_free(instructions.list);
+  for (unsigned i = 0; i < instructions->list.size; ++i)
+    free_instruction(list_nth(instructions->list, i));
+  list_free(instructions->list);
 }
 
 void free_instruction(struct instruction *i)
