@@ -520,4 +520,13 @@ struct prog *make_prog(struct algo *algo, struct entry_point *entry_point)
   return p;
 }
 
+static inline
+struct instruction *funcallinstr(char *ident, struct exprlist *args)
+{
+  struct instruction *i = malloc(sizeof(struct instruction));
+  i->kind = funcall;
+  i->instr.funcall.fun_ident = ident;
+  i->instr.funcall.args = args;
+  return i;
+}
 #endif

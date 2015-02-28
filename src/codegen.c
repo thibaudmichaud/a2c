@@ -109,6 +109,17 @@ void print_instructions(struct block *instructions)
   print_instruction(list_nth(instructions->list, instructions->list.size - 1));
 }
 
+void print_exprlist(struct exprlist *l)
+{
+  unsigned i = 0;
+  for (; i + 1 < l->list.size; ++i)
+  {
+    print_expression(list_nth(l->list, i));
+    printf(", ");
+  }
+  print_expression(list_nth(l->list, i));
+}
+
 void print_instruction(struct instruction *i)
 {
   switch (i->kind)
@@ -149,6 +160,11 @@ void print_instruction(struct instruction *i)
       printf(")) {\n");
       print_instructions(i->instr.forloop.instructions);
       printf("}\n");
+      break;
+    case funcall:
+      printf("%s(", i->instr.funcall.fun_ident);
+      print_exprlist(i->instr.funcall.args);
+      printf(");\n");
       break;
     default:
       printf("instruction not handled yet\n");
@@ -244,13 +260,7 @@ void print_expression(struct expr *e)
       break;
     case funcalltype:
       printf("%s(", e->val.funcall.fun_ident);
-      unsigned i = 0;
-      for (; i + 1 < e->val.funcall.args->list.size; ++i)
-      {
-        print_expression(list_nth(e->val.funcall.args->list, i));
-        printf(", ");
-      }
-      print_expression(list_nth(e->val.funcall.args->list, i));
+      print_exprlist(e->val.funcall.args);
       printf(")");
       break;
     default:

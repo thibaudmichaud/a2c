@@ -147,6 +147,7 @@ instruction:
 | DO instructions WHILE exp { $$ = dowhileblock($2, $4); }
 | FOR assign UPTO exp DO instructions END FOR { $$ = forblock($2, $4, 0, $6); }
 | FOR assign UPTO exp DECREASING DO instructions END FOR { $$ = forblock($2, $4, 1, $7); }
+| IDENT "(" explist ")" { $$ = funcallinstr($1, $3); }
 
 assign:
  exp "<-" exp    { $$ = assign($1, $3); }
