@@ -20,7 +20,7 @@
 
 %%
 
-"\n"                    yylloc->first_line++;
+\n+                     return _EOL;
 "algorithme"            return ALGORITHM;
 "alors"                 return THEN;
 "autrement"             printf("keyword: %s\n", yytext);

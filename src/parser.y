@@ -1,6 +1,5 @@
 %debug
 %error-verbose
-%locations
 %define api.pure full
 
 %code top
@@ -12,13 +11,14 @@
 
 extern struct prog *prog;
 extern FILE *yyin;
+int yylineno;
 }
 
 %code provides
 {
-  #define YY_DECL enum yytokentype yylex(YYSTYPE *yylval, YYLTYPE *yylloc)
+  #define YY_DECL enum yytokentype yylex(YYSTYPE *yylval)
   YY_DECL;
-  void yyerror (YYLTYPE* yylloc, const char* msg);
+  void yyerror (const char* msg);
 }
 
 
@@ -88,6 +88,7 @@ extern FILE *yyin;
        NO "non"
 %token ASSIGN "<-"
 %token COMMA ","
+%token _EOL
 %token _EOF 0
 
 
@@ -98,45 +99,49 @@ extern FILE *yyin;
 %token <expression> FALSE
 
 /* priority */
+%right ASSIGN
+%precedence IDENT WHILE
 %left "=" "<>"
 %left PLUS MINUS OR XOR
 %left STAR SLASH DIV AND MOD
 %right NO DEREF
-%precedence "[" "]"
+%precedence "[" "]" "(" ")"
 
 %%
 
 prog:
- algo entry_point { prog = make_prog($1, $2); }
+ algo _EOL
+ entry_point _EOL { prog = make_prog($1, $3); }
 
 entry_point:
  var_decl
- "debut"
+ "debut" _EOL
  instructions
- "fin" { $$ = make_entry_point($1, $3); }
+ "fin" { $$ = make_entry_point($1, $4); }
 
 algo:
- "algorithme" "procedure" IDENT
+ "algorithme" "procedure" IDENT _EOL
  decls
- "debut"
+ "debut" _EOL
    instructions
  "fin" "algorithme" "procedure" IDENT
- { $$ = algo($3, $4, $6); free($10); }
-/* NOTE: $10 will be needed for the semantic analysis phase but for now the
+ { $$ = algo($3, $5, $8); free($12); }
+/* NOTE: $12 will be needed for the semantic analysis phase but for now the
 free is here to prevent valgrind from reporting the error */
 
 decls:
  var_decl { $$ = malloc(sizeof(struct declarations)); $$->var_decl = $1; }
 
 var_decl:
- "variables" var_decl2 { $$ = $2; }
+ "variables" _EOL
+ var_decl2 { $$ = $3; }
 
 var_decl2:
  { $$ = empty_var_decl(); }
 | var_decl2 single_var_decl { $$ = $1; list_push_back($$->decls, $2); }
 
 single_var_decl:
- IDENT identlist { $$ = single_var_decl($1, $2); }
+ IDENT identlist _EOL { $$ = single_var_decl($1, $2); }
 
 identlist:
 IDENT { $$ = empty_identlist(); list_push_back($$->list, $1); }
@@ -147,17 +152,31 @@ instructions:
 | instructions instruction { list_push_back(($1)->list, $2); $$ = $1; }
 
 instruction:
- assign            { $$ = assigninstr($1); }
-| ASLONG AS exp DO instructions END ASLONG AS { $$ = whileblock($3, $5); }
-| DO instructions WHILE exp { $$ = dowhileblock($2, $4); }
-| FOR assign UPTO exp DO instructions END FOR { $$ = forblock($2, $4, 0, $6); }
-| FOR assign UPTO exp DECREASING DO instructions END FOR { $$ = forblock($2, $4, 1, $7); }
-| IDENT "(" explist ")" { $$ = funcallinstr($1, $3); }
-| IF exp THEN instructions END IF { $$ = ifthenelseblock($2, $4, NULL); }
-| IF exp THEN instructions ELSE instructions END IF { $$ = ifthenelseblock($2, $4, $6); }
+ assign _EOL      { $$ = assigninstr($1); }
+| ASLONG AS exp DO _EOL
+    instructions
+  END ASLONG AS _EOL { $$ = whileblock($3, $6); }
+| DO _EOL
+    instructions
+  WHILE exp _EOL { $$ = dowhileblock($3, $5); }
+| FOR assign UPTO exp DO _EOL
+    instructions
+  END FOR _EOL { $$ = forblock($2, $4, 0, $7); }
+| FOR assign UPTO exp DECREASING DO _EOL
+    instructions
+  END FOR _EOL { $$ = forblock($2, $4, 1, $8); }
+| IDENT "(" explist ")" _EOL { $$ = funcallinstr($1, $3); }
+| IF exp THEN _EOL
+    instructions
+  END IF _EOL { $$ = ifthenelseblock($2, $5, NULL); }
+| IF exp THEN _EOL
+    instructions
+  ELSE _EOL
+    instructions
+  END IF _EOL { $$ = ifthenelseblock($2, $5, $8); }
 
 assign:
- exp "<-" exp    { $$ = assign($1, $3); }
+ exp "<-" exp { $$ = assign($1, $3); }
 
 exp:
  exp "+" exp  { $$ = binopexpr($1, PLUS, $3); }
@@ -178,6 +197,7 @@ exp:
 | TRUE { $$ = boolexpr(true); }
 | FALSE { $$ = boolexpr(false); }
 | "(" exp ")"  { $$ = $2; }
+| "non" exp  { $$ = unopexpr(NO, $2); }
 | "+" exp      { $$ = $2; }
 | "-" exp      { $$ = unopexpr(MINUS, $2); }
 | IDENT "(" explist ")" { $$ = funcallexpr($1, $3); }
@@ -196,8 +216,7 @@ nonempty_explist:
 %%
 
 void
-yyerror (YYLTYPE *yylloc, const char* msg)
+yyerror (const char* msg)
 {
-  YY_LOCATION_PRINT(stderr, *yylloc);
-  fprintf (stderr, ": %s\n", msg);
+  fprintf (stderr, "error near line %d: %s\n", yylineno, msg);
 }
