@@ -124,6 +124,23 @@ void print_instruction(struct instruction *i)
       print_expression(i->instr.dowhile.cond);
       printf(");\n");
       break;
+    case forloop:
+      printf("for (; ");
+      print_expression(i->instr.forloop.assignment->e1);
+      if (i->instr.forloop.decreasing)
+        printf(" >= ");
+      else
+        printf(" <= ");
+      print_expression(i->instr.forloop.upto);
+      if (i->instr.forloop.decreasing)
+        printf("; --(");
+      else
+        printf("; ++(");
+      print_expression(i->instr.forloop.assignment->e1);
+      printf(")) {\n");
+      print_instructions(i->instr.forloop.instructions);
+      printf("}\n");
+      break;
     default:
       printf("instruction not handled yet\n");
   }
@@ -163,7 +180,11 @@ void free_instruction(struct instruction *i)
       free_instructions(i->instr.whiledo.instructions);
       break;
     case forloop:
-      // TODO
+      free_expression(i->instr.forloop.assignment->e1);
+      free_expression(i->instr.forloop.assignment->e2);
+      free(i->instr.forloop.assignment);
+      free_instructions(i->instr.forloop.instructions);
+      free_expression(i->instr.forloop.upto);
       break;
     case returnstmt:
       break;

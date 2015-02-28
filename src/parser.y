@@ -33,6 +33,7 @@ extern FILE *yyin;
   struct single_var_decl *single_var_decl;
   struct var_decl *var_decl;
   struct declarations *decls;
+  struct assignment *assignment;
   char *str;
 };
 
@@ -40,14 +41,14 @@ extern FILE *yyin;
 %type <algo> algo
 %type <instructions> instructions
 %type <instruction> instruction
-%type <instruction> assign
 %type <exprlist> explist
 %type <identlist> identlist
 %type <single_var_decl> single_var_decl
 %type <var_decl> var_decl
 %type <decls> decls
+%type <assignment> assign
 
-/* ################## */
+/* ################# */
 /* TOKEN DECLARATION */
 /* ################# */
 
@@ -57,6 +58,9 @@ extern FILE *yyin;
 %token END "fin"
 %token ASLONG AS DO
 %token WHILE
+%token FOR
+%token DECREASING
+%token UPTO
 %token DEREF "^"
 %token <str> IDENT
 %token <str> STRING
@@ -119,9 +123,11 @@ instructions:
 | instructions instruction { list_push_back(($1)->list, $2); $$ = $1; }
 
 instruction:
- assign            { $$ = $1; }
+ assign            { $$ = assigninstr($1); }
 | ASLONG AS exp DO instructions END ASLONG AS { $$ = whileblock($3, $5); }
 | DO instructions WHILE exp { $$ = dowhileblock($2, $4); }
+| FOR assign UPTO exp DO instructions END FOR { $$ = forblock($2, $4, 0, $6); }
+| FOR assign UPTO exp DECREASING DO instructions END FOR { $$ = forblock($2, $4, 1, $7); }
 
 assign:
  exp "<-" exp    { $$ = assign($1, $3); }

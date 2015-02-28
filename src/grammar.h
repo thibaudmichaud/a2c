@@ -153,8 +153,8 @@ struct whiledo
 struct forloop
 {
   struct assignment *assignment;
-  struct expr *cond;
-  bool decroissant;
+  struct expr *upto;
+  bool decreasing;
   struct block *instructions;
 };
 
@@ -386,13 +386,12 @@ struct expr *arrayexpr(struct expr *e1, struct expr *e2)
 }
 
 static inline
-struct instruction *assign(struct expr *e1, struct expr *e2)
+struct assignment *assign(struct expr *e1, struct expr *e2)
 {
-  struct instruction *i = malloc(sizeof(struct instruction));
-  i->kind = assignment;
-  i->instr.assignment.e1 = e1;
-  i->instr.assignment.e2 = e2;
-  return i;
+  struct assignment *a = malloc(sizeof(struct assignment));
+  a->e1 = e1;
+  a->e2 = e2;
+  return a;
 }
 
 static inline
@@ -465,6 +464,30 @@ struct var_decl *empty_var_decl(void)
   struct var_decl *v = malloc(sizeof(struct var_decl));
   list_init(v->decls);
   return v;
+}
+
+static inline
+struct instruction *forblock(struct assignment *assignment, struct expr *upto, bool decreasing,
+    struct block *instructions)
+{
+  struct instruction *i = malloc(sizeof(struct instruction));
+  i->kind = forloop;
+  i->instr.forloop.assignment = malloc(sizeof(struct assignment));
+  i->instr.forloop.assignment = assignment;
+  i->instr.forloop.upto = upto;
+  i->instr.forloop.instructions = instructions;
+  i->instr.forloop.decreasing = decreasing;
+  return i;
+}
+
+static inline
+struct instruction *assigninstr(struct assignment *a)
+{
+  struct instruction *i = malloc(sizeof(struct instruction));
+  i->kind = assignment;
+  i->instr.assignment = *a;
+  free(a);
+  return i;
 }
 
 #endif

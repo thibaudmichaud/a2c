@@ -14,6 +14,12 @@ faire
   b <- 3
   c <- 4 + 4
 tantque (1 + 1)
+pour u <- 3 jusqu'a quarante_deux faire
+  a <- malloc(u)
+fin pour
+pour node <- a jusqu'a b decroissant faire
+  c <- free(node)
+fin pour
 a <- 2 * 3
 b <- 3 + 4 * 5
 c <- vrai <> faux ou b
@@ -39,6 +45,12 @@ do {
 b = 3;
 c = (4 + 4);
 } while ((1 + 1));
+for (; u <= quarante_deux; ++(u)) {
+a = malloc(u);
+}
+for (; node >= b; --(node)) {
+c = free(node);
+}
 a = (2 * 3);
 b = (3 + (4 * 5));
 c = (1 <> (0 || b));
