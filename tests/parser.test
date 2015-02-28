@@ -14,6 +14,11 @@ debut
   faire
     b <- 3
     c <- 4 + 4
+    si (reponse = 42) alors
+      ok()
+    sinon
+      notok()
+    fin si
   tantque (1 + 1)
   pour u <- 3 jusqu'a quarante_deux faire
     a <- malloc(u)
@@ -57,6 +62,14 @@ void foo(void)
   {
     b = 3;
     c = (4 + 4);
+    if ((reponse == 42))
+    {
+      ok();
+    }
+    else
+    {
+      notok();
+    }
   } while ((1 + 1));
   for (; u <= quarante_deux; ++(u))
   {

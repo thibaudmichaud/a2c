@@ -112,10 +112,11 @@ void free_algo(struct algo *algo)
 
 void print_instructions(struct block *instructions, int indent)
 {
-  for (unsigned i = 0; i + 1 < instructions->list.size; ++i)
+  unsigned i = 0;
+  for (; i + 1 < instructions->list.size; ++i)
     print_instruction(list_nth(instructions->list, i), indent);
-  print_instruction(list_nth(instructions->list, instructions->list.size - 1),
-      indent);
+  if (instructions->list.size > 0)
+    print_instruction(list_nth(instructions->list, i), indent);
 }
 
 void print_exprlist(struct exprlist *l)
@@ -126,7 +127,8 @@ void print_exprlist(struct exprlist *l)
     print_expression(list_nth(l->list, i));
     printf(", ");
   }
-  print_expression(list_nth(l->list, i));
+  if (l->list.size > 0)
+    print_expression(list_nth(l->list, i));
 }
 
 void print_instruction(struct instruction *i, int indent)
@@ -231,9 +233,6 @@ void free_instruction(struct instruction *i)
       free_expression(i->instr.assignment.e1);
       free_expression(i->instr.assignment.e2);
       break;
-    case ifthenelse:
-      // TODO
-      break;
     case switchcase:
       // TODO free list of instructions once lists are implemented
       break;
@@ -255,6 +254,12 @@ void free_instruction(struct instruction *i)
     case funcall:
       free_expressions(i->instr.funcall.args);
       free(i->instr.funcall.fun_ident);
+      break;
+    case ifthenelse:
+      free_expression(i->instr.ifthenelse.cond);
+      free_instructions(i->instr.ifthenelse.instructions);
+      if (i->instr.ifthenelse.elseblock)
+        free_instructions(i->instr.ifthenelse.elseblock);
       break;
     case returnstmt:
       break;
