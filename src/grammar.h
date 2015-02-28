@@ -11,6 +11,18 @@
 /* expressions */
 /*-------------*/
 
+struct prog
+{
+  struct algo *algo;
+  struct entry_point *entry_point;
+};
+
+struct entry_point
+{
+  struct var_decl *var_decl;
+  struct block *instructions;
+};
+
 struct binopexpr
 {
   struct expr *e1;
@@ -488,6 +500,24 @@ struct instruction *assigninstr(struct assignment *a)
   i->instr.assignment = *a;
   free(a);
   return i;
+}
+
+static inline
+struct entry_point *make_entry_point(struct var_decl *var_decl, struct block *instructions)
+{
+  struct entry_point *e = malloc(sizeof(struct entry_point));
+  e->var_decl = var_decl;
+  e->instructions = instructions;
+  return e;
+}
+
+static inline
+struct prog *make_prog(struct algo *algo, struct entry_point *entry_point)
+{
+  struct prog *p = malloc(sizeof(struct prog));
+  p->algo = algo;
+  p->entry_point = entry_point;
+  return p;
 }
 
 #endif

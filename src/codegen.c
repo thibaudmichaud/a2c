@@ -52,6 +52,15 @@ void print_decls(struct declarations *declarations)
   print_var_decl(declarations->var_decl);
 }
 
+void print_prog(struct prog *prog)
+{
+  print_var_decl(prog->entry_point->var_decl);
+  print_algo(prog->algo);
+  printf("int main(void) {\n");
+  print_instructions(prog->entry_point->instructions);
+  printf("}\n");
+}
+
 void print_algo(struct algo *algo)
 {
   printf("void ");
@@ -291,4 +300,12 @@ void free_expression(struct expr *e)
       break;
   }
   free(e);
+}
+
+void free_prog(struct prog *prog)
+{
+  free_var_decl(prog->entry_point->var_decl);
+  free_instructions(prog->entry_point->instructions);
+  free(prog->entry_point);
+  free_algo(prog->algo);
 }

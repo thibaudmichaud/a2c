@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-extern struct algo *algorithm;
+extern struct prog *prog;
 extern FILE *yyin;
 }
 
@@ -34,6 +34,8 @@ extern FILE *yyin;
   struct var_decl *var_decl;
   struct declarations *decls;
   struct assignment *assignment;
+  struct entry_point *entry_point;
+  struct prog *prog;
   char *str;
 };
 
@@ -47,6 +49,8 @@ extern FILE *yyin;
 %type <var_decl> var_decl
 %type <decls> decls
 %type <assignment> assign
+%type <entry_point> entry_point
+%type <prog> prog
 
 /* ################# */
 /* TOKEN DECLARATION */
@@ -96,13 +100,22 @@ extern FILE *yyin;
 
 %%
 
+prog:
+ algo entry_point { prog = make_prog($1, $2); }
+
+entry_point:
+ var_decl
+ "debut"
+ instructions
+ "fin" { $$ = make_entry_point($1, $3); }
+
 algo:
  "algorithme" "procedure" IDENT
  decls
  "debut"
    instructions
  "fin" "algorithme" "procedure" IDENT
- { algorithm = algo($3, $4, $6); free($10); }
+ { $$ = algo($3, $4, $6); free($10); }
 /* NOTE: $10 will be needed for the semantic analysis phase but for now the
 free is here to prevent valgrind from reporting the error */
 

@@ -8,7 +8,7 @@
 #include "data_struct/list/list.h"
 
 // Global variable filled by yyparse().
-struct algo *algorithm;
+struct prog *prog;
 extern FILE *yyin;
 
 // This is needed to free the global variables allocated by the lexer.
@@ -28,10 +28,10 @@ int main(int argc, char **argv)
 
   yyparse();
 
-  print_algo(algorithm);
+  print_prog(prog);
 
   fclose(yyin);
   yylex_destroy();
-  free_algo(algorithm);
+  free_prog(prog);
   return 0;
 }
