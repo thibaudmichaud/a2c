@@ -424,6 +424,16 @@ struct instruction *whileblock(struct expr *cond, struct block *b)
 }
 
 static inline
+struct instruction *dowhileblock(struct block *b, struct expr *cond)
+{
+  struct instruction *i = malloc(sizeof(struct instruction));
+  i->kind = dowhile;
+  i->instr.dowhile.cond = cond;
+  i->instr.dowhile.instructions = b;
+  return i;
+}
+
+static inline
 struct expr *boolexpr(bool b)
 {
   struct expr *e = malloc(sizeof(struct expr));

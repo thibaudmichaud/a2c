@@ -56,6 +56,7 @@ extern FILE *yyin;
 %token START "debut"
 %token END "fin"
 %token ASLONG AS DO
+%token WHILE
 %token DEREF "^"
 %token <str> IDENT
 %token <str> STRING
@@ -120,6 +121,7 @@ instructions:
 instruction:
  assign            { $$ = $1; }
 | ASLONG AS exp DO instructions END ASLONG AS { $$ = whileblock($3, $5); }
+| DO instructions WHILE exp { $$ = dowhileblock($2, $4); }
 
 assign:
  exp "<-" exp    { $$ = assign($1, $3); }

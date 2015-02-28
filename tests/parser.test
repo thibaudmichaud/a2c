@@ -10,6 +10,10 @@ tant que (1 + 1) faire
   b <- 3
   c <- 4 + 4
 fin tant que
+faire
+  b <- 3
+  c <- 4 + 4
+tantque (1 + 1)
 a <- 2 * 3
 b <- 3 + 4 * 5
 c <- vrai <> faux ou b
@@ -31,6 +35,10 @@ while ((1 + 1)) {
 b = 3;
 c = (4 + 4);
 }
+do {
+b = 3;
+c = (4 + 4);
+} while ((1 + 1));
 a = (2 * 3);
 b = (3 + (4 * 5));
 c = (1 <> (0 || b));

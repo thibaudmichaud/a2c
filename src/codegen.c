@@ -117,6 +117,13 @@ void print_instruction(struct instruction *i)
       print_instructions(i->instr.whiledo.instructions);
       printf("}\n");
       break;
+    case dowhile:
+      printf("do {\n");
+      print_instructions(i->instr.dowhile.instructions);
+      printf("} while (");
+      print_expression(i->instr.dowhile.cond);
+      printf(");\n");
+      break;
     default:
       printf("instruction not handled yet\n");
   }
@@ -148,6 +155,8 @@ void free_instruction(struct instruction *i)
       // TODO free list of instructions once lists are implemented
       break;
     case dowhile:
+      free_expression(i->instr.dowhile.cond);
+      free_instructions(i->instr.dowhile.instructions);
       break;
     case whiledo:
       free_expression(i->instr.whiledo.cond);
