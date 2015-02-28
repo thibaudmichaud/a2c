@@ -11,5 +11,6 @@ void free_instructions(struct block *instructions);
 void free_instruction(struct instruction *i);
 void print_expression(struct expr *e);
 void free_expression(struct expr *e);
+void free_expressions(struct exprlist *l);
 
 #endif

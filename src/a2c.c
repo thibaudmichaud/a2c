@@ -27,8 +27,10 @@ int main(int argc, char **argv)
     err(1, "Couldn't open file %s", argv[1]);
 
   yyparse();
+
   print_algo(algorithm);
-  printf("\n");
+
+  fclose(yyin);
   yylex_destroy();
   free_algo(algorithm);
   return 0;

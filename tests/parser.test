@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 cat <<EOF >input
 algorithme procedure foo
 debut
@@ -16,7 +17,7 @@ g <- e[a + 5]
 fin algorithme procedure foo
 EOF
 
-valgrind --leak-check=full --show-leak-kinds=all ./a2c input >out
+valgrind --error-exitcode=1 --leak-check=full --show-leak-kinds=all ./a2c input >out
 cat <<EOF >exp
 void foo(void)
 {
@@ -35,3 +36,4 @@ g = e[(a + 5)];
 EOF
 
 diff exp out
+set +e

@@ -7,12 +7,13 @@ void print_algo(struct algo *algo)
   printf("void ");
   printf("%s(void)\n{\n", algo->ident);
   print_instructions(algo->instructions);
-  printf("}");
+  printf("}\n");
 }
 
 void free_algo(struct algo *algo)
 {
   free_instructions(algo->instructions);
+  free(algo->ident);
   free(algo);
 }
 
@@ -50,6 +51,7 @@ void free_instructions(struct block *instructions)
   for (unsigned i = 0; i < instructions->list.size; ++i)
     free_instruction(list_nth(instructions->list, i));
   list_free(instructions->list);
+  free(instructions);
 }
 
 void free_instruction(struct instruction *i)
@@ -70,13 +72,13 @@ void free_instruction(struct instruction *i)
       // TODO free list of instructions once lists are implemented
       break;
     case dowhile:
-      // TODO free list of instructions once lists are implemented
       break;
     case whiledo:
-      // TODO free list of instructions once lists are implemented
+      free_expression(i->instr.whiledo.cond);
+      free_instructions(i->instr.whiledo.instructions);
       break;
     case forloop:
-      // TODO free list of instructions once lists are implemented
+      // TODO
       break;
     case returnstmt:
       break;
@@ -139,6 +141,14 @@ void print_expression(struct expr *e)
   }
 }
 
+void free_expressions(struct exprlist *l)
+{
+  for (unsigned i = 0; i < l->list.size; ++i)
+    free_expression(list_nth(l->list, i));
+  list_free(l->list);
+  free(l);
+}
+
 void free_expression(struct expr *e)
 {
   switch (e->exprtype)
@@ -150,6 +160,25 @@ void free_expression(struct expr *e)
     case unopexprtype:
       free_expression(e->val.unopexpr.e);
       break;
+    case arrayexprtype:
+      free_expression(e->val.arrayexpr.e1);
+      free_expression(e->val.arrayexpr.e2);
+      break;
+    case identtype:
+      free(e->val.ident);
+      break;
+    case stringtype:
+      free(e->val.stringval);
+      break;
+    case dereftype:
+      free_expression(e->val.deref.e);
+      break;
+    case funcalltype:
+      free_expressions(e->val.funcall.args);
+      free(e->val.funcall.fun_ident);
+      break;
+    case inttype:
+    case booltype:
     default:
       break;
   }

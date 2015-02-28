@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include "parser.h"
 #include "data_struct/list/list.h"
+#include <stdio.h>
 
 /*-------------*/
 /* expressions */

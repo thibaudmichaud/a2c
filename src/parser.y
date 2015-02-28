@@ -86,7 +86,9 @@ algo:
  "debut"
    instructions
  "fin" "algorithme" "procedure" IDENT
- { algorithm = algo($3, $5); }
+ { algorithm = algo($3, $5); free($9); }
+/* NOTE: $9 will be needed for the semantic analysis phase but for now the
+free is here to prevent valgrind from reporting the error */
 
 instructions:
   { $$ = malloc(sizeof(struct block)); list_init(($$)->list); }
