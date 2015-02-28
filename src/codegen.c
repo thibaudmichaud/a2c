@@ -31,7 +31,7 @@ char *getopstr(int op)
     case MOD:
       return "%";
     case EQ:
-      return "=";
+      return "==";
     case NEQ:
       return "<>";
     default:
@@ -188,6 +188,27 @@ void print_instruction(struct instruction *i, int indent)
       printf("%s(", i->instr.funcall.fun_ident);
       print_exprlist(i->instr.funcall.args);
       printf(");\n");
+      break;
+    case ifthenelse:
+      print_indent(indent);
+      printf("if (");
+      print_expression(i->instr.ifthenelse.cond);
+      printf(")\n");
+      print_indent(indent);
+      printf("{\n");
+      print_instructions(i->instr.ifthenelse.instructions, indent + INDENT_WIDTH);
+      print_indent(indent);
+      printf("}\n");
+      if (i->instr.ifthenelse.elseblock)
+      {
+        print_indent(indent);
+        printf("else\n");
+        print_indent(indent);
+        printf("{\n");
+        print_instructions(i->instr.ifthenelse.elseblock, indent + INDENT_WIDTH);
+        print_indent(indent);
+        printf("}\n");
+      }
       break;
     default:
       printf("instruction not handled yet\n");

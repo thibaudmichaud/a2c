@@ -22,7 +22,7 @@
 
 "\n"                    yylloc->first_line++;
 "algorithme"            return ALGORITHM;
-"alors"                 printf("keyword: %s\n", yytext);
+"alors"                 return THEN;
 "autrement"             printf("keyword: %s\n", yytext);
 "constantes"            printf("keyword: %s\n", yytext);
 "debut"                 return START;
@@ -44,9 +44,9 @@
 "parametres"            printf("keyword: %s\n", yytext);
 "pour"                  return FOR;
 "procedure"             return PROCEDURE;
-"selon"                 printf("keyword: %s\n", yytext);
-"si"                    printf("keyword: %s\n", yytext);
-"sinon"                 printf("keyword: %s\n", yytext);
+"selon"                 return SWITCH;
+"si"                    return IF;
+"sinon"                 return ELSE;
 "tant"                  return ASLONG;
 "que"                   return AS;
 "types"                 printf("keyword: %s\n", yytext);
@@ -61,7 +61,7 @@
 "^"                     return DEREF;
 "."                     printf("operator: %s\n", yytext);
 ","                     return COMMA;
-":"                     printf("operator: %s\n", yytext);
+":"                     return COLON;
 "<"                     printf("operator: %s\n", yytext);
 ">"                     printf("operator: %s\n", yytext);
 "<="                    printf("operator: %s\n", yytext);

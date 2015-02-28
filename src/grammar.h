@@ -113,16 +113,11 @@ struct exprlist
   list_tpl(struct expr *) list;
 };
 
-struct elseblock
-{
-  struct block *instructions;
-};
-
 struct ifthenelse
 {
   struct expr *cond;
   struct block *instructions;
-  struct elseblock *elseblock;
+  struct block *elseblock;
 };
 
 struct assignment
@@ -528,4 +523,16 @@ struct instruction *funcallinstr(char *ident, struct exprlist *args)
   i->instr.funcall.args = args;
   return i;
 }
+
+static inline
+struct instruction *ifthenelseblock(struct expr *cond, struct block *instructions, struct block *elseblock)
+{
+  struct instruction *i = malloc(sizeof(struct instruction));
+  i->kind = ifthenelse;
+  i->instr.ifthenelse.cond = cond;
+  i->instr.ifthenelse.instructions = instructions;
+  i->instr.ifthenelse.elseblock = elseblock;
+  return i;
+}
+
 #endif

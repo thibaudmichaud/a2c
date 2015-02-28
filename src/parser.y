@@ -65,12 +65,17 @@ extern FILE *yyin;
 %token FOR
 %token DECREASING
 %token UPTO
+%token IF
+%token THEN
+%token ELSE
+%token SWITCH
+%token COLON ":"
 %token DEREF "^"
 %token <str> IDENT
 %token <str> STRING
 %token VARIABLES "variables"
 
-/* operands */
+/* operators */
 %token PLUS "+" MINUS "-"
        STAR "*" SLASH "/"
        DIV "div"
@@ -148,6 +153,8 @@ instruction:
 | FOR assign UPTO exp DO instructions END FOR { $$ = forblock($2, $4, 0, $6); }
 | FOR assign UPTO exp DECREASING DO instructions END FOR { $$ = forblock($2, $4, 1, $7); }
 | IDENT "(" explist ")" { $$ = funcallinstr($1, $3); }
+| IF exp THEN instructions END IF { $$ = ifthenelseblock($2, $4, NULL); }
+| IF exp THEN instructions ELSE instructions END IF { $$ = ifthenelseblock($2, $4, $6); }
 
 assign:
  exp "<-" exp    { $$ = assign($1, $3); }
@@ -182,7 +189,7 @@ explist:
 | nonempty_explist { $$ = $1; }
 
 nonempty_explist:
-| exp     { $$ = empty_exprlist(); list_push_back(($$)->list, $1); }
+ exp     { $$ = empty_exprlist(); list_push_back(($$)->list, $1); }
 | explist "," exp { $$ = $1; list_push_back(($$)->list, $3); }
 ;
 
