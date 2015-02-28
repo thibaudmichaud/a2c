@@ -2,6 +2,13 @@
 #include "grammar.h"
 #include "codegen.h"
 #include "parser.h"
+#define INDENT_WIDTH 2
+
+void print_indent(int indent)
+{
+  for (int i = 0; i < indent; ++i)
+    printf(" ");
+}
 
 char *getopstr(int op)
 {
@@ -32,8 +39,9 @@ char *getopstr(int op)
   }
 }
 
-void print_single_var_decl(struct single_var_decl *single_var_decl)
+void print_single_var_decl(struct single_var_decl *single_var_decl, int indent)
 {
+  print_indent(indent);
   printf("%s ", single_var_decl->type_ident);
   unsigned i = 0;
   for (; i + 1 < single_var_decl->var_idents->list.size; ++i)
@@ -41,23 +49,23 @@ void print_single_var_decl(struct single_var_decl *single_var_decl)
   printf("%s;\n", list_nth(single_var_decl->var_idents->list, i));
 }
 
-void print_var_decl(struct var_decl *var_decl)
+void print_var_decl(struct var_decl *var_decl, int indent)
 {
   for (unsigned i = 0; i < var_decl->decls.size; ++i)
-    print_single_var_decl(list_nth(var_decl->decls, i));
+    print_single_var_decl(list_nth(var_decl->decls, i), indent);
 }
 
-void print_decls(struct declarations *declarations)
+void print_decls(struct declarations *declarations, int indent)
 {
-  print_var_decl(declarations->var_decl);
+  print_var_decl(declarations->var_decl, indent);
 }
 
 void print_prog(struct prog *prog)
 {
-  print_var_decl(prog->entry_point->var_decl);
+  print_var_decl(prog->entry_point->var_decl, 0);
   print_algo(prog->algo);
-  printf("int main(void) {\n");
-  print_instructions(prog->entry_point->instructions);
+  printf("int main(void)\n{\n");
+  print_instructions(prog->entry_point->instructions, INDENT_WIDTH);
   printf("}\n");
 }
 
@@ -65,8 +73,8 @@ void print_algo(struct algo *algo)
 {
   printf("void ");
   printf("%s(void)\n{\n", algo->ident);
-  print_decls(algo->declarations);
-  print_instructions(algo->instructions);
+  print_decls(algo->declarations, INDENT_WIDTH);
+  print_instructions(algo->instructions, INDENT_WIDTH);
   printf("}\n");
 }
 
@@ -102,11 +110,12 @@ void free_algo(struct algo *algo)
   free(algo);
 }
 
-void print_instructions(struct block *instructions)
+void print_instructions(struct block *instructions, int indent)
 {
   for (unsigned i = 0; i + 1 < instructions->list.size; ++i)
-    print_instruction(list_nth(instructions->list, i));
-  print_instruction(list_nth(instructions->list, instructions->list.size - 1));
+    print_instruction(list_nth(instructions->list, i), indent);
+  print_instruction(list_nth(instructions->list, instructions->list.size - 1),
+      indent);
 }
 
 void print_exprlist(struct exprlist *l)
@@ -120,31 +129,41 @@ void print_exprlist(struct exprlist *l)
   print_expression(list_nth(l->list, i));
 }
 
-void print_instruction(struct instruction *i)
+void print_instruction(struct instruction *i, int indent)
 {
   switch (i->kind)
   {
     case assignment:
+      print_indent(indent);
       print_expression(i->instr.assignment.e1);
       printf(" = ");
       print_expression(i->instr.assignment.e2);
       printf(";\n");
       break;
     case whiledo:
+      print_indent(indent);
       printf("while (");
       print_expression(i->instr.whiledo.cond);
-      printf(") {\n");
-      print_instructions(i->instr.whiledo.instructions);
+      printf(")\n");
+      print_indent(indent);
+      printf("{\n");
+      print_instructions(i->instr.whiledo.instructions, indent + INDENT_WIDTH);
+      print_indent(indent);
       printf("}\n");
       break;
     case dowhile:
-      printf("do {\n");
-      print_instructions(i->instr.dowhile.instructions);
+      print_indent(indent);
+      printf("do\n");
+      print_indent(indent);
+      printf("{\n");
+      print_instructions(i->instr.dowhile.instructions, indent + INDENT_WIDTH);
+      print_indent(indent);
       printf("} while (");
       print_expression(i->instr.dowhile.cond);
       printf(");\n");
       break;
     case forloop:
+      print_indent(indent);
       printf("for (; ");
       print_expression(i->instr.forloop.assignment->e1);
       if (i->instr.forloop.decreasing)
@@ -157,11 +176,15 @@ void print_instruction(struct instruction *i)
       else
         printf("; ++(");
       print_expression(i->instr.forloop.assignment->e1);
-      printf(")) {\n");
-      print_instructions(i->instr.forloop.instructions);
+      printf("))\n");
+      print_indent(indent);
+      printf("{\n");
+      print_instructions(i->instr.forloop.instructions, indent + INDENT_WIDTH);
+      print_indent(indent);
       printf("}\n");
       break;
     case funcall:
+      print_indent(indent);
       printf("%s(", i->instr.funcall.fun_ident);
       print_exprlist(i->instr.funcall.args);
       printf(");\n");
