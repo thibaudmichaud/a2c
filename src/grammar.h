@@ -208,7 +208,7 @@ struct array_def
 
 struct var_decl
 {
-  struct single_var_decl *decls;
+  list_tpl(struct single_var_decl *) decls;
 };
 
 struct struct_def
@@ -244,7 +244,7 @@ struct type_def
 struct single_var_decl
 {
   char *type_ident;
-  char **var_ident;
+  struct identlist *var_idents;
 };
 
 struct global_param
@@ -275,17 +275,26 @@ struct type_decl
 
 struct declarations
 {
-  struct param_decl param_decl;
-  struct const_decl const_decl;
-  struct type_decl type;
-  struct var_decl var_decl;
+  struct param_decl *param_decl;
+  struct const_decl *const_decl;
+  struct type_decl *type;
+  struct var_decl *var_decl;
 };
 
 struct algo
 {
   char *ident;
-  struct declarations declarations;
+  struct declarations *declarations;
   struct block *instructions;
+};
+
+/*------*/
+/* Misc */
+/*------*/
+
+struct identlist
+{
+  list_tpl(char *) list;
 };
 
 // Helper functions
@@ -387,11 +396,12 @@ struct instruction *assign(struct expr *e1, struct expr *e2)
 }
 
 static inline
-struct algo *algo(char *ident, struct block *instructions)
+struct algo *algo(char *ident, struct declarations *declarations, struct block *instructions)
 {
   struct algo *a = malloc(sizeof(struct algo));
   a->ident = ident;
   a->instructions = instructions;
+  a->declarations = declarations;
   return a;
 }
 
@@ -420,6 +430,31 @@ struct expr *boolexpr(bool b)
   e->exprtype = booltype;
   e->val.boolval = b;
   return e;
+}
+
+static inline
+struct identlist *empty_identlist(void)
+{
+  struct identlist *i = malloc(sizeof(struct identlist));
+  list_init(i->list);
+  return i;
+}
+
+static inline
+struct single_var_decl *single_var_decl(char *typeid, struct identlist *idents)
+{
+  struct single_var_decl *s = malloc(sizeof(struct single_var_decl));
+  s->type_ident = typeid;
+  s->var_idents = idents;
+  return s;
+}
+
+static inline
+struct var_decl *empty_var_decl(void)
+{
+  struct var_decl *v = malloc(sizeof(struct var_decl));
+  list_init(v->decls);
+  return v;
 }
 
 #endif

@@ -29,6 +29,10 @@ extern FILE *yyin;
   struct block *instructions;
   struct algo *algo;
   struct exprlist *exprlist;
+  struct identlist *identlist;
+  struct single_var_decl *single_var_decl;
+  struct var_decl *var_decl;
+  struct declarations *decls;
   char *str;
 };
 
@@ -38,6 +42,10 @@ extern FILE *yyin;
 %type <instruction> instruction
 %type <instruction> assign
 %type <exprlist> explist
+%type <identlist> identlist
+%type <single_var_decl> single_var_decl
+%type <var_decl> var_decl
+%type <decls> decls
 
 /* ################## */
 /* TOKEN DECLARATION */
@@ -83,12 +91,27 @@ extern FILE *yyin;
 
 algo:
  "algorithme" "procedure" IDENT
+ decls
  "debut"
    instructions
  "fin" "algorithme" "procedure" IDENT
- { algorithm = algo($3, $5); free($9); }
-/* NOTE: $9 will be needed for the semantic analysis phase but for now the
+ { algorithm = algo($3, $4, $6); free($10); }
+/* NOTE: $10 will be needed for the semantic analysis phase but for now the
 free is here to prevent valgrind from reporting the error */
+
+decls:
+ var_decl { $$ = malloc(sizeof(struct declarations)); $$->var_decl = $1; }
+
+var_decl:
+ { $$ = empty_var_decl(); }
+| var_decl single_var_decl { $$ = $1; list_push_back($$->decls, $2); }
+
+single_var_decl:
+ IDENT identlist { $$ = single_var_decl($1, $2); }
+
+identlist:
+IDENT { $$ = empty_identlist(); list_push_back($$->list, $1); }
+| identlist "," IDENT { $$ = $1; list_push_back($$->list, $3); }
 
 instructions:
   { $$ = malloc(sizeof(struct block)); list_init(($$)->list); }

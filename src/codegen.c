@@ -32,24 +32,65 @@ char *getopstr(int op)
   }
 }
 
+void print_single_var_decl(struct single_var_decl *single_var_decl)
+{
+  printf("%s ", single_var_decl->type_ident);
+  unsigned i = 0;
+  for (; i + 1 < single_var_decl->var_idents->list.size; ++i)
+    printf("%s, ", list_nth(single_var_decl->var_idents->list, i));
+  printf("%s;\n", list_nth(single_var_decl->var_idents->list, i));
+}
+
+void print_var_decl(struct var_decl *var_decl)
+{
+  for (unsigned i = 0; i < var_decl->decls.size; ++i)
+    print_single_var_decl(list_nth(var_decl->decls, i));
+}
+
+void print_decls(struct declarations *declarations)
+{
+  print_var_decl(declarations->var_decl);
+}
+
 void print_algo(struct algo *algo)
 {
   printf("void ");
   printf("%s(void)\n{\n", algo->ident);
+  print_decls(algo->declarations);
   print_instructions(algo->instructions);
   printf("}\n");
+}
+
+void free_single_var_decl(struct single_var_decl *single_var_decl)
+{
+  free(single_var_decl->type_ident);
+  for (unsigned i = 0; i < single_var_decl->var_idents->list.size; ++i)
+    free(list_nth(single_var_decl->var_idents->list, i));
+  list_free(single_var_decl->var_idents->list);
+}
+
+void free_var_decl(struct var_decl *var_decl)
+{
+  for (unsigned i = 0; i < var_decl->decls.size; ++i)
+    free_single_var_decl(list_nth(var_decl->decls, i));
+}
+
+void free_decls(struct declarations *declarations)
+{
+  free_var_decl(declarations->var_decl);
 }
 
 void free_algo(struct algo *algo)
 {
   free_instructions(algo->instructions);
+  free_decls(algo->declarations);
   free(algo->ident);
   free(algo);
 }
 
 void print_instructions(struct block *instructions)
 {
-  for (unsigned i = 0; i < instructions->list.size - 1; ++i)
+  for (unsigned i = 0; i + 1 < instructions->list.size; ++i)
     print_instruction(list_nth(instructions->list, i));
   print_instruction(list_nth(instructions->list, instructions->list.size - 1));
 }
@@ -160,7 +201,7 @@ void print_expression(struct expr *e)
     case funcalltype:
       printf("%s(", e->val.funcall.fun_ident);
       unsigned i = 0;
-      for (; i < e->val.funcall.args->list.size - 1; ++i)
+      for (; i + 1 < e->val.funcall.args->list.size; ++i)
       {
         print_expression(list_nth(e->val.funcall.args->list, i));
         printf(", ");
