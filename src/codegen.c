@@ -67,17 +67,22 @@ void free_single_var_decl(struct single_var_decl *single_var_decl)
   for (unsigned i = 0; i < single_var_decl->var_idents->list.size; ++i)
     free(list_nth(single_var_decl->var_idents->list, i));
   list_free(single_var_decl->var_idents->list);
+  free(single_var_decl->var_idents);
+  free(single_var_decl);
 }
 
 void free_var_decl(struct var_decl *var_decl)
 {
   for (unsigned i = 0; i < var_decl->decls.size; ++i)
     free_single_var_decl(list_nth(var_decl->decls, i));
+  list_free(var_decl->decls);
+  free(var_decl);
 }
 
 void free_decls(struct declarations *declarations)
 {
   free_var_decl(declarations->var_decl);
+  free(declarations);
 }
 
 void free_algo(struct algo *algo)

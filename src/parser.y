@@ -152,7 +152,7 @@ exp:
 explist:
           { $$ = empty_exprlist(); }
 | exp     { $$ = empty_exprlist(); list_push_back(($$)->list, $1); }
-| explist "," exp { list_push_back(($1)->list, $3); $$ = $1; }
+| explist "," exp { $$ = $1; list_push_back(($$)->list, $3); }
 ;
 
 %%

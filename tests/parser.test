@@ -2,6 +2,9 @@
 set -e
 cat <<EOF >input
 algorithme procedure foo
+int a, b
+char c, d, e
+bool f, g
 debut
 tant que (1 + 1) faire
   b <- 3
@@ -21,6 +24,9 @@ valgrind --error-exitcode=1 --leak-check=full --show-leak-kinds=all ./a2c input 
 cat <<EOF >exp
 void foo(void)
 {
+int a, b;
+char c, d, e;
+bool f, g;
 while ((1 + 1)) {
 b = 3;
 c = (4 + 4);
