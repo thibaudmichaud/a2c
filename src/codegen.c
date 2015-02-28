@@ -1,6 +1,36 @@
 #include <stdio.h>
 #include "grammar.h"
 #include "codegen.h"
+#include "parser.h"
+
+char *getopstr(int op)
+{
+  switch (op)
+  {
+    case PLUS:
+      return "+";
+    case MINUS:
+      return "-";
+    case STAR:
+      return "*";
+    case SLASH:
+      return "/";
+    case DIV:
+      return "div";
+    case OR:
+      return "||";
+    case AND:
+      return "&&";
+    case MOD:
+      return "%";
+    case EQ:
+      return "=";
+    case NEQ:
+      return "<>";
+    default:
+      return NULL;
+  }
+}
 
 void print_algo(struct algo *algo)
 {
@@ -96,6 +126,8 @@ void print_expression(struct expr *e)
     case binopexprtype:
       printf("(");
       print_expression(e->val.binopexpr.e1);
+      // TODO handle the XOR case here, because there is no corresponding
+      // operator in C.
       printf(" %s ", getopstr(e->val.binopexpr.op));
       print_expression(e->val.binopexpr.e2);
       printf(")");

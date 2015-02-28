@@ -377,38 +377,6 @@ struct expr *arrayexpr(struct expr *e1, struct expr *e2)
 }
 
 static inline
-char *getopstr(int op)
-{
-  switch (op)
-  {
-    case PLUS:
-      return "+";
-    case MINUS:
-      return "-";
-    case STAR:
-      return "*";
-    case SLASH:
-      return "/";
-    case DIV:
-      return "div";
-    case OR:
-      return "||";
-    case AND:
-      return "&&";
-    case XOR:
-      return "oue";
-    case MOD:
-      return "mod";
-    case EQ:
-      return "=";
-    case NEQ:
-      return "<>";
-    default:
-      return NULL;
-  }
-}
-
-static inline
 struct instruction *assign(struct expr *e1, struct expr *e2)
 {
   struct instruction *i = malloc(sizeof(struct instruction));
