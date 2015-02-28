@@ -1,19 +1,19 @@
 parseur & génération de code
 =======
-[ ] parser booléens, string
-[ ] parser pointeurs
-[ ] parser identifiants
-[ ] parser tableaux
-[ ] parser fonctions
+[X] parser booléens, string
+[X] parser pointeurs
+[X] parser identifiants
+[X] parser tableaux
+[X] parser fonctions
 [ ] parser une liste d'algos
-[ ] parser variables globales et main
+[X] parser variables globales et main
 - parser l'en-tête des algos
- [ ] var
+ [X] var
  [ ] PL
  [ ] PG
  [ ] const
  [ ] type
-[ ] parser structures de controles
+[X] parser structures de controles
 [ ] parser structures conditionnelles
 [ ] ajouter numéros de lignes dans l'ast
 
