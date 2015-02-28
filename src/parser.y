@@ -88,9 +88,11 @@ extern FILE *yyin;
 %token <expression> FALSE
 
 /* priority */
+%left "=" "<>"
 %left PLUS MINUS OR XOR
 %left STAR SLASH DIV AND MOD
 %right NO DEREF
+%precedence "[" "]"
 
 %%
 
