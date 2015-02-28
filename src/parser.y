@@ -43,7 +43,7 @@ extern FILE *yyin;
 %type <algo> algo
 %type <instructions> instructions
 %type <instruction> instruction
-%type <exprlist> explist
+%type <exprlist> explist nonempty_explist
 %type <identlist> identlist
 %type <single_var_decl> single_var_decl
 %type <var_decl> var_decl var_decl2
@@ -175,10 +175,13 @@ exp:
 | "-" exp      { $$ = unopexpr(MINUS, $2); }
 | IDENT "(" explist ")" { $$ = funcallexpr($1, $3); }
 | "^" exp { $$ = derefexpr($2); }
-| exp "[" exp "]" { $$ = arrayexpr($1, $3); }
+| exp "[" nonempty_explist "]" { $$ = arrayexpr($1, $3); }
 
 explist:
           { $$ = empty_exprlist(); }
+| nonempty_explist { $$ = $1; }
+
+nonempty_explist:
 | exp     { $$ = empty_exprlist(); list_push_back(($$)->list, $1); }
 | explist "," exp { $$ = $1; list_push_back(($$)->list, $3); }
 ;

@@ -27,7 +27,7 @@ c <- vrai <> faux ou b
 d <- f(2 + 2, b et c, foo)
 e <- "bla"
 f <- ^c
-g <- e[a + 5]
+g <- e[a + 5, n]
 fin algorithme procedure foo
 
 variables
@@ -35,7 +35,7 @@ int global_int
 char global_char
 
 debut
-a <- foo(a)
+foo(a, b)
 fin
 EOF
 
@@ -68,10 +68,10 @@ c = (1 <> (0 || b));
 d = f((2 + 2), (b && c), foo);
 e = "bla";
 f = *c;
-g = e[(a + 5)];
+g = e[(a + 5)][n];
 }
 int main(void) {
-a = foo(a);
+foo(a, b);
 }
 EOF
 

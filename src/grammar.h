@@ -33,9 +33,8 @@ struct binopexpr
 
 struct arrayexpr
 {
-  // e1[e2]
   struct expr *e1;
-  struct expr *e2;
+  struct exprlist *indices;
 };
 
 struct structelt
@@ -388,12 +387,12 @@ struct expr *derefexpr(struct expr *e1)
 }
 
 static inline
-struct expr *arrayexpr(struct expr *e1, struct expr *e2)
+struct expr *arrayexpr(struct expr *e1, struct exprlist *indices)
 {
   struct expr *e = malloc(sizeof(struct expr));
   e->exprtype = arrayexprtype;
   e->val.arrayexpr.e1 = e1;
-  e->val.arrayexpr.e2 = e2;
+  e->val.arrayexpr.indices = indices;
   return e;
 }
 

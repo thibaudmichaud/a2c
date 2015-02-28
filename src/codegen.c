@@ -183,9 +183,6 @@ void free_instruction(struct instruction *i)
 {
   switch (i->kind)
   {
-    case funcall:
-      // TODO
-      break;
     case assignment:
       free_expression(i->instr.assignment.e1);
       free_expression(i->instr.assignment.e2);
@@ -210,6 +207,10 @@ void free_instruction(struct instruction *i)
       free(i->instr.forloop.assignment);
       free_instructions(i->instr.forloop.instructions);
       free_expression(i->instr.forloop.upto);
+      break;
+    case funcall:
+      free_expressions(i->instr.funcall.args);
+      free(i->instr.funcall.fun_ident);
       break;
     case returnstmt:
       break;
@@ -241,9 +242,12 @@ void print_expression(struct expr *e)
       break;
     case arrayexprtype:
       print_expression(e->val.arrayexpr.e1);
-      printf("[");
-      print_expression(e->val.arrayexpr.e2);
-      printf("]");
+      for (unsigned i = 0; i < e->val.arrayexpr.indices->list.size; ++i)
+      {
+        printf("[");
+        print_expression(list_nth(e->val.arrayexpr.indices->list, i));
+        printf("]");
+      }
       break;
     case identtype:
       printf("%s", e->val.ident);
@@ -289,7 +293,7 @@ void free_expression(struct expr *e)
       break;
     case arrayexprtype:
       free_expression(e->val.arrayexpr.e1);
-      free_expression(e->val.arrayexpr.e2);
+      free_expressions(e->val.arrayexpr.indices);
       break;
     case identtype:
       free(e->val.ident);
