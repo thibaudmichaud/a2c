@@ -50,7 +50,7 @@
 "tant"                  return ASLONG;
 "que"                   return AS;
 "types"                 printf("keyword: %s\n", yytext);
-"variables"             printf("keyword: %s\n", yytext);
+"variables"             return VARIABLES;
 "vrai"                  return TRUE;
 "tantque"               return WHILE;
 "/*"                    BEGIN(COMMENT);

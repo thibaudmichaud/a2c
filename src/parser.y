@@ -46,7 +46,7 @@ extern FILE *yyin;
 %type <exprlist> explist
 %type <identlist> identlist
 %type <single_var_decl> single_var_decl
-%type <var_decl> var_decl
+%type <var_decl> var_decl var_decl2
 %type <decls> decls
 %type <assignment> assign
 %type <entry_point> entry_point
@@ -68,6 +68,7 @@ extern FILE *yyin;
 %token DEREF "^"
 %token <str> IDENT
 %token <str> STRING
+%token VARIABLES "variables"
 
 /* operands */
 %token PLUS "+" MINUS "-"
@@ -123,8 +124,11 @@ decls:
  var_decl { $$ = malloc(sizeof(struct declarations)); $$->var_decl = $1; }
 
 var_decl:
+ "variables" var_decl2 { $$ = $2; }
+
+var_decl2:
  { $$ = empty_var_decl(); }
-| var_decl single_var_decl { $$ = $1; list_push_back($$->decls, $2); }
+| var_decl2 single_var_decl { $$ = $1; list_push_back($$->decls, $2); }
 
 single_var_decl:
  IDENT identlist { $$ = single_var_decl($1, $2); }
