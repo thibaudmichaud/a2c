@@ -44,15 +44,15 @@ void print_single_var_decl(struct single_var_decl *single_var_decl, int indent)
   print_indent(indent);
   printf("%s ", single_var_decl->type_ident);
   unsigned i = 0;
-  for (; i + 1 < single_var_decl->var_idents->list.size; ++i)
-    printf("%s, ", list_nth(single_var_decl->var_idents->list, i));
-  printf("%s;\n", list_nth(single_var_decl->var_idents->list, i));
+  for (; i + 1 < single_var_decl->var_idents.size; ++i)
+    printf("%s, ", list_nth(single_var_decl->var_idents, i));
+  printf("%s;\n", list_nth(single_var_decl->var_idents, i));
 }
 
-void print_var_decl(struct var_decl *var_decl, int indent)
+void print_var_decl(vardecllist_t var_decl, int indent)
 {
-  for (unsigned i = 0; i < var_decl->decls.size; ++i)
-    print_single_var_decl(list_nth(var_decl->decls, i), indent);
+  for (unsigned i = 0; i < var_decl.size; ++i)
+    print_single_var_decl(list_nth(var_decl, i), indent);
 }
 
 void print_decls(struct declarations *declarations, int indent)
@@ -81,19 +81,17 @@ void print_algo(struct algo *algo)
 void free_single_var_decl(struct single_var_decl *single_var_decl)
 {
   free(single_var_decl->type_ident);
-  for (unsigned i = 0; i < single_var_decl->var_idents->list.size; ++i)
-    free(list_nth(single_var_decl->var_idents->list, i));
-  list_free(single_var_decl->var_idents->list);
-  free(single_var_decl->var_idents);
+  for (unsigned i = 0; i < single_var_decl->var_idents.size; ++i)
+    free(list_nth(single_var_decl->var_idents, i));
+  list_free(single_var_decl->var_idents);
   free(single_var_decl);
 }
 
-void free_var_decl(struct var_decl *var_decl)
+void free_var_decl(vardecllist_t var_decl)
 {
-  for (unsigned i = 0; i < var_decl->decls.size; ++i)
-    free_single_var_decl(list_nth(var_decl->decls, i));
-  list_free(var_decl->decls);
-  free(var_decl);
+  for (unsigned i = 0; i < var_decl.size; ++i)
+    free_single_var_decl(list_nth(var_decl, i));
+  list_free(var_decl);
 }
 
 void free_decls(struct declarations *declarations)
@@ -110,25 +108,25 @@ void free_algo(struct algo *algo)
   free(algo);
 }
 
-void print_instructions(struct block *instructions, int indent)
+void print_instructions(instructionlist_t instructions, int indent)
 {
   unsigned i = 0;
-  for (; i + 1 < instructions->list.size; ++i)
-    print_instruction(list_nth(instructions->list, i), indent);
-  if (instructions->list.size > 0)
-    print_instruction(list_nth(instructions->list, i), indent);
+  for (; i + 1 < instructions.size; ++i)
+    print_instruction(list_nth(instructions, i), indent);
+  if (instructions.size > 0)
+    print_instruction(list_nth(instructions, i), indent);
 }
 
-void print_exprlist(struct exprlist *l)
+void print_exprlist(exprlist_t l)
 {
   unsigned i = 0;
-  for (; i + 1 < l->list.size; ++i)
+  for (; i + 1 < l.size; ++i)
   {
-    print_expression(list_nth(l->list, i));
+    print_expression(list_nth(l, i));
     printf(", ");
   }
-  if (l->list.size > 0)
-    print_expression(list_nth(l->list, i));
+  if (l.size > 0)
+    print_expression(list_nth(l, i));
 }
 
 void print_instruction(struct instruction *i, int indent)
@@ -201,7 +199,7 @@ void print_instruction(struct instruction *i, int indent)
       print_instructions(i->instr.ifthenelse.instructions, indent + INDENT_WIDTH);
       print_indent(indent);
       printf("}\n");
-      if (i->instr.ifthenelse.elseblock)
+      if (i->instr.ifthenelse.elseblock.size > 0)
       {
         print_indent(indent);
         printf("else\n");
@@ -217,12 +215,11 @@ void print_instruction(struct instruction *i, int indent)
   }
 }
 
-void free_instructions(struct block *instructions)
+void free_instructions(instructionlist_t instructions)
 {
-  for (unsigned i = 0; i < instructions->list.size; ++i)
-    free_instruction(list_nth(instructions->list, i));
-  list_free(instructions->list);
-  free(instructions);
+  for (unsigned i = 0; i < instructions.size; ++i)
+    free_instruction(list_nth(instructions, i));
+  list_free(instructions);
 }
 
 void free_instruction(struct instruction *i)
@@ -258,7 +255,7 @@ void free_instruction(struct instruction *i)
     case ifthenelse:
       free_expression(i->instr.ifthenelse.cond);
       free_instructions(i->instr.ifthenelse.instructions);
-      if (i->instr.ifthenelse.elseblock)
+      if (i->instr.ifthenelse.elseblock.size > 0)
         free_instructions(i->instr.ifthenelse.elseblock);
       break;
     case returnstmt:
@@ -291,10 +288,10 @@ void print_expression(struct expr *e)
       break;
     case arrayexprtype:
       print_expression(e->val.arrayexpr.e1);
-      for (unsigned i = 0; i < e->val.arrayexpr.indices->list.size; ++i)
+      for (unsigned i = 0; i < e->val.arrayexpr.indices.size; ++i)
       {
         printf("[");
-        print_expression(list_nth(e->val.arrayexpr.indices->list, i));
+        print_expression(list_nth(e->val.arrayexpr.indices, i));
         printf("]");
       }
       break;
@@ -321,12 +318,11 @@ void print_expression(struct expr *e)
   }
 }
 
-void free_expressions(struct exprlist *l)
+void free_expressions(exprlist_t l)
 {
-  for (unsigned i = 0; i < l->list.size; ++i)
-    free_expression(list_nth(l->list, i));
-  list_free(l->list);
-  free(l);
+  for (unsigned i = 0; i < l.size; ++i)
+    free_expression(list_nth(l, i));
+  list_free(l);
 }
 
 void free_expression(struct expr *e)

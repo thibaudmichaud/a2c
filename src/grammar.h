@@ -3,13 +3,18 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
-#include "parser.h"
 #include "data_struct/list/list.h"
 #include <stdio.h>
 
 /*-------------*/
 /* expressions */
 /*-------------*/
+
+typedef list_tpl(char *) identlist_t;
+typedef list_tpl(struct expr *) exprlist_t;
+typedef list_tpl(struct caseblock *) caselist_t;
+typedef list_tpl(struct instruction *) instructionlist_t;
+typedef list_tpl(struct single_var_decl *) vardecllist_t;
 
 struct prog
 {
@@ -19,8 +24,8 @@ struct prog
 
 struct entry_point
 {
-  struct var_decl *var_decl;
-  struct block *instructions;
+  vardecllist_t var_decl;
+  instructionlist_t instructions;
 };
 
 struct binopexpr
@@ -34,7 +39,7 @@ struct binopexpr
 struct arrayexpr
 {
   struct expr *e1;
-  struct exprlist *indices;
+  exprlist_t indices;
 };
 
 struct structelt
@@ -65,7 +70,7 @@ struct unopexpr
 struct funcall
 {
   char *fun_ident;
-  struct exprlist *args;
+  exprlist_t args;
 };
 
 struct expr
@@ -108,16 +113,11 @@ struct expr
 /* instructions */
 /*--------------*/
 
-struct exprlist
-{
-  list_tpl(struct expr *) list;
-};
-
 struct ifthenelse
 {
   struct expr *cond;
-  struct block *instructions;
-  struct block *elseblock;
+  instructionlist_t instructions;
+  instructionlist_t elseblock;
 };
 
 struct assignment
@@ -129,31 +129,26 @@ struct assignment
 
 struct caseblock
 {
-  struct expr *exprlist;
+  exprlist_t exprlist;
   struct instruction *instructions;
-};
-
-struct caselist
-{
-  list_tpl(struct caseblock *) caselist;
 };
 
 struct switchcase
 {
   struct expr *cond;
-  struct caselist caselist;
+  caselist_t caselist;
 };
 
 struct dowhile
 {
-  struct block *instructions;
+  instructionlist_t instructions;
   struct expr *cond;
 };
 
 struct whiledo
 {
   struct expr *cond;
-  struct block *instructions;
+  instructionlist_t instructions;
 };
 
 struct forloop
@@ -161,17 +156,12 @@ struct forloop
   struct assignment *assignment;
   struct expr *upto;
   bool decreasing;
-  struct block *instructions;
+  instructionlist_t instructions;
 };
 
 struct returnstmt
 {
   struct expr *expr;
-};
-
-struct block
-{
-  list_tpl(struct instruction *) list;
 };
 
 struct instruction
@@ -212,15 +202,10 @@ struct array_def
   char *type_ident;
 };
 
-struct var_decl
-{
-  list_tpl(struct single_var_decl *) decls;
-};
-
 struct struct_def
 {
   char *ident;
-  struct var_decl var_decl;
+  vardecllist_t var_decl;
 };
 
 struct pointer_def
@@ -250,17 +235,17 @@ struct type_def
 struct single_var_decl
 {
   char *type_ident;
-  struct identlist *var_idents;
+  identlist_t var_idents;
 };
 
 struct global_param
 {
-  struct var_decl var_decl;
+  vardecllist_t var_decl;
 };
 
 struct local_param
 {
-  struct var_decl var_decl;
+  vardecllist_t var_decl;
 };
 
 struct param_decl
@@ -284,24 +269,19 @@ struct declarations
   struct param_decl *param_decl;
   struct const_decl *const_decl;
   struct type_decl *type;
-  struct var_decl *var_decl;
+  vardecllist_t var_decl;
 };
 
 struct algo
 {
   char *ident;
   struct declarations *declarations;
-  struct block *instructions;
+  instructionlist_t instructions;
 };
 
 /*------*/
 /* Misc */
 /*------*/
-
-struct identlist
-{
-  list_tpl(char *) list;
-};
 
 // Helper functions
 
@@ -363,7 +343,7 @@ struct expr *stringexpr(char *str)
 }
 
 static inline
-struct expr *funcallexpr(char *ident, struct exprlist *e1)
+struct expr *funcallexpr(char *ident, exprlist_t e1)
 {
   struct expr *e = malloc(sizeof(struct expr));
   e->exprtype = funcalltype;
@@ -382,7 +362,7 @@ struct expr *derefexpr(struct expr *e1)
 }
 
 static inline
-struct expr *arrayexpr(struct expr *e1, struct exprlist *indices)
+struct expr *arrayexpr(struct expr *e1, exprlist_t indices)
 {
   struct expr *e = malloc(sizeof(struct expr));
   e->exprtype = arrayexprtype;
@@ -401,7 +381,8 @@ struct assignment *assign(struct expr *e1, struct expr *e2)
 }
 
 static inline
-struct algo *algo(char *ident, struct declarations *declarations, struct block *instructions)
+struct algo *algo(char *ident, struct declarations *declarations,
+    instructionlist_t instructions)
 {
   struct algo *a = malloc(sizeof(struct algo));
   a->ident = ident;
@@ -411,15 +392,15 @@ struct algo *algo(char *ident, struct declarations *declarations, struct block *
 }
 
 static inline
-struct exprlist *empty_exprlist(void)
+exprlist_t empty_exprlist(void)
 {
-  struct exprlist *e = malloc(sizeof(struct exprlist));
-  list_init(e->list);
-  return e;
+  exprlist_t l;
+  list_init(l);
+  return l;
 }
 
 static inline
-struct instruction *whileblock(struct expr *cond, struct block *b)
+struct instruction *whileblock(struct expr *cond, instructionlist_t b)
 {
   struct instruction *i = malloc(sizeof(struct instruction));
   i->kind = whiledo;
@@ -429,7 +410,7 @@ struct instruction *whileblock(struct expr *cond, struct block *b)
 }
 
 static inline
-struct instruction *dowhileblock(struct block *b, struct expr *cond)
+struct instruction *dowhileblock(instructionlist_t b, struct expr *cond)
 {
   struct instruction *i = malloc(sizeof(struct instruction));
   i->kind = dowhile;
@@ -448,15 +429,15 @@ struct expr *boolexpr(bool b)
 }
 
 static inline
-struct identlist *empty_identlist(void)
+identlist_t empty_identlist(void)
 {
-  struct identlist *i = malloc(sizeof(struct identlist));
-  list_init(i->list);
-  return i;
+  identlist_t l;
+  list_init(l);
+  return l;
 }
 
 static inline
-struct single_var_decl *single_var_decl(char *typeid, struct identlist *idents)
+struct single_var_decl *single_var_decl(char *typeid, identlist_t idents)
 {
   struct single_var_decl *s = malloc(sizeof(struct single_var_decl));
   s->type_ident = typeid;
@@ -465,16 +446,16 @@ struct single_var_decl *single_var_decl(char *typeid, struct identlist *idents)
 }
 
 static inline
-struct var_decl *empty_var_decl(void)
+vardecllist_t empty_var_decl(void)
 {
-  struct var_decl *v = malloc(sizeof(struct var_decl));
-  list_init(v->decls);
+  vardecllist_t v;
+  list_init(v);
   return v;
 }
 
 static inline
 struct instruction *forblock(struct assignment *assignment, struct expr *upto, bool decreasing,
-    struct block *instructions)
+    instructionlist_t instructions)
 {
   struct instruction *i = malloc(sizeof(struct instruction));
   i->kind = forloop;
@@ -497,7 +478,7 @@ struct instruction *assigninstr(struct assignment *a)
 }
 
 static inline
-struct entry_point *make_entry_point(struct var_decl *var_decl, struct block *instructions)
+struct entry_point *make_entry_point(vardecllist_t var_decl, instructionlist_t instructions)
 {
   struct entry_point *e = malloc(sizeof(struct entry_point));
   e->var_decl = var_decl;
@@ -515,7 +496,7 @@ struct prog *make_prog(struct algo *algo, struct entry_point *entry_point)
 }
 
 static inline
-struct instruction *funcallinstr(char *ident, struct exprlist *args)
+struct instruction *funcallinstr(char *ident, exprlist_t args)
 {
   struct instruction *i = malloc(sizeof(struct instruction));
   i->kind = funcall;
@@ -525,13 +506,35 @@ struct instruction *funcallinstr(char *ident, struct exprlist *args)
 }
 
 static inline
-struct instruction *ifthenelseblock(struct expr *cond, struct block *instructions, struct block *elseblock)
+struct instruction *ifthenelseblock(struct expr *cond, instructionlist_t instructions, instructionlist_t elseblock)
 {
   struct instruction *i = malloc(sizeof(struct instruction));
   i->kind = ifthenelse;
   i->instr.ifthenelse.cond = cond;
   i->instr.ifthenelse.instructions = instructions;
   i->instr.ifthenelse.elseblock = elseblock;
+  return i;
+}
+
+static inline
+struct declarations *make_declarations(struct param_decl *param_decl,
+    struct const_decl *const_decl,
+    struct type_decl *type_decl,
+    vardecllist_t var_decl)
+{
+  struct declarations *d = malloc(sizeof(struct declarations));
+  d->param_decl = param_decl;
+  d->const_decl = const_decl;
+  d->type = type_decl;
+  d->var_decl = var_decl;
+  return d;
+}
+
+static inline
+instructionlist_t empty_instructionlist(void)
+{
+  instructionlist_t i;
+  list_init(i);
   return i;
 }
 

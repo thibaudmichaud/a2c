@@ -5,13 +5,17 @@
 %code top
 {
 #include <stdlib.h>
-#include "grammar.h"
 #include <stdio.h>
 #include <stdbool.h>
 
 extern struct prog *prog;
 extern FILE *yyin;
 int yylineno;
+}
+
+%code requires
+{
+#include "grammar.h"
 }
 
 %code provides
@@ -26,12 +30,12 @@ int yylineno;
 {
   struct expr *expression;
   struct instruction *instruction;
-  struct block *instructions;
+  instructionlist_t instructions;
   struct algo *algo;
-  struct exprlist *exprlist;
-  struct identlist *identlist;
+  exprlist_t exprlist;
+  identlist_t identlist;
   struct single_var_decl *single_var_decl;
-  struct var_decl *var_decl;
+  vardecllist_t var_decl;
   struct declarations *decls;
   struct assignment *assignment;
   struct entry_point *entry_point;
@@ -130,7 +134,7 @@ algo:
 free is here to prevent valgrind from reporting the error */
 
 decls:
- var_decl { $$ = malloc(sizeof(struct declarations)); $$->var_decl = $1; }
+ var_decl { $$ = make_declarations(NULL, NULL, NULL, $1); }
 
 var_decl:
  "variables" _EOL
@@ -138,18 +142,18 @@ var_decl:
 
 var_decl2:
  { $$ = empty_var_decl(); }
-| var_decl2 single_var_decl { $$ = $1; list_push_back($$->decls, $2); }
+| var_decl2 single_var_decl { $$ = $1; list_push_back($$, $2); }
 
 single_var_decl:
  IDENT identlist _EOL { $$ = single_var_decl($1, $2); }
 
 identlist:
-IDENT { $$ = empty_identlist(); list_push_back($$->list, $1); }
-| identlist "," IDENT { $$ = $1; list_push_back($$->list, $3); }
+IDENT { $$ = empty_identlist(); list_push_back($$, $1); }
+| identlist "," IDENT { $$ = $1; list_push_back($$, $3); }
 
 instructions:
-  { $$ = malloc(sizeof(struct block)); list_init(($$)->list); }
-| instructions instruction { list_push_back(($1)->list, $2); $$ = $1; }
+  { list_init($$); }
+| instructions instruction { list_push_back(($1), $2); $$ = $1; }
 
 instruction:
  assign _EOL      { $$ = assigninstr($1); }
@@ -168,7 +172,7 @@ instruction:
 | IDENT "(" explist ")" _EOL { $$ = funcallinstr($1, $3); }
 | IF exp THEN _EOL
     instructions
-  END IF _EOL { $$ = ifthenelseblock($2, $5, NULL); }
+  END IF _EOL { ifthenelseblock($2, $5, empty_instructionlist()); }
 | IF exp THEN _EOL
     instructions
   ELSE _EOL
@@ -209,8 +213,8 @@ explist:
 | nonempty_explist { $$ = $1; }
 
 nonempty_explist:
- exp     { $$ = empty_exprlist(); list_push_back(($$)->list, $1); }
-| explist "," exp { $$ = $1; list_push_back(($$)->list, $3); }
+ exp     { $$ = empty_exprlist(); list_push_back($$, $1); }
+| explist "," exp { $$ = $1; list_push_back($$, $3); }
 ;
 
 %%
