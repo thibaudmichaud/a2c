@@ -41,19 +41,22 @@ do {                                                                          \
   typedef __typeof__((_ht).buckets[0]) bucket;                                \
   size_t i = (_ht).hash(_elt) % (_ht).size;                                   \
   bucket prev = NULL;                                                         \
-  for (bucket b = (_ht).buckets[i]; b; prev = b, b = b->next)                 \
+  bucket b = (_ht).buckets[i];                                                \
+  while(b)                                                                   \
   {                                                                           \
     if ((_ht).equal(b->elt, _elt))                                            \
     {                                                                         \
       if (prev)                                                               \
       {                                                                       \
-        bucket tmp = b;                                                       \
         prev->next = b->next;                                                 \
-        free(tmp);                                                            \
+        free(b);                                                              \
+        b = prev;                                                             \
       }                                                                       \
       else                                                                    \
       {                                                                       \
         (_ht).buckets[i] = b->next;                                           \
+        free(b);                                                              \
+        b = (_ht).buckets[i];                                                 \
       }                                                                       \
       --(_ht).length;                                                         \
     }                                                                         \
@@ -89,6 +92,7 @@ do {                                                                          \
       b = next;                                                               \
     }                                                                         \
   }                                                                           \
+  free(ht.buckets);                                                           \
 } while(0)
 
 #endif
