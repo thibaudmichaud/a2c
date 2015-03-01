@@ -1,95 +1,94 @@
-#ifndef HASHTABLE_H_
-#define HASHTABLE_H_
+#ifndef _DATA_STRUCT_HASHTABLE_H
+#define _DATA_STRUCT_HASHTABLE_H
 
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 
-#define MAX 100 
-
-
-
-typedef struct s_dico_data * t_dico_data;
-typedef struct s_hashtable * t_hashtable;
-typedef struct t_hashtable t_dictionary;
-
-struct s_dico_data
-{
-  void * key;
-  void * value;
-  t_dico_data next;
-};
-
-struct s_hashtable
-{
-  t_dico_data *h_table;
-  size_t size;
-  size_t (*hash_function)(void*, size_t);
-};
-
-int hash_function(void * p, size_t size)
-{
-  int i_p = ((int) p) % size;
-  if (i_p < 0)
-    return -i_p;
-  return i_p;
+#define ht_tpl(type)                                                          \
+struct                                                                        \
+{                                                                             \
+  size_t size;                                                                \
+  size_t length;                                                              \
+  size_t (*hash)(type);                                                       \
+  int (*equal)(type, type);                                                   \
+  struct bucket { type elt; struct bucket *next; } **buckets;                 \
 }
 
-int is_cell_empty(t_hashtable table, int cell)
-{
-  if (table->h_table[cell])
-    return 0;
-  return 1;
-}
+#define ht_init(_ht, _size, _hash, _equal)                                    \
+do                                                                            \
+{                                                                             \
+  (_ht).size = (_size);                                                       \
+  (_ht).length = 0;                                                           \
+  (_ht).hash = _hash;                                                         \
+  (_ht).equal = _equal;                                                       \
+  (_ht).buckets = calloc(_size, sizeof(*(_ht).buckets));                      \
+} while(0)
 
+#define ht_add(_ht, _elt)                                                     \
+do {                                                                          \
+  typedef __typeof__((_ht).buckets[0]) bucket;                                \
+  typedef __typeof__(_elt) type;                                              \
+  size_t i = (_ht).hash(_elt) % (_ht).size;                                   \
+  bucket nhead = malloc(sizeof(struct { type elt; bucket next; }));           \
+  nhead->elt = (_elt);                                                        \
+  nhead->next = (_ht).buckets[i];                                             \
+  (_ht).buckets[i] = nhead;                                                   \
+  ++(_ht).length;                                                             \
+} while(0)
 
+#define ht_del(_ht, _elt)                                                     \
+do {                                                                          \
+  typedef __typeof__((_ht).buckets[0]) bucket;                                \
+  size_t i = (_ht).hash(_elt) % (_ht).size;                                   \
+  bucket prev = NULL;                                                         \
+  for (bucket b = (_ht).buckets[i]; b; prev = b, b = b->next)                 \
+  {                                                                           \
+    if ((_ht).equal(b->elt, _elt))                                            \
+    {                                                                         \
+      if (prev)                                                               \
+      {                                                                       \
+        bucket tmp = b;                                                       \
+        prev->next = b->next;                                                 \
+        free(tmp);                                                            \
+      }                                                                       \
+      else                                                                    \
+      {                                                                       \
+        (_ht).buckets[i] = b->next;                                           \
+      }                                                                       \
+      --(_ht).length;                                                         \
+    }                                                                         \
+  }                                                                           \
+} while(0)
 
-void hash_table_print(t_hashtable ht);
+#define ht_find(_ht, _elt, _res) ({                                           \
+  typedef __typeof__((_ht).buckets[0]) bucket;                                \
+  int found = 0;                                                              \
+  size_t i = (_ht).hash(_elt) % (_ht).size;                                   \
+  for (bucket b = (_ht).buckets[i]; b != NULL; b = b->next)                   \
+  {                                                                           \
+    if ((_ht).equal(b->elt, _elt))                                            \
+    {                                                                         \
+      *_res = b->elt;                                                         \
+      found = 1;                                                              \
+      break;                                                                  \
+    }                                                                         \
+  }                                                                           \
+  found; })
 
-t_hashtable hash_table_init(size_t size, size_t (*h_function)(void*, size_t));
+#define ht_free(_ht)                                                          \
+do {                                                                          \
+  typedef __typeof__((_ht).buckets[0]) bucket;                                \
+  for (unsigned i = 0; i < (_ht).size; ++i)                                   \
+  {                                                                           \
+    bucket next;                                                              \
+    bucket b = (_ht).buckets[i];                                              \
+    while (b)                                                                 \
+    {                                                                         \
+      next = b->next;                                                         \
+      free(b);                                                                \
+      b = next;                                                               \
+    }                                                                         \
+  }                                                                           \
+} while(0)
 
-void dico_data_free(t_dico_data dd);
-
-void hash_table_free(t_hashtable t);
-
-int hash_table_find_add(t_hashtable t, void * data);
-
-int hash_table_find(t_hashtable t, void * key);
-
-void hash_table_dico_add(t_hashtable t, void * key, void * value);
-
-void hash_table_add(t_hashtable t, void * key);
-
-void hash_table_remove(t_hashtable t, void * key);
-
-
-/* definition of dictionary */
-
-t_dictionary dictionary_init(size_t size, size_t (*h_function)(void*, size_t))                                                                            
-{
-  return hash_table_init(size, h_function);
-}
-
-void dictionary_free(t_dictionary t)
-{
-  hash_table_free(t);
-}
-
-int dictionary_find(t_dictionary t, void * key)
-{
-  return hash_table_find(t, key);
-}
-
-void dictionary_add(t_dictionary t, void *key, void *value)
-{
-  hash_table_dico_add(t, key, value);
-}
-
-void dictionary_remove(t_dictionary t, void *key)
-{
-  hash_table_remove(t, key);
-}
-
-void* dictionary_get_value(t_dictionary t, void *key);
-
-
-#endif /* HASHTABLE_H_ */
+#endif
