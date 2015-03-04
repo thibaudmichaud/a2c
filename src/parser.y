@@ -65,7 +65,6 @@ int yylineno;
 %token START "debut"
 %token END "fin"
 %token ASLONG AS DO
-%token WHILE
 %token FOR
 %token DECREASING
 %token UPTO
@@ -162,7 +161,7 @@ instruction:
   END ASLONG AS _EOL { $$ = whileblock($3, $6); }
 | DO _EOL
     instructions
-  WHILE exp _EOL { $$ = dowhileblock($3, $5); }
+  ASLONG AS exp _EOL { $$ = dowhileblock($3, $6); }
 | FOR assign UPTO exp DO _EOL
     instructions
   END FOR _EOL { $$ = forblock($2, $4, 0, $7); }

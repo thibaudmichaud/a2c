@@ -19,7 +19,7 @@ debut
     sinon
       notok()
     fin si
-  tantque (1 + 1)
+  tant que (1 + 1)
   pour u <- 3 jusqu'a quarante_deux faire
     a <- malloc(u)
   fin pour
