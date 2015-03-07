@@ -61,12 +61,12 @@
 "."                     printf("operator: %s\n", yytext);
 ","                     return COMMA;
 ":"                     return COLON;
-"<"                     printf("operator: %s\n", yytext);
-">"                     printf("operator: %s\n", yytext);
-"<="                    printf("operator: %s\n", yytext);
-">="                    printf("operator: %s\n", yytext);
 "<>"                    return NEQ;
 "="                     return EQ;
+"<"                     return LT;
+">"                     return GT;
+"<="                    return LE;
+">="                    return GE;
 "+"                     return PLUS;
 "-"                     return MINUS;
 "*"                     return STAR;

@@ -83,6 +83,8 @@ int yylineno;
        STAR "*" SLASH "/"
        DIV "div"
        MOD "mod"
+       LT "<" LE "<="
+       GT ">" GE ">="
        EQ "=" NEQ "<>"
        LPAREN "(" RPAREN ")"
        LBRACKET "[" RBRACKET "]"
@@ -192,6 +194,10 @@ exp:
 | exp "et" exp  { $$ = binopexpr($1, AND, $3); }
 | exp "mod" exp  { $$ = binopexpr($1, MOD, $3); }
 | exp "=" exp  { $$ = binopexpr($1, EQ, $3); }
+| exp "<=" exp  { $$ = binopexpr($1, LE, $3); }
+| exp ">=" exp  { $$ = binopexpr($1, GE, $3); }
+| exp "<" exp  { $$ = binopexpr($1, LT, $3); }
+| exp ">" exp  { $$ = binopexpr($1, GT, $3); }
 | exp "<>" exp  { $$ = binopexpr($1, NEQ, $3); }
 | INT     { $$ = $1; }
 | REAL    { $$ = $1; }

@@ -32,6 +32,14 @@ char *getopstr(int op)
       return "%";
     case EQ:
       return "==";
+    case LE:
+      return "<=";
+    case LT:
+      return "<";
+    case GT:
+      return ">";
+    case GE:
+      return ">=";
     case NEQ:
       return "<>";
     default:
