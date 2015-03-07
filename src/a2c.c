@@ -28,8 +28,6 @@ int main(int argc, char **argv)
     err(1, "Couldn't open file %s", argv[1]);
 
   yyparse();
-  int a = check_prog(prog);
-  printf("this algo is : %d",a);
   print_prog(prog);
 
   fclose(yyin);
