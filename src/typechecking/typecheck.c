@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include "grammar.h"
 #include "typecheck.h"
+#include <err.h>
 //top level doesn't exist so name is always the algo name
-
 
 struct context {
   char* name; 
@@ -67,9 +67,14 @@ bool check_inst(struct instruction *i)
 
 }
 
+bool check_prog(struct prog* prog)
+{
+  return check_algo(prog->algo);
+}
+
 bool check_algo(struct algo* al){
-  for(unsigned i = 0; i < al->instructions.list.size; ++i){
-    if(!check_inst(list_nth(al->instructions.list, i))){
+  for(unsigned i = 0; i < al->instructions.size; i++){
+    if(!check_inst(list_nth(al->instructions, i)) && list_nth(al->instructions, i)->kind == assignment){
         return false;
         }
   }
@@ -106,26 +111,22 @@ bool check_expr(struct expr *e)
       break;
     
     case arrayexprtype:
-        return false;
       break;
     
     case structelttype:
-        return false;
       break;
     
     case dereftype:
-        return false;
       break;
     
     default:
       break;
   }
-  return false;
+  return true;
 
 }
 
 types get_expr_type(struct expr *e){
-
   switch(e->exprtype){
     
     case nulltype:
@@ -139,6 +140,10 @@ types get_expr_type(struct expr *e){
     case stringtype:
       return t_STR;
       break;
+
+    case booltype:
+      return t_BOOL;
+      break;
     
     case inttype:
       return t_INT;
@@ -149,17 +154,15 @@ types get_expr_type(struct expr *e){
       break;
     
     case identtype:
-        //return get_ident(e->val.ident) != NULL ? *get_ident(e->val.ident)->type : t_error;
       break;
     
     case funcalltype :
-       // return get_ident(e->val.funcallval.fun_ident) != NULL ? 
-         // *get_ident(e->val.funcallval.fun_ident)->type : t_error;
       break;
     
     case binopexprtype:
-        printf("binop spot");
-        if (get_expr_type(e->val.binopexpr.e1) == t_INT || get_expr_type(e->val.binopexpr.e1) == t_REAL)
+        if (   get_expr_type(e->val.binopexpr.e1) == t_INT 
+            || get_expr_type(e->val.binopexpr.e1) == t_REAL
+            || get_expr_type(e->val.binopexpr.e1) == t_BOOL)
           return get_expr_type(e->val.binopexpr.e2) == get_expr_type(e->val.binopexpr.e1) ? 
                   get_expr_type(e->val.binopexpr.e1) : t_error;
         
@@ -168,7 +171,9 @@ types get_expr_type(struct expr *e){
       break;
    
     case unopexprtype:
-        if(get_expr_type(e->val.unopexpr.e) == t_INT || get_expr_type(e->val.unopexpr.e) == t_REAL)
+        if(    get_expr_type(e->val.unopexpr.e) == t_INT 
+            || get_expr_type(e->val.unopexpr.e) == t_REAL
+            || get_expr_type(e->val.unopexpr.e) == t_BOOL)
           return get_expr_type(e->val.unopexpr.e);
         
         return t_error;
