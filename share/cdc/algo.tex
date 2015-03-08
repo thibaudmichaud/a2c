@@ -1,0 +1,143 @@
+
+\section{Presentation langage algo et equivalence C}
+
+	Le langage algo est un langage inventé dans le but de faire
+comprendre les cours d'algo aux élèves de prépa à l'EPITA, ce qui n'est pas
+chose aisée. Ce langage a donc intérêt à offrir moins de souplesse que le C
+et à bien faire la distinction entre les différents types, les procédures les
+fonctions, etc. Nous allons donc faire un bref aperçu de la 
+structure générale de ce langage.
+
+\subsection{structure de base}
+\noindent de base le langage se structure de la sorte :
+
+\begin{lstlisting}[style=base]
+@[procedure ou fonction]@ µalgorithmeµ [nom algo]
+	[declaration des variables et des parametres]
+µdebutµ
+	[implementation]
+µfin algorithmeµ [nom algo]\end{lstlisting}
+qui pourrait alors se traduire en C par :
+\begin{lstlisting}[style=base]
+@[type de retour]@ [nom algo]{[definition des parametres]){
+	[declaration des variables]
+	[implementation]
+}
+\end{lstlisting}
+
+On voit déjà apparaître que le langage algo est plus éxigeant en terme de mots
+clefs que le C. Passons maintenant à la déclaration des variables et paramètres.
+
+\subsection{Déclaration des variables et des paramètres}
+\noindent Parmis les déclarations des variables et des paramètres il existe
+plusieurs déclarations possible suivant la composante algorithmique utilisée.
+
+\begin{lstlisting}[style=base]
+	µconstantesµ
+		id_const = valeur
+	µtypesµ
+		declaration de type
+	µvariablesµ
+		@id_type@ id_var 1
+\end{lstlisting}
+\newpage
+qui pourrait alors se traduire en C par : 
+
+\begin{itemize}
+	\item[-]\noindent pour les constantes : 
+		\begin{lstlisting}[style=base]	
+		@const [type]@ id = valeur;\end{lstlisting}	
+	\item[-] pour les types :
+		\begin{lstlisting}[style=base]			
+	 @typedef [type] @id = [type];\end{lstlisting}
+	\item[-] pour les variables :
+		\begin{lstlisting}[style=base]			
+		@[type]@ id = valeur;\end{lstlisting}
+\end{itemize}
+
+\subsection{Structure de choix}
+
+Passons maintenant à la presentation des structures de choix et à leurs
+équivalences en C. La structure est un peu verbeuse mais sa traduction vers le C
+ne pose pose pas de problème majeur.\\
+Algo:
+\begin{lstlisting}[style=base]
+	µsiµ [condition] µalorsµ
+		[instruction 1]
+	µsinonµ 
+		[instruction 2]
+	µfin siµ
+\end{lstlisting}
+
+\noindent C :
+
+\begin{lstlisting}[style=base]	
+	if([condition]){
+		[instruction 1]
+	}
+	else{
+		[instruction 2]
+	}
+\end{lstlisting}
+
+\subsection{Les boucles}
+
+Comme en C, en algo il existe deux types de boucles : \texttt{tant que} et
+\texttt{pour}, respectivement \texttt{while} et \texttt{for} en C. Les deux
+boucles sont là aussi sensiblement équivalentes dans les deux langages, leurs syntaxes sont :
+en algo
+\begin{lstlisting}[style=base]
+µtant queµ [condition] µfaireµ
+	[instruction]
+µfin tant queµ
+\end{lstlisting}
+
+en C
+\begin{lstlisting}[style=base]
+while([condition]){
+
+}
+\end{lstlisting}
+
+Il existe aussi la boucle \texttt{faire tant que} qui est l'équivalent de la
+boucle \texttt{do while} en C :
+en Algo
+\begin{lstlisting}[style=base]
+µfaireµ 
+	[instruction]
+µtant queµ [condition]
+\end{lstlisting}
+en C
+\begin{lstlisting}[style=base]
+do{
+
+
+}while([condition])
+\end{lstlisting}
+
+Et finalement la boucle \texttt{pour} :
+en algo
+\begin{lstlisting}[style=base]
+µpourµ i <- [valeur 1] µjusqu aµ [valeur 2] µfaireµ
+	[instruction]
+µfin pourµ
+\end{lstlisting}
+
+en C
+\begin{lstlisting}[style=base]
+µforµ([initialisation];[existance];[incrementation]){
+	[instruction]
+}
+\end{lstlisting}
+
+
+Voilà les bases de la syntaxe du langage algo. Il nous est alors évident que le
+passage du langage algo vers un langage plus courant comme le C nous semble
+facile, on arrive assez facilement à trouver les correspondances entre les
+différentes syntaxes. C'est pour cela que nous avons choisis le C, pour sa
+syntaxe simple et par sa grande utilisation.
+\\
+
+l'ensemble de document de cour sur le langage peuvent etre trouver sur le
+site (si il est à jour) de junior : 
+http://algo-td.infoprepa.epita.fr/algo/langage/

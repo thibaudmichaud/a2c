@@ -1,0 +1,126 @@
+\documentclass{beamer}
+
+\usetheme{Warsaw}
+\setbeamertemplate{footline}[frame number]
+\usepackage[french]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[version=0.96]{pgf}
+\usepackage{tikz}
+\usetikzlibrary{arrows, positioning}
+
+
+\title{A2C}
+\author{Team MALT : \\
+  Lucien Boillod \\
+  Maxime Gaudron \\
+  Thibaud Michaud \\
+Charles Yaiche }
+
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \tableofcontents[
+      currentsection,
+      sectionstyle=show/shaded,
+      subsectionstyle=show/shaded/hide
+    ]
+  \end{frame}
+}
+
+\AtBeginSubsection[]
+{
+  \begin{frame}<beamer>
+    \tableofcontents[
+      currentsection,
+      sectionstyle=show/shaded,
+      subsectionstyle=show/shaded/hide
+    ]
+  \end{frame}
+}
+
+\begin{document}
+\maketitle
+
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+\begin{frame}
+  \begin{center}
+    La team MALT (anciennement Ghom) \\
+    vous présente le projet A2C
+  \end{center}
+\end{frame}
+\section{grammaire abstraite}
+\begin{frame}
+  \begin{center}
+    \includegraphics[scale=0.4]{screen-grammar.png}
+  \end{center}
+\end{frame}
+\section{lexeur/parseur}
+\begin{frame}
+  \begin{center}
+    \includegraphics[scale=0.3]{bison.jpg}
+  \end{center}
+\end{frame}
+\section{AST}
+\begin{frame}
+\begin{center}
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2.5cm, thick,main node/.style={fill=blue!20,draw,font=\sffamily}]
+  %
+    \node[main node] (6) {instruction (assignation)};
+    \node[main node] (7) [below left of=6]{identifiant (a)};
+    \node[main node] (1) [below right of=6]{expression (+)};
+    \node[main node] (2) [below left of=1] {expression (22)};
+    \node[main node] (3) [below right of=1] {expression (*)};
+    \node[main node] (4) [below left of=3] {expression (2)};
+    \node[main node] (5) [below right of=3] {expression (10)};
+    \path[every node/.style={font=\sffamily\small}]
+    (1) edge node {} (2)
+    (1) edge node {} (3)
+    (3) edge node {} (4)
+    (3) edge node {} (5)
+    (6) edge node {} (7)
+    (6) edge node {} (1)
+    ;
+\end{tikzpicture}
+\end{center}
+\end{frame}
+
+\section{génération de code}
+\begin{frame}
+\begin{center}
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2.5cm, thick,main node/.style={fill=blue!20,draw,font=\sffamily}]
+  %
+    \node[main node] (6) {instruction (assignation)};
+    \node[main node] (7) [below left of=6]{identifiant (a)};
+    \node[main node] (1) [below right of=6]{expression (+)};
+    \node[main node] (2) [below left of=1] {expression (22)};
+    \node[main node] (3) [below right of=1] {expression (*)};
+    \node[main node] (4) [below left of=3] {expression (2)};
+    \node[main node] (5) [below right of=3] {expression (10)};
+    \path[every node/.style={font=\sffamily\small}]
+    (1) edge node {} (2)
+    (1) edge node {} (3)
+    (3) edge node {} (4)
+    (3) edge node {} (5)
+    (6) edge node {} (7)
+    (6) edge node {} (1)
+    ;
+\end{tikzpicture}
+\end{center}
+\end{frame}
+
+\section{structures de données}
+\section{analyse semantique}
+\section{Site web}
+\section{Conclusion}
+
+
+\begin{frame}
+  \begin{center}
+    \Large{Questions?}\\
+  \end{center}
+\end{frame}
+
+\end{document}
