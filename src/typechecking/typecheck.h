@@ -28,7 +28,7 @@ struct symbole* get_ident(char* ident);
 bool check_algo(struct algo* al);
 bool check_prog(struct prog* prog);
 bool check_expr(struct expr *e);
-
+char* expr_type(struct expr *e);
 types get_expr_type(struct expr *e);
 
 #endif

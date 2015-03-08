@@ -28,8 +28,9 @@ int main(int argc, char **argv)
     err(1, "Couldn't open file %s", argv[1]);
 
   yyparse();
+  
   print_prog(prog);
-
+  check_prog(prog);
   fclose(yyin);
   yylex_destroy();
   free_prog(prog);
