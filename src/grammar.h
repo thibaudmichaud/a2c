@@ -306,11 +306,11 @@ struct expr *intexpr(int i)
 }
 
 static inline
-struct expr *realexpr(int i)
+struct expr *realexpr(double i)
 {
   struct expr *e = malloc(sizeof(struct expr));
-  e->exprtype = inttype;
-  e->val.intval = i;
+  e->exprtype = realtype;
+  e->val.realval = i;
   return e;
 }
 

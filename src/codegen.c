@@ -279,6 +279,9 @@ void print_expression(struct expr *e)
     case inttype:
       printf("%d", e->val.intval);
       break;
+    case realtype:
+      printf("%g", e->val.realval);
+      break;
     case binopexprtype:
       printf("(");
       print_expression(e->val.binopexpr.e1);
