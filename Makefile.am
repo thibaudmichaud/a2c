@@ -7,4 +7,4 @@ a2c_SOURCES = src/parser.y src/lexer.l src/typechecking/typecheck.c src/codegen.
 check_PROGRAMS = tests/list
 tests_list_SOURCES = tests/list.c
 
-TESTS = tests/parser.test tests/list.test
+TESTS = tests/parser.test tests/list.test tests/parser-testfail.test
