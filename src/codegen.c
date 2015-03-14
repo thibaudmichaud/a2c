@@ -79,7 +79,10 @@ void print_prog(struct prog *prog)
 
 void print_algo(struct algo *algo)
 {
-  printf("void ");
+  if (algo->return_type)
+    printf("%s ", algo->return_type);
+  else
+    printf("void ");
   printf("%s(void)\n{\n", algo->ident);
   print_decls(algo->declarations, INDENT_WIDTH);
   print_instructions(algo->instructions, INDENT_WIDTH);
@@ -217,6 +220,12 @@ void print_instruction(struct instruction *i, int indent)
         print_indent(indent);
         printf("}\n");
       }
+      break;
+    case returnstmt:
+      print_indent(indent);
+      printf("return ");
+      print_expression(i->instr.returnstmt.expr);
+      printf(";\n");
       break;
     default:
       printf("instruction not handled yet\n");

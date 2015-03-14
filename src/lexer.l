@@ -33,7 +33,7 @@
 "faire"                 return DO;
 "faux"                  return FALSE;
 "fin"                   return END;
-"fonction"              printf("keyword: %s\n", yytext);
+"fonction"              return FUNCTION;
 "globaux"               printf("keyword: %s\n", yytext);
 "jusqu'a"               return UPTO;
 "locaux"                printf("keyword: %s\n", yytext);
@@ -44,6 +44,7 @@
 "parametres"            printf("keyword: %s\n", yytext);
 "pour"                  return FOR;
 "procedure"             return PROCEDURE;
+"retourne"              return RETURN;
 "selon"                 return SWITCH;
 "si"                    return IF;
 "sinon"                 return ELSE;

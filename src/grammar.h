@@ -275,6 +275,7 @@ struct declarations
 struct algo
 {
   char *ident;
+  char *return_type;
   struct declarations *declarations;
   instructionlist_t instructions;
 };
@@ -381,11 +382,12 @@ struct assignment *assign(struct expr *e1, struct expr *e2)
 }
 
 static inline
-struct algo *algo(char *ident, struct declarations *declarations,
+struct algo *algo(char *ident, char *return_type, struct declarations *declarations,
     instructionlist_t instructions)
 {
   struct algo *a = malloc(sizeof(struct algo));
   a->ident = ident;
+  a->return_type = return_type;
   a->instructions = instructions;
   a->declarations = declarations;
   return a;
@@ -535,6 +537,15 @@ instructionlist_t empty_instructionlist(void)
 {
   instructionlist_t i;
   list_init(i);
+  return i;
+}
+
+static inline
+struct instruction *return_stmt(struct expr *e)
+{
+  struct instruction *i = malloc(sizeof(struct instruction));
+  i->kind = returnstmt;
+  i->instr.returnstmt.expr = e;
   return i;
 }
 

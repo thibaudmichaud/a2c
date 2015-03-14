@@ -44,6 +44,8 @@ int yylineno;
 };
 
 %type <expression> exp
+%type <algo> proc
+%type <algo> fun
 %type <algo> algo
 %type <instructions> instructions
 %type <instruction> instruction
@@ -62,6 +64,8 @@ int yylineno;
 
 %token ALGORITHM "algorithme"
 %token PROCEDURE "procedure"
+%token FUNCTION "fonction"
+%token RETURN "retourne"
 %token START "debut"
 %token END "fin"
 %token ASLONG AS DO
@@ -107,9 +111,10 @@ int yylineno;
 %right ASSIGN
 %precedence IDENT WHILE
 %left "=" "<>"
+%left  "<" ">" "<=" ">="
 %left PLUS MINUS OR XOR
 %left STAR SLASH DIV AND MOD
-%right NO DEREF
+%right NO "^"
 %precedence "[" "]" "(" ")"
 
 %%
@@ -124,15 +129,25 @@ entry_point:
  instructions
  "fin" { $$ = make_entry_point($1, $4); }
 
-algo:
+algo: proc | fun
+
+proc:
  "algorithme" "procedure" IDENT _EOL
  decls
  "debut" _EOL
    instructions
  "fin" "algorithme" "procedure" IDENT
- { $$ = algo($3, $5, $8); free($12); }
+ { $$ = algo($3, NULL, $5, $8); free($12); }
 /* NOTE: $12 will be needed for the semantic analysis phase but for now the
 free is here to prevent valgrind from reporting the error */
+
+fun:
+ "algorithme" "fonction" IDENT ":" IDENT _EOL
+ decls
+ "debut" _EOL
+   instructions
+ "fin" "algorithme" "fonction" IDENT
+ { $$ = algo($3, $5, $7, $10); free($14); }
 
 decls:
  var_decl { $$ = make_declarations(NULL, NULL, NULL, $1); }
@@ -179,6 +194,7 @@ instruction:
   ELSE _EOL
     instructions
   END IF _EOL { $$ = ifthenelseblock($2, $5, $8); }
+| "retourne" exp _EOL { $$ = return_stmt($2); }
 
 assign:
  exp "<-" exp { $$ = assign($1, $3); }
