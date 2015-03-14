@@ -77,13 +77,92 @@ void print_prog(struct prog *prog)
   printf("}\n");
 }
 
+void print_lp_decl(struct local_param *local_param)
+{
+  unsigned i = 0;
+  for (; i + 1 < local_param->param.size; ++i)
+  {
+    for (unsigned k = 0; k < list_nth(local_param->param, i)->var_idents.size; ++k)
+    {
+      printf("%s %s, ", list_nth(local_param->param, i)->type_ident, 
+          list_nth(list_nth(local_param->param, i)->var_idents, k));
+    }
+  }
+  unsigned k = 0;
+  for (; k + 1 < list_nth(local_param->param, i)->var_idents.size; ++k)
+  {
+    printf("%s %s, ", list_nth(local_param->param, i)->type_ident, 
+        list_nth(list_nth(local_param->param, i)->var_idents, k));
+  }
+  printf("%s %s", list_nth(local_param->param, i)->type_ident, 
+      list_nth(list_nth(local_param->param, i)->var_idents, k));
+}
+
+void print_gp_decl(struct global_param *global_param)
+{
+  unsigned i = 0;
+  for (; i + 1 < global_param->param.size; ++i)
+  {
+    for (unsigned k = 0; k < global_param->param.data[i]->var_idents.size; ++k)
+    {
+      printf("%s *%s, ", global_param->param.data[i]->type_ident, 
+          global_param->param.data[i]->var_idents.data[k]);
+    }
+  }
+  unsigned k = 0;
+  for (; k + 1 < global_param->param.data[i]->var_idents.size; ++k)
+  {
+    printf("%s *%s, ", global_param->param.data[i]->type_ident, 
+        global_param->param.data[i]->var_idents.data[k]);
+  }
+  printf("%s *%s", global_param->param.data[i]->type_ident, 
+      global_param->param.data[i]->var_idents.data[k]);
+}
+
+void print_param_decl(struct param_decl *param_decl)
+{
+  if (!param_decl->local_param && !param_decl->global_param)
+  {
+    printf("void");
+    return;
+  }
+  if (param_decl->local_first)
+  {
+    if (param_decl->local_param)
+    {
+      print_lp_decl(param_decl->local_param);
+      if (param_decl->global_param)
+        printf(", ");
+    }
+    if (param_decl->global_param)
+    {
+      print_gp_decl(param_decl->global_param);
+    }
+  }
+  else
+  {
+    if (param_decl->global_param)
+    {
+      print_gp_decl(param_decl->global_param);
+      if (param_decl->local_param)
+        printf(", ");
+    }
+    if (param_decl->local_param)
+    {
+      print_lp_decl(param_decl->local_param);
+    }
+  }
+}
+
 void print_algo(struct algo *algo)
 {
   if (algo->return_type)
     printf("%s ", algo->return_type);
   else
     printf("void ");
-  printf("%s(void)\n{\n", algo->ident);
+  printf("%s(", algo->ident);
+  print_param_decl(algo->declarations->param_decl);
+  printf(")\n{\n");
   print_decls(algo->declarations, INDENT_WIDTH);
   print_instructions(algo->instructions, INDENT_WIDTH);
   printf("}\n");
@@ -98,6 +177,25 @@ void free_single_var_decl(struct single_var_decl *single_var_decl)
   free(single_var_decl);
 }
 
+void free_param_decl(struct param_decl *param_decl)
+{
+  if (param_decl->local_param)
+  {
+    for (unsigned i = 0; i < param_decl->local_param->param.size; ++i)
+      free_single_var_decl(param_decl->local_param->param.data[i]);
+    list_free(param_decl->local_param->param);
+    free(param_decl->local_param);
+  }
+  if (param_decl->global_param)
+  {
+    for (unsigned i = 0; i < param_decl->global_param->param.size; ++i)
+      free_single_var_decl(param_decl->global_param->param.data[i]);
+    list_free(param_decl->global_param->param);
+    free(param_decl->global_param);
+  }
+  free(param_decl);
+}
+
 void free_var_decl(vardecllist_t var_decl)
 {
   for (unsigned i = 0; i < var_decl.size; ++i)
@@ -107,6 +205,7 @@ void free_var_decl(vardecllist_t var_decl)
 
 void free_decls(struct declarations *declarations)
 {
+  free_param_decl(declarations->param_decl);
   free_var_decl(declarations->var_decl);
   free(declarations);
 }
@@ -116,6 +215,8 @@ void free_algo(struct algo *algo)
   free_instructions(algo->instructions);
   free_decls(algo->declarations);
   free(algo->ident);
+  if (algo->return_type)
+    free(algo->return_type);
   free(algo);
 }
 

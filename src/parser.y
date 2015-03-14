@@ -40,6 +40,9 @@ int yylineno;
   struct assignment *assignment;
   struct entry_point *entry_point;
   struct prog *prog;
+  struct local_param *lp;
+  struct global_param *gp;
+  struct param_decl *param_decl;
   char *str;
 };
 
@@ -47,6 +50,9 @@ int yylineno;
 %type <algo> proc
 %type <algo> fun
 %type <algo> algo
+%type <lp> lp_decl
+%type <gp> gp_decl
+%type <param_decl> param_decl
 %type <instructions> instructions
 %type <instruction> instruction
 %type <exprlist> explist nonempty_explist
@@ -78,6 +84,9 @@ int yylineno;
 %token SWITCH
 %token COLON ":"
 %token DEREF "^"
+%token PARAMETERS "parametres"
+%token LOCAL "locaux"
+%token GLOBAL "globaux"
 %token <str> IDENT
 %token <str> STRING
 %token VARIABLES "variables"
@@ -150,7 +159,21 @@ fun:
  { $$ = algo($3, $5, $7, $10); free($14); }
 
 decls:
- var_decl { $$ = make_declarations(NULL, NULL, NULL, $1); }
+ param_decl var_decl { $$ = make_declarations($1, NULL, NULL, $2); }
+
+param_decl:
+ lp_decl gp_decl { $$ = make_param_decl(true, $1, $2); }
+| gp_decl lp_decl { $$ = make_param_decl(false, $2, $1); }
+
+lp_decl:
+ "parametres" "locaux" _EOL
+ var_decl2 { $$ = make_lp_decl($4); }
+| { $$ = NULL; }
+
+gp_decl:
+ "parametres" "globaux" _EOL
+ var_decl2 { $$ = make_gp_decl($4); }
+| { $$ = NULL; }
 
 var_decl:
  "variables" _EOL
@@ -195,6 +218,7 @@ instruction:
     instructions
   END IF _EOL { $$ = ifthenelseblock($2, $5, $8); }
 | "retourne" exp _EOL { $$ = return_stmt($2); }
+| "retourne" _EOL { $$ = return_stmt(NULL); }
 
 assign:
  exp "<-" exp { $$ = assign($1, $3); }

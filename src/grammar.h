@@ -240,18 +240,19 @@ struct single_var_decl
 
 struct global_param
 {
-  vardecllist_t var_decl;
+  vardecllist_t param;
 };
 
 struct local_param
 {
-  vardecllist_t var_decl;
+  vardecllist_t param;
 };
 
 struct param_decl
 {
-  struct global_param global_param;
-  struct local_param local_param;
+  bool local_first;
+  struct local_param *local_param;
+  struct global_param *global_param;
 };
 
 struct const_decl
@@ -549,4 +550,31 @@ struct instruction *return_stmt(struct expr *e)
   return i;
 }
 
+static inline
+struct local_param *make_lp_decl(vardecllist_t params)
+{
+  struct local_param *l = malloc(sizeof(struct local_param));
+  l->param = params;
+  return l;
+}
+
+static inline
+struct global_param *make_gp_decl(vardecllist_t params)
+{
+  struct global_param *g = malloc(sizeof(struct global_param));
+  g->param = params;
+  return g;
+}
+
+static inline
+struct param_decl *make_param_decl(bool local_first,
+    struct local_param *lp,
+    struct global_param *gp)
+{
+  struct param_decl *p = malloc(sizeof(struct param_decl));
+  p->local_first = local_first;
+  p->local_param = lp;
+  p->global_param = gp;
+  return p;
+}
 #endif

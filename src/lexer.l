@@ -34,14 +34,14 @@
 "faux"                  return FALSE;
 "fin"                   return END;
 "fonction"              return FUNCTION;
-"globaux"               printf("keyword: %s\n", yytext);
+"globaux"               return GLOBAL;
 "jusqu'a"               return UPTO;
-"locaux"                printf("keyword: %s\n", yytext);
+"locaux"                return LOCAL;
 "mod"                   return MOD;
 "non"                   return NO;
 "ou"                    return OR;
 "oue"                   return XOR;
-"parametres"            printf("keyword: %s\n", yytext);
+"parametres"            return PARAMETERS;
 "pour"                  return FOR;
 "procedure"             return PROCEDURE;
 "retourne"              return RETURN;

@@ -10,9 +10,6 @@ a2c_SOURCES = src/parser.y \
 	      src/a2c.c
 
 check_PROGRAMS = tests/hashtable tests/list
-tests_hashtable_SOURCES = tests/hashtable.c
-
-test_list_source= tests/list.c
 
 TESTS = tests/parser.test \
 	tests/list.test \
