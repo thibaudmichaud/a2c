@@ -3,15 +3,14 @@
 
 #include "grammar.h"
 
-typedef enum {
-  t_INT,
-  t_CHAR,
-  t_STR,
-  t_REAL,
-  t_BOOL,
-  t_NUL,
-  t_error
-} type;
+typedef enum{
+  int_t,
+  char_t,
+  str_t,
+  real_t,
+  bool_t,
+  nul_t,
+}types;
 
 struct symbole {
   char* ident;

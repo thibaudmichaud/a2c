@@ -1,37 +1,32 @@
 #include <stdio.h>
 #include "grammar.h"
 #include "codegen.h"
+#include "funtable.h"
+#include "var_table.h"
+#include "type_table.h"
 #include "typecheck.h"
 #include <err.h>
 #include <string.h>
 //top level doesn't exist so name is always the algo name
 
-struct context {
-  char* name;
-  struct symbole_table table;
-};
-
-struct context* c = NULL;
+funtable functions;
+var_table_t variables;
+type_table_t types;
 
 /*bool equals_expr(struct expr *e1, struct expr *e2){
     return get_expr_type(e1) == get_expr_type(e2);
 }
-
-bool check_args(struct funcall* f){
-  struct expr* argf = f->args;
-  struct symbole* fun = malloc(sizeof(struct symbole));
-  //fun = get_ident(f->fun_ident);
-  int i = 0;
-  //asked if this is correct
-  for(;argf != NULL; argf++){
-      if(!equals_expr(fun->exprlist, argf)){
+*/
+bool check_args(struct function* f, struct funcall call){
+    if(f->arg.size != call.args.size)
         return false;
-      }
-      i++;
-  }
-return true;
-
-}*/
+    for(unsigned i = 0; i < call.args.size; ++i)
+    {
+        if(get_expr_type((struct expr *)list_nth(call.args,i)) != (list_nth(f->arg,i))->type)
+            return false;
+    }
+    return true;
+}
 
 char *algo_to_c_type(char *ident)
 {
@@ -50,44 +45,140 @@ char *algo_to_c_type(char *ident)
   return ident;
 }
 
-bool check_inst(struct instruction *i)
+bool check_inst(struct instruction *i, struct function* f)
 {
   switch(i->kind)
   {
     case funcall:
-        //exist and args are good typed
-        //return get_ident((*i->instr.funcall).fun_ident) && check_args((i->instr.funcall));
+        {
+            struct function* f = malloc(sizeof(struct function));
+            f->ident = i->instr.funcall.fun_ident;
+            if (get_function(functions, f->ident) != NULL)
+            {
+                free(f);
+                return true;
+            }
+            else
+            {
+                printf("implicit declaration of function %s",f->ident);
+                free(f);
+                return false;
+            }
+        }
       break;
 
     case assignment:
-
-        if(check_expr(i->instr.assignment->e2)){
-          return true;
+        if(check_expr(i->instr.assignment.e1) && check_expr(i->instr.assignment.e2)){
+            return get_expr_type(i->instr.assignment.e1) == get_expr_type(i->instr.assignment.e2); 
         }
         else
         {
-          printf("In instruction : ");
-          print_instruction(i,0);
+            return false;
         }
       break;
 
     case ifthenelse:
+      {
+        struct ifthenelse e = i->instr.ifthenelse;
+        
+        if(get_expr_type(e.cond) == bool_t){
+          for(unsigned int i =0; i < e.instructions.size; ++i)
+          {
+            if (!check_inst(list_nth(e.instructions, i), f))
+            {
+              printf("error in if statement");
+              return false;
+            }
+          }
+          for(unsigned int i =0; i < e.elseblock.size; ++i)
+          {
+            if(!check_inst(list_nth(e.elseblock,i), f))
+            {
+              printf("error in else statement");
+              return false;
+            }
+          }
+
+          return true;
+        }
+        
+        printf("error in condition statement");
+        
+        return false;
+      }
       break;
 
     case switchcase:
+      //TODO: implement switchcase
       break;
 
     case dowhile:
+      {
+        struct dowhile e = i->instr.dowhile;
+        if(get_expr_type(e.cond) == bool_t)
+        {
+          for(unsigned int i = 0; i < e.instructions.size; ++i)
+          {
+            if(!check_inst(list_nth(e.instructions,i), f))
+            {
+              printf("error in instruction switch");
+              return false;
+            }
+          }
+          return true;
+        }
+        printf("error in condition of switch");
+        return false;
+      } 
       break;
 
     case whiledo:
+      {
+        struct whiledo e = i->instr.whiledo;
+        if(get_expr_type(e.cond) == bool_t)
+        {
+          for(unsigned int i = 0; i < e.instructions.size; ++i)
+          {
+            if(!check_inst(list_nth(e.instructions,i), f))
+            {
+              printf("error in instruction switch");
+              return false;
+            }
+          }
+          return true;
+        }
+        printf("error in condition of switch");
+        return false;
+      } 
       break;
 
     case forloop:
+      {
+        struct forloop e = i->instr.forloop;
+        if(check_expr((struct expr *)e.assignment))
+        {
+          if(get_expr_type(e.upto) == bool_t)
+          {
+            for(unsigned int i = 0; i < e.instructions.size; ++i)
+            {
+              if(!check_inst(list_nth(e.instructions, i), f))
+              {
+                printf("error in for loop");
+                return false;
+              }
+            }
+            return true;
+          }
+          printf("error in up to");
+          return false;
+        }
+        printf("error in assignement");
+        return false;
+      }
       break;
-
+    
     case returnstmt:
-       //return *get_ident(c->name)->type == get_expr_type(i->instr.returnstmt->expr);
+      return get_expr_type(i->inst.returnstmt.expr) == f->type;
       break;
   }
   return false;
@@ -105,38 +196,32 @@ bool check_prog(struct prog* prog)
 }
 
 bool check_algo(struct algo* al){
-  for(unsigned i = 0; i < al->instructions.size; i++){
-    if(!check_inst(list_nth(al->instructions, i)) && list_nth(al->instructions, i)->kind == assignment){
-      return false;
-
+    struct function* f = malloc(sizeof(struct function));
+    for(unsigned i = 0; i < al->instructions.size; i++){
+        if(!check_inst(list_nth(al->instructions, i), f) && list_nth(al->instructions, i)->kind == assignment){
+            return false;
+        }
     }
-  }
-  return true;
+    return true;
 }
 
 bool check_expr(struct expr *e)
 {
-  switch(e->exprtype){
-
+  switch(e->exprtype)
+  {
     case identtype:
-      //TODO implements element_symbole
-      // struct elt_symbole ident = getident(e->ident);
+        return(find_var(variables, e->val.ident) != NULL);
       break;
 
     case funcalltype:
-      //TODO get your symbole if he existe awesome we can check it else GTFO
-      /*struct elt_symbole fun = getident(e->fun_ident);
-      if ( fun != NULL)
-      {
-        //TODO
-        check_args(fun, expr->val.args);
-      } else {
-        return "this is not what I expected"
-      }*/
+        {
+            struct function* f = malloc(sizeof(struct function));
+            f->ident = e->val.funcall.fun_ident;
+            return (find_function(functions,f->ident));
+        }
       break;
 
     case binopexprtype:
-        get_expr_type(e);
         return get_expr_type(e->val.binopexpr.e1) == get_expr_type(e->val.binopexpr.e2);
       break;
 
@@ -151,6 +236,7 @@ bool check_expr(struct expr *e)
       break;
 
     case dereftype:
+      return(check_expr(e->val.derf.e);
       break;
 
     default:
@@ -161,23 +247,31 @@ bool check_expr(struct expr *e)
 }
 
 type get_expr_type(struct expr *e){
-  switch (e->exprtype)
-  {
-    case valtype:
-      {
-        switch(e->val.val->valtype) {
+  switch(e->exprtype){
 
-          case nulltype:
-            return t_NUL;
-            break;
+    case nulltype:
+      return nul_t;
+      break;
 
-          case chartype:
-            return t_CHAR;
-            break;
+    case chartype:
+      return char_t;
+      break;
 
-          case stringtype:
-            return t_STR;
-            break;
+    case stringtype:
+      return str_t;
+      break;
+
+    case booltype:
+      return bool_t;
+      break;
+
+    case inttype:
+      return int_t;
+      break;
+
+    case realtype:
+      return real_t;
+      break;
 
           case booltype:
             return t_BOOL;
@@ -193,11 +287,9 @@ type get_expr_type(struct expr *e){
         }
       }
     case binopexprtype:
-      if (   get_expr_type(e->val.binopexpr.e1) == t_INT
-          || get_expr_type(e->val.binopexpr.e1) == t_REAL
-          || get_expr_type(e->val.binopexpr.e1) == t_BOOL)
-      {
-        if (get_expr_type(e->val.binopexpr.e2) == get_expr_type(e->val.binopexpr.e1) )
+        if (   get_expr_type(e->val.binopexpr.e1) == int_t
+            || get_expr_type(e->val.binopexpr.e1) == real_t
+            || get_expr_type(e->val.binopexpr.e1) == bool_t) 
         {
           return get_expr_type(e->val.binopexpr.e1);
         }
@@ -216,11 +308,24 @@ type get_expr_type(struct expr *e){
           || get_expr_type(e->val.unopexpr.e) == t_REAL
           || get_expr_type(e->val.unopexpr.e) == t_BOOL)
         return get_expr_type(e->val.unopexpr.e);
+      break;
 
-      return t_error;
-    default: // TODO handle missing expression types
-      return t_STR;
+    case unopexprtype:
+        if(    get_expr_type(e->val.unopexpr.e) == int_t 
+            || get_expr_type(e->val.unopexpr.e) == real_t
+            || get_expr_type(e->val.unopexpr.e) == bool_t)
+          return get_expr_type(e->val.unopexpr.e);
+        
+      break;
+
+    case arrayexprtype:
+      //something strange is happening here
+      break;
+
+    case structelttype:
+      break;
   }
+  return str_t;
 }
 
 char* expr_type (struct expr* e)
@@ -260,6 +365,14 @@ char* expr_type (struct expr* e)
       break;
 
     case funcalltype :
+      {
+        struct function* f = malloc(sizeof(struct function));
+        if((f = get_function(functions, e->val.funcall.fun_ident)) != NULL 
+                  && check_args(f, e->val.funcall))
+        { 
+              return f->ret;
+        }
+      }
       break;
 
     case binopexprtype:
