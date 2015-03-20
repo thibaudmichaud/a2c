@@ -4,7 +4,9 @@ AM_YFLAGS = -d
 bin_PROGRAMS = a2c
 a2c_SOURCES = src/parser.y src/lexer.l src/typechecking/typecheck.c src/codegen.c src/a2c.c
 
-check_PROGRAMS = tests/hashtable
+check_PROGRAMS = tests/hashtable tests/list
 tests_hashtable_SOURCES = tests/hashtable.c
+
+test_list_source= tests/list.c
 
 TESTS = tests/parser.test tests/list.test tests/parser-testfail.test tests/hashtable.test
