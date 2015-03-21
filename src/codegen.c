@@ -63,13 +63,54 @@ void print_var_decl(vardecllist_t var_decl, int indent)
     print_single_var_decl(list_nth(var_decl, i), indent);
 }
 
-void print_decls(struct declarations *declarations, int indent)
+void print_enum(char *ident, struct enum_def *enum_def)
 {
-  print_var_decl(declarations->var_decl, indent);
+  printf("typedef enum\n{\n");
+  for (unsigned i = 0; i < enum_def->identlist.size; ++i)
+  {
+    print_indent(INDENT_WIDTH);
+    printf("%s,\n", enum_def->identlist.data[i]);
+  }
+  printf("} %s\n", ident);
+}
+
+void print_array(char *ident, struct array_def *array_def)
+{
+  printf("typedef ");
+  printf("%s %s", ident, array_def->elt_type);
+  for (unsigned i = 0; i < array_def->dims.size; ++i)
+  {
+    printf("[%d]", array_def->dims.data[i]);
+  }
+  printf("\n");
+}
+
+void print_type_decl(struct type_decl *type_decl)
+{
+  switch (type_decl->type_def->type_type)
+  {
+    case enum_type:
+      print_enum(type_decl->ident, type_decl->type_def->def.enum_def);
+      break;
+    case array_type:
+      print_array(type_decl->ident, type_decl->type_def->def.array_def);
+      break;
+    default:
+      printf("type not handled yet\n");
+  }
+}
+
+void print_type_decls(typedecllist_t type_decls)
+{
+  for (unsigned i = 0; i < type_decls.size; ++i)
+  {
+    print_type_decl(type_decls.data[i]);
+  }
 }
 
 void print_prog(struct prog *prog)
 {
+  print_type_decls(prog->algo->declarations->type_decls);
   print_var_decl(prog->entry_point->var_decl, 0);
   print_algo(prog->algo);
   printf("int main(void)\n{\n");
@@ -163,17 +204,22 @@ void print_algo(struct algo *algo)
   printf("%s(", algo->ident);
   print_param_decl(algo->declarations->param_decl);
   printf(")\n{\n");
-  print_decls(algo->declarations, INDENT_WIDTH);
+  print_var_decl(algo->declarations->var_decl, INDENT_WIDTH);
   print_instructions(algo->instructions, INDENT_WIDTH);
   printf("}\n");
+}
+
+void free_identlist(identlist_t idents)
+{
+  for (unsigned i = 0; i < idents.size; ++i)
+    free(idents.data[i]);
+  list_free(idents);
 }
 
 void free_single_var_decl(struct single_var_decl *single_var_decl)
 {
   free(single_var_decl->type_ident);
-  for (unsigned i = 0; i < single_var_decl->var_idents.size; ++i)
-    free(list_nth(single_var_decl->var_idents, i));
-  list_free(single_var_decl->var_idents);
+  free_identlist(single_var_decl->var_idents);
   free(single_var_decl);
 }
 
@@ -203,9 +249,45 @@ void free_var_decl(vardecllist_t var_decl)
   list_free(var_decl);
 }
 
+void free_type_def(struct type_def *type_def)
+{
+  switch(type_def->type_type)
+  {
+    case array_type:
+      free(type_def->def.array_def->elt_type);
+      list_free(type_def->def.array_def->dims);
+      free(type_def->def.array_def);
+      break;
+    case enum_type:
+      free_identlist(type_def->def.enum_def->identlist);
+      free(type_def->def.enum_def);
+      break;
+    default:
+      printf("type not handled yet (in free_var_decl)");
+  }
+  free(type_def);
+}
+
+void free_type_decl(struct type_decl *type_decl)
+{
+  free(type_decl->ident);
+  free_type_def(type_decl->type_def);
+  free(type_decl);
+}
+
+void free_type_decls(typedecllist_t type_decls)
+{
+  for (unsigned i = 0; i < type_decls.size; ++i)
+  {
+    free_type_decl(type_decls.data[i]);
+  }
+  list_free(type_decls);
+}
+
 void free_decls(struct declarations *declarations)
 {
   free_param_decl(declarations->param_decl);
+  free_type_decls(declarations->type_decls);
   free_var_decl(declarations->var_decl);
   free(declarations);
 }

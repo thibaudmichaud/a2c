@@ -15,6 +15,8 @@ typedef list_tpl(struct expr *) exprlist_t;
 typedef list_tpl(struct caseblock *) caselist_t;
 typedef list_tpl(struct instruction *) instructionlist_t;
 typedef list_tpl(struct single_var_decl *) vardecllist_t;
+typedef list_tpl(struct type_decl *) typedecllist_t;
+typedef list_tpl(int) intlist_t;
 
 struct prog
 {
@@ -192,14 +194,13 @@ struct instruction
 
 struct enum_def
 {
-  char **ident;
+  identlist_t identlist;
 };
 
 struct array_def
 {
-  char *array_ident;
-  size_t *dim;
-  char *type_ident;
+  intlist_t dims;
+  char *elt_type;
 };
 
 struct struct_def
@@ -262,14 +263,14 @@ struct const_decl
 struct type_decl
 {
   char *ident;
-  struct type_def type_def;
+  struct type_def *type_def;
 };
 
 struct declarations
 {
   struct param_decl *param_decl;
   struct const_decl *const_decl;
-  struct type_decl *type;
+  typedecllist_t type_decls;
   vardecllist_t var_decl;
 };
 
@@ -440,6 +441,22 @@ identlist_t empty_identlist(void)
 }
 
 static inline
+typedecllist_t empty_typedecllist(void)
+{
+  typedecllist_t l;
+  list_init(l);
+  return l;
+}
+
+static inline
+vardecllist_t empty_vardecllist(void)
+{
+  vardecllist_t l;
+  list_init(l);
+  return l;
+}
+
+static inline
 struct single_var_decl *single_var_decl(char *typeid, identlist_t idents)
 {
   struct single_var_decl *s = malloc(sizeof(struct single_var_decl));
@@ -522,13 +539,13 @@ struct instruction *ifthenelseblock(struct expr *cond, instructionlist_t instruc
 static inline
 struct declarations *make_declarations(struct param_decl *param_decl,
     struct const_decl *const_decl,
-    struct type_decl *type_decl,
+    typedecllist_t type_decls,
     vardecllist_t var_decl)
 {
   struct declarations *d = malloc(sizeof(struct declarations));
   d->param_decl = param_decl;
   d->const_decl = const_decl;
-  d->type = type_decl;
+  d->type_decls = type_decls;
   d->var_decl = var_decl;
   return d;
 }
@@ -577,4 +594,45 @@ struct param_decl *make_param_decl(bool local_first,
   p->global_param = gp;
   return p;
 }
+
+static inline
+struct type_decl *make_type_decl(char *ident, struct type_def *type_def)
+{
+  struct type_decl *t = malloc(sizeof(struct type_decl));
+  t->ident = ident;
+  t->type_def = type_def;
+  return t;
+}
+
+static inline
+struct type_def *make_enum_def(identlist_t identlist)
+{
+  struct enum_def *e = malloc(sizeof(struct enum_def));
+  e->identlist = identlist;
+  struct type_def *t = malloc(sizeof(struct type_def));
+  t->type_type = enum_type;
+  t->def.enum_def = e;
+  return t;
+}
+
+static inline
+intlist_t empty_intlist(void)
+{
+  intlist_t i;
+  list_init(i);
+  return i;
+}
+
+static inline
+struct type_def *make_array_def(intlist_t dims, char *ident)
+{
+  struct array_def *a = malloc(sizeof(struct array_def));
+  a->dims = dims;
+  a->elt_type = ident;
+  struct type_def *t = malloc(sizeof(struct type_def));
+  t->type_type = array_type;
+  t->def.array_def = a;
+  return t;
+}
+
 #endif

@@ -50,13 +50,14 @@
 "sinon"                 return ELSE;
 "tant"                  return ASLONG;
 "que"                   return AS;
-"types"                 printf("keyword: %s\n", yytext);
+"types"                 return TYPES;
 "variables"             return VARIABLES;
 "vrai"                  return TRUE;
 "/*"                    BEGIN(COMMENT);
 <COMMENT>"*/"           BEGIN(INITIAL);
 <COMMENT>(.|\n)         ;
 <COMMENT><<EOF>>        printf("Unexpected file end (unterminated comment).\n");
+"x"                     return CROSS;
 "<-"                    return ASSIGN;
 "^"                     return DEREF;
 "."                     printf("operator: %s\n", yytext);

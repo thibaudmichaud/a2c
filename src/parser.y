@@ -43,6 +43,11 @@ int yylineno;
   struct local_param *lp;
   struct global_param *gp;
   struct param_decl *param_decl;
+  struct type_decl *type_decl;
+  struct type_def *type_def;
+  struct enum_def *enum_def;
+  typedecllist_t type_decls;
+  intlist_t intlist;
   char *str;
 };
 
@@ -63,6 +68,13 @@ int yylineno;
 %type <assignment> assign
 %type <entry_point> entry_point
 %type <prog> prog
+%type <type_decl> type_decl
+%type <type_decls> type_decls
+%type <type_decls> type_decl_list
+%type <type_def> type_def
+%type <type_def> enum_def
+%type <type_def> array_def
+%type <intlist> dims
 
 /* ################# */
 /* TOKEN DECLARATION */
@@ -90,6 +102,8 @@ int yylineno;
 %token <str> IDENT
 %token <str> STRING
 %token VARIABLES "variables"
+%token TYPES "types"
+%token CROSS "x"
 
 /* operators */
 %token PLUS "+" MINUS "-"
@@ -159,21 +173,50 @@ fun:
  { $$ = algo($3, $5, $7, $10); free($14); }
 
 decls:
- param_decl var_decl { $$ = make_declarations($1, NULL, NULL, $2); }
+ param_decl type_decls var_decl { $$ = make_declarations($1, NULL, $2, $3); }
+| param_decl var_decl type_decls { $$ = make_declarations($1, NULL, $3, $2); }
+| param_decl var_decl { $$ = make_declarations($1, NULL, empty_typedecllist(), $2); }
+| param_decl type_decls { $$ = make_declarations($1, NULL, $2, empty_vardecllist()); }
+| param_decl { $$ = make_declarations($1, NULL, empty_typedecllist(), empty_vardecllist()); }
+
+type_decls:
+ "types" _EOL type_decl_list { $$ = $3; }
+
+type_decl_list:
+ type_decl { $$ = empty_typedecllist(); list_push_back($$, $1); }
+| type_decl_list type_decl { $$ = $1; list_push_back($$, $2); }
+
+type_decl:
+ IDENT "=" type_def _EOL { $$ = make_type_decl($1, $3); }
+
+type_def:
+ enum_def { $$ = $1; }
+| array_def { $$ = $1; }
+
+enum_def:
+ "(" identlist ")" { $$ = make_enum_def($2); }
+
+array_def:
+ dims IDENT { $$ = make_array_def($1, $2); }
+
+dims:
+ INT { $$ = empty_intlist(); list_push_back($$, ($1)->val.intval); free($1); }
+| dims "x" INT { $$ = $1; list_push_back($$, ($3)->val.intval); free($3); }
 
 param_decl:
  lp_decl gp_decl { $$ = make_param_decl(true, $1, $2); }
 | gp_decl lp_decl { $$ = make_param_decl(false, $2, $1); }
+| lp_decl { $$ = make_param_decl(true, $1, NULL); }
+| gp_decl { $$ = make_param_decl(true, NULL, $1); }
+| { $$ = make_param_decl(true, NULL, NULL); }
 
 lp_decl:
  "parametres" "locaux" _EOL
  var_decl2 { $$ = make_lp_decl($4); }
-| { $$ = NULL; }
 
 gp_decl:
  "parametres" "globaux" _EOL
  var_decl2 { $$ = make_gp_decl($4); }
-| { $$ = NULL; }
 
 var_decl:
  "variables" _EOL
