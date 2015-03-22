@@ -568,7 +568,8 @@ void print_instruction(struct instruction *i, int indent)
 void free_instructions(instructionlist_t instructions)
 {
   for (unsigned i = 0; i < instructions.size; ++i)
-    free_instruction(list_nth(instructions, i));
+    if (list_nth(instructions, i))
+      free_instruction(list_nth(instructions, i));
   list_free(instructions);
 }
 
@@ -729,8 +730,8 @@ void free_expression(struct expr *e)
 
 void free_prog(struct prog *prog)
 {
-  free_var_decl(prog->entry_point->var_decl);
-  free_instructions(prog->entry_point->instructions);
+    free_var_decl(prog->entry_point->var_decl);
+    free_instructions(prog->entry_point->instructions);
   free(prog->entry_point);
   for (unsigned i = 0; i < prog->algos.size; ++i)
     free_algo(prog->algos.data[i]);

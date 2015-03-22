@@ -15,6 +15,8 @@ a2c_SOURCES = src/lexer.l \
 
 check_PROGRAMS = tests/hashtable tests/list
 
+test_list_source= tests/list.c
+
 TESTS = tests/parser.test \
 	tests/test-ifthen.test \
 	tests/list.test \
@@ -27,3 +29,4 @@ TESTS = tests/parser.test \
 	tests/fibo.test \
 	tests/switch.test \
 	tests/switchnodef.test
+	tests/fibo.test

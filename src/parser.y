@@ -2,6 +2,8 @@
 %error-verbose
 %define api.pure full
 
+%destructor {; free($$); } <str>
+
 %code top
 {
 #include <stdlib.h>
@@ -9,8 +11,12 @@
 #include <stdbool.h>
 
 extern struct prog *prog;
+extern FILE *yyin;
+extern int syntax_error;
 int yylineno;
+char *srcfilename;
 }
+
 
 %code requires
 {
@@ -23,6 +29,7 @@ extern FILE *yyin;
   #define YY_DECL enum yytokentype yylex(YYSTYPE *yylval)
   YY_DECL;
   void yyerror (const char* msg);
+  char* get_line(FILE *f, int line);
 }
 
 %union
@@ -172,7 +179,8 @@ algolist:
   { $$ = empty_algolist(); }
 | algolist algo _EOL { $$ = $1; list_push_back($$, $2); }
 
-algo: proc | fun
+algo: 
+    proc | fun
 
 proc:
  "algorithme" "procedure" IDENT _EOL
@@ -286,9 +294,12 @@ identlist:
 IDENT { $$ = empty_identlist(); list_push_back($$, $1); }
 | identlist "," IDENT { $$ = $1; list_push_back($$, $3); }
 
-instructions:
-  { list_init($$); }
+instructions: { list_init($$); }
+| instructions error  
 | instructions instruction { list_push_back(($1), $2); $$ = $1; }
+
+
+
 
 instruction:
  assign _EOL      { $$ = assigninstr($1); }
@@ -373,5 +384,9 @@ nonempty_explist:
 void
 yyerror (const char* msg)
 {
-  fprintf (stderr, "error near line %d: %s\n", yylineno, msg);
+  syntax_error = 1;
+  fprintf (stderr, "%s:%d: %s\n", srcfilename ,yylineno, msg);
 }
+
+
+

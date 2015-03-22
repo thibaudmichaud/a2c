@@ -6,6 +6,7 @@
 struct prog *prog;
 extern FILE *yyin;
 extern char *srcfilename;
+int syntax_error;
 
 // This is needed to free the global variables allocated by the lexer.
 int yylex_destroy(void);

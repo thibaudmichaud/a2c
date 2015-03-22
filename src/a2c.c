@@ -11,6 +11,9 @@
 
 char *srcfilename = NULL;
 
+// This is needed to free the global variables allocated by the lexer.
+int yylex_destroy(void);
+
 int main(int argc, char **argv)
 {
   if (argc < 2)
@@ -24,12 +27,15 @@ int main(int argc, char **argv)
   if (yyin == NULL)
     err(1, "Couldn't open file %s", argv[1]);
 
+  syntax_error = 0;
   yyparse();
-  
-  if (check_prog(prog))
+  if (!syntax_error && check_prog(prog))
     print_prog(prog);
+
+  if (prog)
+    free_prog(prog);
+
   fclose(yyin);
   yylex_destroy();
-  free_prog(prog);
   return 0;
 }
