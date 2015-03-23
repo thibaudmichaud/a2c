@@ -137,7 +137,7 @@ bool check_expr(struct expr *e)
 
 }
 
-types get_expr_type(struct expr *e){
+type get_expr_type(struct expr *e){
   switch(e->exprtype){
     
     case nulltype:

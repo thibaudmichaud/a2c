@@ -3,7 +3,7 @@
 
 #include "grammar.h"
 
-typedef enum{
+typedef enum {
   t_INT,
   t_CHAR,
   t_STR,
@@ -11,11 +11,11 @@ typedef enum{
   t_BOOL,
   t_NUL,
   t_error
-}types;
+} type;
 
 struct symbole {
   char* ident;
-  types* type;
+  type* type;
   struct expr* args;
 };
 
@@ -29,6 +29,6 @@ bool check_algo(struct algo* al);
 bool check_prog(struct prog* prog);
 bool check_expr(struct expr *e);
 char* expr_type(struct expr *e);
-types get_expr_type(struct expr *e);
+type get_expr_type(struct expr *e);
 
 #endif
