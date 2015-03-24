@@ -203,7 +203,7 @@ struct array_def
   char *elt_type;
 };
 
-struct struct_def
+struct record_def
 {
   char *ident;
   vardecllist_t var_decl;
@@ -228,7 +228,7 @@ struct type_def
   {
     struct enum_def *enum_def;
     struct array_def *array_def;
-    struct struct_def *struct_def;
+    struct record_def *record_def;
     struct pointer_def *pointer_def;
   } def;
 };
@@ -638,12 +638,12 @@ struct type_def *make_array_def(intlist_t dims, char *ident)
 static inline
 struct type_def *make_record(vardecllist_t var_decl, char *ident)
 {
-  struct struct_def *s = malloc(sizeof(struct struct_def));
+  struct record_def *s = malloc(sizeof(struct record_def));
   s->ident = ident;
   s->var_decl = var_decl;
   struct type_def *t = malloc(sizeof(struct type_def));
   t->type_type = struct_type;
-  t->def.struct_def = s;
+  t->def.record_def = s;
   return t;
 }
 

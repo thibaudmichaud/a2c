@@ -85,11 +85,11 @@ void print_array(char *ident, struct array_def *array_def)
   printf("\n");
 }
 
-void print_record(struct struct_def *struct_def)
+void print_record(struct record_def *record_def)
 {
   printf("typedef struct\n{\n");
-  print_var_decl(struct_def->var_decl, INDENT_WIDTH);
-  printf("} %s;\n", struct_def->ident);
+  print_var_decl(record_def->var_decl, INDENT_WIDTH);
+  printf("} %s;\n", record_def->ident);
 }
 
 void print_type_decl(struct type_decl *type_decl)
@@ -103,7 +103,7 @@ void print_type_decl(struct type_decl *type_decl)
       print_array(type_decl->ident, type_decl->type_def->def.array_def);
       break;
     case struct_type:
-      print_record(type_decl->type_def->def.struct_def);
+      print_record(type_decl->type_def->def.record_def);
       break;
     default:
       printf("type not handled yet\n");
@@ -273,9 +273,9 @@ void free_type_def(struct type_def *type_def)
       free(type_def->def.enum_def);
       break;
     case struct_type:
-      free(type_def->def.struct_def->ident);
-      free_var_decl(type_def->def.struct_def->var_decl);
-      free(type_def->def.struct_def);
+      free(type_def->def.record_def->ident);
+      free_var_decl(type_def->def.record_def->var_decl);
+      free(type_def->def.record_def);
       break;
     default:
       printf("type not handled yet (in free_type_def)");
