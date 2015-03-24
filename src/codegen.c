@@ -89,7 +89,7 @@ void print_record(struct struct_def *struct_def)
 {
   printf("typedef struct\n{\n");
   print_var_decl(struct_def->var_decl, INDENT_WIDTH);
-  printf("} %s\n", struct_def->ident);
+  printf("} %s;\n", struct_def->ident);
 }
 
 void print_type_decl(struct type_decl *type_decl)
@@ -275,6 +275,7 @@ void free_type_def(struct type_def *type_def)
     case struct_type:
       free(type_def->def.struct_def->ident);
       free_var_decl(type_def->def.struct_def->var_decl);
+      free(type_def->def.struct_def);
       break;
     default:
       printf("type not handled yet (in free_type_def)");
