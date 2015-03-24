@@ -211,8 +211,7 @@ struct record_def
 
 struct pointer_def
 {
-  char *pointertype_ident;
-  char *basetype_ident;
+  char *pointed_type_ident;
 };
 
 struct type_def
@@ -644,6 +643,17 @@ struct type_def *make_record(vardecllist_t var_decl, char *ident)
   struct type_def *t = malloc(sizeof(struct type_def));
   t->type_type = struct_type;
   t->def.record_def = s;
+  return t;
+}
+
+static inline
+struct type_def *make_pointer_def(char *ident)
+{
+  struct pointer_def *p = malloc(sizeof(struct pointer_def));
+  p->pointed_type_ident = ident;
+  struct type_def *t = malloc(sizeof(struct type_def));
+  t->type_type = pointer_type;
+  t->def.pointer_def = p;
   return t;
 }
 

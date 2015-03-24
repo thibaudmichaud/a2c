@@ -92,6 +92,11 @@ void print_record(struct record_def *record_def)
   printf("} %s;\n", record_def->ident);
 }
 
+void print_pointer(char *ident, struct pointer_def *pointer_def)
+{
+  printf("typedef %s *%s;\n", pointer_def->pointed_type_ident, ident);
+}
+
 void print_type_decl(struct type_decl *type_decl)
 {
   switch (type_decl->type_def->type_type)
@@ -105,8 +110,11 @@ void print_type_decl(struct type_decl *type_decl)
     case struct_type:
       print_record(type_decl->type_def->def.record_def);
       break;
+    case pointer_type:
+      print_pointer(type_decl->ident, type_decl->type_def->def.pointer_def);
+      break;
     default:
-      printf("type not handled yet\n");
+      printf("type not handled yet (in print_type_decl)\n");
   }
 }
 
@@ -276,6 +284,10 @@ void free_type_def(struct type_def *type_def)
       free(type_def->def.record_def->ident);
       free_var_decl(type_def->def.record_def->var_decl);
       free(type_def->def.record_def);
+      break;
+    case pointer_type:
+      free(type_def->def.pointer_def->pointed_type_ident);
+      free(type_def->def.pointer_def);
       break;
     default:
       printf("type not handled yet (in free_type_def)");
