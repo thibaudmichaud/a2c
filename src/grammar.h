@@ -635,4 +635,16 @@ struct type_def *make_array_def(intlist_t dims, char *ident)
   return t;
 }
 
+static inline
+struct type_def *make_record(vardecllist_t var_decl, char *ident)
+{
+  struct struct_def *s = malloc(sizeof(struct struct_def));
+  s->ident = ident;
+  s->var_decl = var_decl;
+  struct type_def *t = malloc(sizeof(struct type_def));
+  t->type_type = struct_type;
+  t->def.struct_def = s;
+  return t;
+}
+
 #endif

@@ -28,7 +28,7 @@
 "debut"                 return START;
 "decroissant"           return DECREASING;
 "div"                   return DIV;
-"enregistrement"        printf("keyword: %s\n", yytext);
+"enregistrement"        return RECORD;
 "et"                    return AND;
 "faire"                 return DO;
 "faux"                  return FALSE;

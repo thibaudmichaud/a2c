@@ -75,6 +75,7 @@ int yylineno;
 %type <type_def> enum_def
 %type <type_def> array_def
 %type <intlist> dims
+%type <type_def> record_def
 
 /* ################# */
 /* TOKEN DECLARATION */
@@ -104,6 +105,7 @@ int yylineno;
 %token VARIABLES "variables"
 %token TYPES "types"
 %token CROSS "x"
+%token RECORD "enregistrement"
 
 /* operators */
 %token PLUS "+" MINUS "-"
@@ -192,12 +194,16 @@ type_decl:
 type_def:
  enum_def { $$ = $1; }
 | array_def { $$ = $1; }
+| record_def { $$ = $1; }
 
 enum_def:
  "(" identlist ")" { $$ = make_enum_def($2); }
 
 array_def:
  dims IDENT { $$ = make_array_def($1, $2); }
+
+record_def:
+ "enregistrement" _EOL var_decl2 "fin" "enregistrement" IDENT { $$ = make_record($3, $6); }
 
 dims:
  INT { $$ = empty_intlist(); list_push_back($$, ($1)->val.intval); free($1); }
