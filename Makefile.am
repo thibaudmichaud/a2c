@@ -6,8 +6,8 @@ a2c_SOURCES = src/parser.y \
 	      src/lexer.l \
 	      src/typechecking/typecheck.c \
 	      src/codegen.c \
-	      src/a2c.c \
-	      src/var_table.c
+	      src/type_table.c \
+	      src/a2c.c
 
 check_PROGRAMS = tests/hashtable tests/list
 tests_hashtable_SOURCES = tests/hashtable.c
