@@ -1,8 +1,8 @@
-booleen variable_globale;
+int variable_globale;
 void test(void)
 {
-  entier a, b;
-  reel c;
+  int a, b;
+  double c;
   a = 0;
   c = (4.5 + "a");
   if ((a == b))

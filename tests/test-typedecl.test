@@ -1,0 +1,7 @@
+#!/bin/sh
+set -e
+
+valgrind --error-exitcode=1 --leak-check=full --show-leak-kinds=all \
+./a2c tests/test-typedecl.algo > tests/out
+diff tests/test-typedecl.c tests/out
+set +e

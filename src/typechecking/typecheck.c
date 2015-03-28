@@ -3,6 +3,7 @@
 #include "codegen.h"
 #include "typecheck.h"
 #include <err.h>
+#include <string.h>
 //top level doesn't exist so name is always the algo name
 
 struct context {
@@ -32,6 +33,23 @@ return true;
 
 }*/
 
+char *algo_to_c_type(char *ident)
+{
+  if (strcmp(ident, "entier") == 0)
+    return "int";
+  else if (strcmp(ident, "caractere") == 0)
+    return "char";
+  else if (strcmp(ident, "chaine") == 0)
+    return "char *";
+  else if (strcmp(ident, "reel") == 0)
+    return "double";
+  else if (strcmp(ident, "booleen") == 0)
+    return "int";
+  // If it is none of the primary types, then it is a user-defined type
+  // wich will have the same name in the c file as in the algo file.
+  return ident;
+}
+
 bool check_inst(struct instruction *i)
 {
   switch(i->kind)
@@ -43,7 +61,7 @@ bool check_inst(struct instruction *i)
 
     case assignment:
 
-        if(check_expr(i->instr.assignment.e2)){
+        if(check_expr(i->instr.assignment->e2)){
           return true;
         }
         else

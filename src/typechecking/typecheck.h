@@ -25,6 +25,7 @@ struct symbole_table{
 
 struct symbole* get_ident(char* ident);
 
+char *algo_to_c_type(char *ident);
 bool check_algo(struct algo* al);
 bool check_prog(struct prog* prog);
 bool check_expr(struct expr *e);

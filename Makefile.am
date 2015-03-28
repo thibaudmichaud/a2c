@@ -1,4 +1,4 @@
-AM_CFLAGS = -Wall -Werror -Wextra -std=c99 -I$(srcdir)/src -g -D_DEFAULT_SOURCE
+AM_CFLAGS = -Wall -Werror -Wextra -std=c99 -I$(srcdir)/src -O0 -g -D_DEFAULT_SOURCE
 AM_YFLAGS = --report=state -d
 
 bin_PROGRAMS = a2c
@@ -15,4 +15,5 @@ TESTS = tests/parser.test \
 	tests/list.test \
 	tests/parser-testfail.test \
 	tests/hashtable.test \
-	tests/test-typedecl.test
+	tests/test-typedecl.test \
+	tests/fibo.test

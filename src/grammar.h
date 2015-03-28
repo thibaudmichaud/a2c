@@ -181,14 +181,14 @@ struct instruction
   } kind;
   union
   {
-    struct funcall funcall;
-    struct assignment assignment;
-    struct ifthenelse ifthenelse;
-    struct switchcase switchcase;
-    struct dowhile dowhile;
-    struct whiledo whiledo;
-    struct forloop forloop;
-    struct returnstmt returnstmt;
+    struct funcall *funcall;
+    struct assignment *assignment;
+    struct ifthenelse *ifthenelse;
+    struct switchcase *switchcase;
+    struct dowhile *dowhile;
+    struct whiledo *whiledo;
+    struct forloop *forloop;
+    struct returnstmt *returnstmt;
   } instr;
 };
 
@@ -407,8 +407,9 @@ struct instruction *whileblock(struct expr *cond, instructionlist_t b)
 {
   struct instruction *i = malloc(sizeof(struct instruction));
   i->kind = whiledo;
-  i->instr.whiledo.cond = cond;
-  i->instr.whiledo.instructions = b;
+  i->instr.whiledo = malloc(sizeof(struct whiledo));
+  i->instr.whiledo->cond = cond;
+  i->instr.whiledo->instructions = b;
   return i;
 }
 
@@ -417,8 +418,9 @@ struct instruction *dowhileblock(instructionlist_t b, struct expr *cond)
 {
   struct instruction *i = malloc(sizeof(struct instruction));
   i->kind = dowhile;
-  i->instr.dowhile.cond = cond;
-  i->instr.dowhile.instructions = b;
+  i->instr.dowhile = malloc(sizeof(struct dowhile));
+  i->instr.dowhile->cond = cond;
+  i->instr.dowhile->instructions = b;
   return i;
 }
 
@@ -478,11 +480,11 @@ struct instruction *forblock(struct assignment *assignment, struct expr *upto, b
 {
   struct instruction *i = malloc(sizeof(struct instruction));
   i->kind = forloop;
-  i->instr.forloop.assignment = malloc(sizeof(struct assignment));
-  i->instr.forloop.assignment = assignment;
-  i->instr.forloop.upto = upto;
-  i->instr.forloop.instructions = instructions;
-  i->instr.forloop.decreasing = decreasing;
+  i->instr.forloop = malloc(sizeof(struct forloop));
+  i->instr.forloop->assignment = assignment;
+  i->instr.forloop->upto = upto;
+  i->instr.forloop->instructions = instructions;
+  i->instr.forloop->decreasing = decreasing;
   return i;
 }
 
@@ -491,8 +493,7 @@ struct instruction *assigninstr(struct assignment *a)
 {
   struct instruction *i = malloc(sizeof(struct instruction));
   i->kind = assignment;
-  i->instr.assignment = *a;
-  free(a);
+  i->instr.assignment = a;
   return i;
 }
 
@@ -519,8 +520,9 @@ struct instruction *funcallinstr(char *ident, exprlist_t args)
 {
   struct instruction *i = malloc(sizeof(struct instruction));
   i->kind = funcall;
-  i->instr.funcall.fun_ident = ident;
-  i->instr.funcall.args = args;
+  i->instr.funcall = malloc(sizeof(struct funcall));
+  i->instr.funcall->fun_ident = ident;
+  i->instr.funcall->args = args;
   return i;
 }
 
@@ -529,9 +531,10 @@ struct instruction *ifthenelseblock(struct expr *cond, instructionlist_t instruc
 {
   struct instruction *i = malloc(sizeof(struct instruction));
   i->kind = ifthenelse;
-  i->instr.ifthenelse.cond = cond;
-  i->instr.ifthenelse.instructions = instructions;
-  i->instr.ifthenelse.elseblock = elseblock;
+  i->instr.ifthenelse = malloc(sizeof(struct ifthenelse));
+  i->instr.ifthenelse->cond = cond;
+  i->instr.ifthenelse->instructions = instructions;
+  i->instr.ifthenelse->elseblock = elseblock;
   return i;
 }
 
@@ -562,7 +565,8 @@ struct instruction *return_stmt(struct expr *e)
 {
   struct instruction *i = malloc(sizeof(struct instruction));
   i->kind = returnstmt;
-  i->instr.returnstmt.expr = e;
+  i->instr.returnstmt = malloc(sizeof(struct returnstmt));
+  i->instr.returnstmt->expr = e;
   return i;
 }
 

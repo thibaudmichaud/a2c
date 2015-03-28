@@ -1,0 +1,36 @@
+algorithme procedure test
+parametres locaux
+  booleen b
+parametres globaux
+  entier gp, bla
+  caractere z
+types
+  t_enum = (a1, a2, a3, a4)
+  t_vect_entiers = 5 entier
+  t_tab_bool = 5 x 6 booleen
+  t_enregistrement = enregistrement
+    entier a, b
+    booleen c
+  fin enregistrement t_enregistrement
+  t_int_ptr = ^entier
+variables
+  t_tab_bool tab
+  entier a, b
+  reel c
+debut
+  tab[2, 3] <- 4
+  a <- 0
+  c <- 4.5
+  si (a = b) alors
+    b <- a + b
+  sinon
+    a <- a - b
+  fin si
+fin algorithme procedure test
+
+variables
+  booleen variable_globale
+  entier n
+debut
+  test(variable_globale, n)
+fin

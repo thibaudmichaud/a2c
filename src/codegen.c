@@ -2,6 +2,7 @@
 #include "grammar.h"
 #include "codegen.h"
 #include "parser.h"
+#include "typechecking/typecheck.h"
 #define INDENT_WIDTH 2
 
 void print_indent(int indent)
@@ -50,7 +51,7 @@ char *getopstr(int op)
 void print_single_var_decl(struct single_var_decl *single_var_decl, int indent)
 {
   print_indent(indent);
-  printf("%s ", single_var_decl->type_ident);
+  printf("%s ", algo_to_c_type(single_var_decl->type_ident));
   unsigned i = 0;
   for (; i + 1 < single_var_decl->var_idents.size; ++i)
     printf("%s, ", list_nth(single_var_decl->var_idents, i));
@@ -71,18 +72,18 @@ void print_enum(char *ident, struct enum_def *enum_def)
     print_indent(INDENT_WIDTH);
     printf("%s,\n", enum_def->identlist.data[i]);
   }
-  printf("} %s\n", ident);
+  printf("} %s;\n", ident);
 }
 
 void print_array(char *ident, struct array_def *array_def)
 {
   printf("typedef ");
-  printf("%s %s", ident, array_def->elt_type);
+  printf("%s %s", algo_to_c_type(array_def->elt_type), ident);
   for (unsigned i = 0; i < array_def->dims.size; ++i)
   {
     printf("[%d]", array_def->dims.data[i]);
   }
-  printf("\n");
+  printf(";\n");
 }
 
 void print_record(struct record_def *record_def)
@@ -94,7 +95,8 @@ void print_record(struct record_def *record_def)
 
 void print_pointer(char *ident, struct pointer_def *pointer_def)
 {
-  printf("typedef %s *%s;\n", pointer_def->pointed_type_ident, ident);
+  printf("typedef %s *%s;\n", algo_to_c_type(pointer_def->pointed_type_ident),
+      ident);
 }
 
 void print_type_decl(struct type_decl *type_decl)
@@ -143,17 +145,20 @@ void print_lp_decl(struct local_param *local_param)
   {
     for (unsigned k = 0; k < list_nth(local_param->param, i)->var_idents.size; ++k)
     {
-      printf("%s %s, ", list_nth(local_param->param, i)->type_ident, 
-          list_nth(list_nth(local_param->param, i)->var_idents, k));
+      printf("%s %s, ",
+          algo_to_c_type(list_nth(local_param->param, i)->type_ident), 
+          local_param->param.data[i]->var_idents.data[k]);
     }
   }
   unsigned k = 0;
   for (; k + 1 < list_nth(local_param->param, i)->var_idents.size; ++k)
   {
-    printf("%s %s, ", list_nth(local_param->param, i)->type_ident, 
+    printf("%s %s, ",
+        algo_to_c_type(list_nth(local_param->param, i)->type_ident),
         list_nth(list_nth(local_param->param, i)->var_idents, k));
   }
-  printf("%s %s", list_nth(local_param->param, i)->type_ident, 
+  printf("%s %s",
+      algo_to_c_type(list_nth(local_param->param, i)->type_ident),
       list_nth(list_nth(local_param->param, i)->var_idents, k));
 }
 
@@ -164,17 +169,19 @@ void print_gp_decl(struct global_param *global_param)
   {
     for (unsigned k = 0; k < global_param->param.data[i]->var_idents.size; ++k)
     {
-      printf("%s *%s, ", global_param->param.data[i]->type_ident, 
+      printf("%s *%s, ",
+          algo_to_c_type(global_param->param.data[i]->type_ident),
           global_param->param.data[i]->var_idents.data[k]);
     }
   }
   unsigned k = 0;
   for (; k + 1 < global_param->param.data[i]->var_idents.size; ++k)
   {
-    printf("%s *%s, ", global_param->param.data[i]->type_ident, 
+    printf("%s *%s, ", algo_to_c_type(global_param->param.data[i]->type_ident),
         global_param->param.data[i]->var_idents.data[k]);
   }
-  printf("%s *%s", global_param->param.data[i]->type_ident, 
+  printf("%s *%s",
+      algo_to_c_type(global_param->param.data[i]->type_ident),
       global_param->param.data[i]->var_idents.data[k]);
 }
 
@@ -216,7 +223,7 @@ void print_param_decl(struct param_decl *param_decl)
 void print_algo(struct algo *algo)
 {
   if (algo->return_type)
-    printf("%s ", algo->return_type);
+    printf("%s ", algo_to_c_type(algo->return_type));
   else
     printf("void ");
   printf("%s(", algo->ident);
@@ -350,25 +357,30 @@ void print_exprlist(exprlist_t l)
     print_expression(list_nth(l, i));
 }
 
+void print_assignment(struct assignment *a)
+{
+  print_expression(a->e1);
+  printf(" = ");
+  print_expression(a->e2);
+}
+
 void print_instruction(struct instruction *i, int indent)
 {
   switch (i->kind)
   {
     case assignment:
       print_indent(indent);
-      print_expression(i->instr.assignment.e1);
-      printf(" = ");
-      print_expression(i->instr.assignment.e2);
+      print_assignment(i->instr.assignment);
       printf(";\n");
       break;
     case whiledo:
       print_indent(indent);
       printf("while (");
-      print_expression(i->instr.whiledo.cond);
+      print_expression(i->instr.whiledo->cond);
       printf(")\n");
       print_indent(indent);
       printf("{\n");
-      print_instructions(i->instr.whiledo.instructions, indent + INDENT_WIDTH);
+      print_instructions(i->instr.whiledo->instructions, indent + INDENT_WIDTH);
       print_indent(indent);
       printf("}\n");
       break;
@@ -377,56 +389,58 @@ void print_instruction(struct instruction *i, int indent)
       printf("do\n");
       print_indent(indent);
       printf("{\n");
-      print_instructions(i->instr.dowhile.instructions, indent + INDENT_WIDTH);
+      print_instructions(i->instr.dowhile->instructions, indent + INDENT_WIDTH);
       print_indent(indent);
       printf("} while (");
-      print_expression(i->instr.dowhile.cond);
+      print_expression(i->instr.dowhile->cond);
       printf(");\n");
       break;
     case forloop:
       print_indent(indent);
-      printf("for (; ");
-      print_expression(i->instr.forloop.assignment->e1);
-      if (i->instr.forloop.decreasing)
+      printf("for (");
+      print_assignment(i->instr.forloop->assignment);
+      printf("; ");
+      print_expression(i->instr.forloop->assignment->e1);
+      if (i->instr.forloop->decreasing)
         printf(" >= ");
       else
         printf(" <= ");
-      print_expression(i->instr.forloop.upto);
-      if (i->instr.forloop.decreasing)
+      print_expression(i->instr.forloop->upto);
+      if (i->instr.forloop->decreasing)
         printf("; --(");
       else
         printf("; ++(");
-      print_expression(i->instr.forloop.assignment->e1);
+      print_expression(i->instr.forloop->assignment->e1);
       printf("))\n");
       print_indent(indent);
       printf("{\n");
-      print_instructions(i->instr.forloop.instructions, indent + INDENT_WIDTH);
+      print_instructions(i->instr.forloop->instructions, indent + INDENT_WIDTH);
       print_indent(indent);
       printf("}\n");
       break;
     case funcall:
       print_indent(indent);
-      printf("%s(", i->instr.funcall.fun_ident);
-      print_exprlist(i->instr.funcall.args);
+      printf("%s(", i->instr.funcall->fun_ident);
+      print_exprlist(i->instr.funcall->args);
       printf(");\n");
       break;
     case ifthenelse:
       print_indent(indent);
       printf("if (");
-      print_expression(i->instr.ifthenelse.cond);
+      print_expression(i->instr.ifthenelse->cond);
       printf(")\n");
       print_indent(indent);
       printf("{\n");
-      print_instructions(i->instr.ifthenelse.instructions, indent + INDENT_WIDTH);
+      print_instructions(i->instr.ifthenelse->instructions, indent + INDENT_WIDTH);
       print_indent(indent);
       printf("}\n");
-      if (i->instr.ifthenelse.elseblock.size > 0)
+      if (i->instr.ifthenelse->elseblock.size > 0)
       {
         print_indent(indent);
         printf("else\n");
         print_indent(indent);
         printf("{\n");
-        print_instructions(i->instr.ifthenelse.elseblock, indent + INDENT_WIDTH);
+        print_instructions(i->instr.ifthenelse->elseblock, indent + INDENT_WIDTH);
         print_indent(indent);
         printf("}\n");
       }
@@ -434,7 +448,7 @@ void print_instruction(struct instruction *i, int indent)
     case returnstmt:
       print_indent(indent);
       printf("return ");
-      print_expression(i->instr.returnstmt.expr);
+      print_expression(i->instr.returnstmt->expr);
       printf(";\n");
       break;
     default:
@@ -454,38 +468,46 @@ void free_instruction(struct instruction *i)
   switch (i->kind)
   {
     case assignment:
-      free_expression(i->instr.assignment.e1);
-      free_expression(i->instr.assignment.e2);
+      free_expression(i->instr.assignment->e1);
+      free_expression(i->instr.assignment->e2);
+      free(i->instr.assignment);
       break;
     case switchcase:
       // TODO free list of instructions once lists are implemented
       break;
     case dowhile:
-      free_expression(i->instr.dowhile.cond);
-      free_instructions(i->instr.dowhile.instructions);
+      free_expression(i->instr.dowhile->cond);
+      free_instructions(i->instr.dowhile->instructions);
+      free(i->instr.dowhile);
       break;
     case whiledo:
-      free_expression(i->instr.whiledo.cond);
-      free_instructions(i->instr.whiledo.instructions);
+      free_expression(i->instr.whiledo->cond);
+      free_instructions(i->instr.whiledo->instructions);
+      free(i->instr.whiledo);
       break;
     case forloop:
-      free_expression(i->instr.forloop.assignment->e1);
-      free_expression(i->instr.forloop.assignment->e2);
-      free(i->instr.forloop.assignment);
-      free_instructions(i->instr.forloop.instructions);
-      free_expression(i->instr.forloop.upto);
+      free_expression(i->instr.forloop->assignment->e1);
+      free_expression(i->instr.forloop->assignment->e2);
+      free(i->instr.forloop->assignment);
+      free_instructions(i->instr.forloop->instructions);
+      free_expression(i->instr.forloop->upto);
+      free(i->instr.forloop);
       break;
     case funcall:
-      free_expressions(i->instr.funcall.args);
-      free(i->instr.funcall.fun_ident);
+      free_expressions(i->instr.funcall->args);
+      free(i->instr.funcall->fun_ident);
+      free(i->instr.funcall);
       break;
     case ifthenelse:
-      free_expression(i->instr.ifthenelse.cond);
-      free_instructions(i->instr.ifthenelse.instructions);
-      if (i->instr.ifthenelse.elseblock.size > 0)
-        free_instructions(i->instr.ifthenelse.elseblock);
+      free_expression(i->instr.ifthenelse->cond);
+      free_instructions(i->instr.ifthenelse->instructions);
+      if (i->instr.ifthenelse->elseblock.size > 0)
+        free_instructions(i->instr.ifthenelse->elseblock);
+      free(i->instr.ifthenelse);
       break;
     case returnstmt:
+      free_expression(i->instr.returnstmt->expr);
+      free(i->instr.returnstmt);
       break;
   }
   free(i);
@@ -544,7 +566,7 @@ void print_expression(struct expr *e)
       printf(")");
       break;
     default:
-      printf("expr not handled yet\n");
+      printf("expr not handled yet in print_expression\n");
   }
 }
 
