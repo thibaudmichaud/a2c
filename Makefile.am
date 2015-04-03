@@ -7,6 +7,7 @@ a2c_SOURCES = src/parser.y \
 	      src/typechecking/typecheck.c \
 	      src/codegen.c \
 	      src/type_table.c \
+	      src/var_table.c \
 	      src/a2c.c
 
 check_PROGRAMS = tests/hashtable tests/list

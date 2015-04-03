@@ -3,7 +3,7 @@
 #include <string.h>
 #include "var_table.h"
 
-size_t hash(struct var_sym *s)
+static size_t hash(struct var_sym *s)
 {
   char *str = s->ident;
   size_t hash = 5381;
@@ -13,7 +13,7 @@ size_t hash(struct var_sym *s)
   return hash;
 }
 
-int equal(struct var_sym *s1, struct var_sym *s2)
+static int equal(struct var_sym *s1, struct var_sym *s2)
 {
   return (strcmp(s1->ident, s2->ident) == 0);
 }
