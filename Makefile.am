@@ -13,6 +13,7 @@ a2c_SOURCES = src/parser.y \
 check_PROGRAMS = tests/hashtable tests/list
 
 TESTS = tests/parser.test \
+	tests/test-ifthen.test \
 	tests/list.test \
 	tests/parser-testfail.test \
 	tests/hashtable.test \

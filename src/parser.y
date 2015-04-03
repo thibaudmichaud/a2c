@@ -265,7 +265,7 @@ instruction:
 | IDENT "(" explist ")" _EOL { $$ = funcallinstr($1, $3); }
 | IF exp THEN _EOL
     instructions
-  END IF _EOL { ifthenelseblock($2, $5, empty_instructionlist()); }
+  END IF _EOL { $$ = ifthenelseblock($2, $5, empty_instructionlist()); }
 | IF exp THEN _EOL
     instructions
   ELSE _EOL

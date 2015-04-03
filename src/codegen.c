@@ -501,8 +501,7 @@ void free_instruction(struct instruction *i)
     case ifthenelse:
       free_expression(i->instr.ifthenelse->cond);
       free_instructions(i->instr.ifthenelse->instructions);
-      if (i->instr.ifthenelse->elseblock.size > 0)
-        free_instructions(i->instr.ifthenelse->elseblock);
+      free_instructions(i->instr.ifthenelse->elseblock);
       free(i->instr.ifthenelse);
       break;
     case returnstmt:
