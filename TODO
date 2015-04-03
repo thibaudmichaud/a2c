@@ -9,10 +9,10 @@ parseur & génération de code
 [X] parser variables globales et main
 - parser l'en-tête des algos
  [X] var
- [ ] PL
- [ ] PG
+ [X] PL
+ [X] PG
  [ ] const
- [ ] type
+ [X] type
 [X] parser structures de controles
 [ ] parser structures conditionnelles
 [ ] ajouter numéros de lignes dans l'ast
@@ -28,7 +28,7 @@ analyse sémantique
 
 misc
 ====
-[ ] site web
-[ ] templates hashtables
-[ ] rajouter tests parseur
-[ ] rajouter tests hashtable
+[X] site web
+[X] templates hashtables
+[X] rajouter tests parseur
+[X] rajouter tests hashtable
