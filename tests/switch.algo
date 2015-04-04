@@ -1,0 +1,21 @@
+algorithme fonction testswitch : entier
+parametres locaux
+  entier a
+variables
+  entier b
+debut
+  a <- 0
+  b <- 0
+  selon a faire
+    1 : b <- 1
+    2 : b <- 2
+  autrement b <- 0
+  fin selon
+  retourne b
+fin algorithme fonction testswitch
+
+variables
+  booleen variable_globale
+debut
+  ecrire(testswitch(2))
+fin
