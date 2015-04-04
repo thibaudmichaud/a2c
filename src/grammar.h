@@ -12,6 +12,7 @@
 
 typedef list_tpl(char *) identlist_t;
 typedef list_tpl(struct expr *) exprlist_t;
+typedef list_tpl(struct caseblock*) caseblocklist_t;
 typedef list_tpl(struct instruction *) instructionlist_t;
 typedef list_tpl(struct single_var_decl *) vardecllist_t;
 typedef list_tpl(struct type_decl *) typedecllist_t;
@@ -151,7 +152,7 @@ struct caseblock
 struct switchcase
 {
   struct expr *cond;
-  struct caseblock *caseblock;
+  caseblocklist_t caseblocklist;
   instructionlist_t otherwiseblock;
 };
 
@@ -731,13 +732,13 @@ struct caseblock *make_block(exprlist_t exprlist, instructionlist_t instructions
 }
 
 static inline
-struct instruction *switchblock(struct expr *cond, struct caseblock *caseblock, instructionlist_t otherwiseblock)
+struct instruction *switchblock(struct expr *cond, caseblocklist_t caseblocklist, instructionlist_t otherwiseblock)
 {
   struct instruction *i = malloc(sizeof(struct instruction));
   i->kind = switchcase;
   i->instr.switchcase = malloc(sizeof(struct switchcase));
   i->instr.switchcase->cond = cond;
-  i->instr.switchcase->caseblock = caseblock;
+  i->instr.switchcase->caseblocklist = caseblocklist;
   i->instr.switchcase->otherwiseblock = otherwiseblock;
   return i;
 }

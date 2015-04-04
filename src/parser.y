@@ -25,12 +25,13 @@ int yylineno;
   void yyerror (const char* msg);
 }
 
-
 %union
 {
   struct expr *expression;
   struct instruction *instruction;
   instructionlist_t instructions;
+  struct caseblock *caseblock;
+  caseblocklist_t caseblocklist;
   struct algo *algo;
   exprlist_t exprlist;
   identlist_t identlist;
@@ -87,6 +88,8 @@ int yylineno;
 %type <const_decls> const_decls
 %type <const_decls> const_decl_list
 %type <const_decl> const_decl
+%type <caseblock> caseblock
+%type <caseblocklist> caseblocklist
 
 /* ################# */
 /* TOKEN DECLARATION */
@@ -277,6 +280,12 @@ var_decl2:
 single_var_decl:
  IDENT identlist _EOL { $$ = single_var_decl($1, $2); }
 
+caseblock:
+explist ":" instructions {$$ = make_block($1, $3);}
+
+caseblocklist:
+| caseblocklist caseblock {$$ = $1; list_push_back($$, $2);}
+
 identlist:
 IDENT { $$ = empty_identlist(); list_push_back($$, $1); }
 | identlist "," IDENT { $$ = $1; list_push_back($$, $3); }
@@ -309,12 +318,12 @@ instruction:
     instructions
   END IF _EOL { $$ = ifthenelseblock($2, $5, $8); }
 | SWITCH exp DO _EOL
-    explist ":" instructions
-  END SWITCH _EOL { $$ = switchblock($2, make_block($5, $7), empty_instructionlist());}
+    caseblocklist
+  END SWITCH _EOL { $$ = switchblock($2, $5, empty_instructionlist());}
 | SWITCH exp DO _EOL
-    explist ":" instructions
+    caseblocklist
   OTHERWISE instructions
-  END SWITCH _EOL { $$ = switchblock($2, make_block($5, $7), $9);}
+  END SWITCH _EOL { $$ = switchblock($2, $5, $7);}
 | "retourne" exp _EOL { $$ = return_stmt($2); }
 | "retourne" _EOL { $$ = return_stmt(NULL); }
 
