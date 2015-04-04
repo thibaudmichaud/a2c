@@ -42,3 +42,8 @@ struct var_sym *find_var(var_table_t var_table, char *ident)
   ht_find(var_table, &sym, &res);
   return res;
 }
+
+void free_var_table(var_table_t var_table)
+{
+    ht_free(var_table);
+}

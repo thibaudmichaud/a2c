@@ -42,3 +42,8 @@ struct function* get_function(fun_table_t table, char* ident)
     free(f);
     return res;
 }
+
+void free_fun_table(fun_table_t table)
+{
+    ht_free(table);
+}

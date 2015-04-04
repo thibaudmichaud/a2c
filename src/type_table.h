@@ -16,5 +16,5 @@ type_table_t empty_type_table(void);
 void add_type(type_table_t type_table, struct type_sym *sym);
 void del_type(type_table_t type_table, char *ident);
 struct type_sym *find_type(type_table_t type_table, char *ident);
-
+void free_type_table(type_table_t type_table);
 #endif

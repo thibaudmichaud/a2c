@@ -43,3 +43,7 @@ struct type_sym *find_type(type_table_t type_table, char *ident)
   return res;
 }
 
+void free_type_table(type_table_t type_table)
+{
+    ht_free(type_table);
+}
