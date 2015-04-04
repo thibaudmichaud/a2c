@@ -69,10 +69,14 @@ char *algo_to_c_type(char *ident)
 bool check_prog(struct prog* prog)
 {
     fun_table_t functions = empty_fun_table();
-    struct algo* al = prog->algo;
-    struct function* f = malloc(sizeof(struct function));
-    f->ident = al->ident;
-    return check_algo(prog->algo, functions);
+    for(unsigned i = 0; i < prog->algos.size; ++i)
+    {
+        struct algo* al = list_nth(prog->algos, i);
+        struct function* f = malloc(sizeof(struct function));
+        f->ident = al->ident;
+        check_algo(al, functions);
+    }
+    return true;
 }
 
 bool check_algo(struct algo* al, fun_table_t functions)
@@ -306,6 +310,12 @@ struct type* get_expr_type(struct expr *e, fun_table_t functions, var_table_t va
 
     switch(e->exprtype)
     {
+        case valtype:
+            switch(e->val.val->valtype)
+            {
+
+
+
 
         case nulltype:
             {
@@ -314,9 +324,9 @@ struct type* get_expr_type(struct expr *e, fun_table_t functions, var_table_t va
                 primary_type p = nul_t;
                 t->type_val.primary = p;
                 return t;
-            }
+            
             break;
-
+            }
         case chartype:
             {
                 struct type* t = malloc(sizeof(struct type));
@@ -324,9 +334,9 @@ struct type* get_expr_type(struct expr *e, fun_table_t functions, var_table_t va
                 primary_type p = char_t;
                 t->type_val.primary = p;
                 return t;
-            }
+            
             break;
-
+            }
         case stringtype:
             {
                 struct type* t = malloc(sizeof(struct type));
@@ -334,9 +344,9 @@ struct type* get_expr_type(struct expr *e, fun_table_t functions, var_table_t va
                 primary_type p = str_t;
                 t->type_val.primary = p;
                 return t;
-            }
+            
             break;
-
+            }
         case booltype:
             {
                 struct type* t = malloc(sizeof(struct type));
@@ -344,9 +354,9 @@ struct type* get_expr_type(struct expr *e, fun_table_t functions, var_table_t va
                 primary_type p = bool_t;
                 t->type_val.primary = p;
                 return t;
-            }
+            
             break;
-
+            }
         case inttype:
             {
                 struct type* t = malloc(sizeof(struct type));
@@ -354,11 +364,9 @@ struct type* get_expr_type(struct expr *e, fun_table_t functions, var_table_t va
                 primary_type p = int_t;
                 t->type_val.primary = p;
                 return t;
-            }
+            
             break;
-                    return int_t;
-                    break;
-
+            }
         case realtype:
             {
                 struct type* t = malloc(sizeof(struct type));
@@ -366,9 +374,10 @@ struct type* get_expr_type(struct expr *e, fun_table_t functions, var_table_t va
                 primary_type p = real_t;
                 t->type_val.primary = p;
                 return t;
-            }
+            
             break;
-
+            }
+            }
             case identtype:
                     break;
 
@@ -432,30 +441,30 @@ char* expr_type (struct expr* e)
 {
     switch(e->exprtype)
     {
+        case valtype:
+        switch(e->val.val->valtype)
+        {
+            case nulltype:
+                return "null";
+                break;
 
-        case nulltype:
-            return "null";
-            break;
+            case chartype:
+                return "char";
+                break;
 
-        case chartype:
-            return "char";
-            break;
+            case stringtype:
+                return "string";
 
-        case stringtype:
-            return "string";
-            break;
+            case booltype:
+                return "bool";
 
-        case booltype:
-            return "bool";
-            break;
+            case inttype:
+                return "int";
 
-        case inttype:
-            return "int";
-            break;
-
-        case realtype:
-            return "real";
-            break;
+            case realtype:
+                return "real";
+        }
+        break;
 
         case identtype:
             break;
