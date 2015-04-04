@@ -48,6 +48,31 @@ char *getopstr(int op)
   }
 }
 
+void print_val(struct val *val)
+{
+  switch (val->valtype)
+  {
+    case inttype:
+      printf("%d", val->val.intval);
+      break;
+    case realtype:
+      printf("%g", val->val.realval);
+      break;
+    case stringtype:
+      printf("%s", val->val.stringval);
+      break;
+    case booltype:
+      printf("%d", val->val.boolval == true);
+      break;
+    case chartype:
+      printf("%c", val->val.charval);
+      break;
+    case nulltype:
+      printf("NULL");
+      break;
+  }
+}
+
 void print_single_var_decl(struct single_var_decl *single_var_decl, int indent)
 {
   print_indent(indent);
@@ -222,6 +247,18 @@ void print_param_decl(struct param_decl *param_decl)
   }
 }
 
+void print_const_decl(constdecllist_t const_decls, int indent)
+{
+  for (unsigned i = 0; i < const_decls.size; ++i)
+  {
+    print_indent(indent);
+    printf("const %s %s = ", algo_to_c_type(const_decls.data[i]->type),
+        const_decls.data[i]->ident);
+    print_val(const_decls.data[i]->val);
+    printf(";\n");
+  }
+}
+
 void print_algo(struct algo *algo)
 {
   if (algo->return_type)
@@ -231,9 +268,23 @@ void print_algo(struct algo *algo)
   printf("%s(", algo->ident);
   print_param_decl(algo->declarations->param_decl);
   printf(")\n{\n");
+  print_const_decl(algo->declarations->const_decls, INDENT_WIDTH);
   print_var_decl(algo->declarations->var_decl, INDENT_WIDTH);
   print_instructions(algo->instructions, INDENT_WIDTH);
   printf("}\n");
+}
+
+void free_val(struct val *val)
+{
+  switch (val->valtype)
+  {
+    case stringtype:
+      free(val->val.stringval);
+      break;
+    default:
+      break;
+  }
+  free(val);
 }
 
 void free_identlist(identlist_t idents)
@@ -320,9 +371,22 @@ void free_type_decls(typedecllist_t type_decls)
   list_free(type_decls);
 }
 
+void free_const_decl(constdecllist_t const_decls)
+{
+  for (unsigned i = 0; i < const_decls.size; ++i)
+  {
+    free(const_decls.data[i]->type);
+    free(const_decls.data[i]->ident);
+    free_val(const_decls.data[i]->val);
+    free(const_decls.data[i]);
+  }
+  list_free(const_decls);
+}
+
 void free_decls(struct declarations *declarations)
 {
   free_param_decl(declarations->param_decl);
+  free_const_decl(declarations->const_decls);
   free_type_decls(declarations->type_decls);
   free_var_decl(declarations->var_decl);
   free(declarations);
@@ -518,11 +582,8 @@ void print_expression(struct expr *e)
 {
   switch (e->exprtype)
   {
-    case inttype:
-      printf("%d", e->val.intval);
-      break;
-    case realtype:
-      printf("%g", e->val.realval);
+    case valtype:
+      print_val(e->val.val);
       break;
     case binopexprtype:
       printf("(");
@@ -551,12 +612,6 @@ void print_expression(struct expr *e)
     case identtype:
       printf("%s", e->val.ident);
       break;
-    case stringtype:
-      printf("%s", e->val.stringval);
-      break;
-    case booltype:
-      printf("%d", e->val.boolval == true);
-      break;
     case dereftype:
       printf("*");
       print_expression(e->val.deref.e);
@@ -582,6 +637,9 @@ void free_expression(struct expr *e)
 {
   switch (e->exprtype)
   {
+    case valtype:
+      free_val(e->val.val);
+      break;
     case binopexprtype:
       free_expression(e->val.binopexpr.e1);
       free_expression(e->val.binopexpr.e2);
@@ -596,9 +654,6 @@ void free_expression(struct expr *e)
     case identtype:
       free(e->val.ident);
       break;
-    case stringtype:
-      free(e->val.stringval);
-      break;
     case dereftype:
       free_expression(e->val.deref.e);
       break;
@@ -606,8 +661,6 @@ void free_expression(struct expr *e)
       free_expressions(e->val.funcall.args);
       free(e->val.funcall.fun_ident);
       break;
-    case inttype:
-    case booltype:
     default:
       break;
   }

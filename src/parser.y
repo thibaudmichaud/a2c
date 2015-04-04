@@ -43,16 +43,21 @@ int yylineno;
   struct local_param *lp;
   struct global_param *gp;
   struct param_decl *param_decl;
+  struct const_decl *const_decl;
   struct type_decl *type_decl;
   struct type_def *type_def;
   struct enum_def *enum_def;
+  struct val *val;
+  constdecllist_t const_decls;
   typedecllist_t type_decls;
   intlist_t intlist;
   algolist_t algolist;
   char *str;
+  int integer;
 };
 
 %type <expression> exp
+%type <val> val
 %type <algo> proc
 %type <algo> fun
 %type <algo> algo
@@ -79,6 +84,9 @@ int yylineno;
 %type <type_def> record_def
 %type <type_def> pointer_def
 %type <algolist> algolist
+%type <const_decls> const_decls
+%type <const_decls> const_decl_list
+%type <const_decl> const_decl
 
 /* ################# */
 /* TOKEN DECLARATION */
@@ -109,6 +117,8 @@ int yylineno;
 %token TYPES "types"
 %token CROSS "x"
 %token RECORD "enregistrement"
+%token <val> CHAR
+%token CONST "constantes"
 
 /* operators */
 %token PLUS "+" MINUS "-"
@@ -130,10 +140,10 @@ int yylineno;
 
 
 /* expressions */
-%token <expression> INT
-%token <expression> REAL
-%token <expression> TRUE
-%token <expression> FALSE
+%token <integer> INT
+%token <val> REAL
+%token TRUE
+%token FALSE
 
 /* priority */
 %right ASSIGN
@@ -182,11 +192,32 @@ fun:
  { $$ = algo($3, $5, $7, $10); free($14); }
 
 decls:
- param_decl type_decls var_decl { $$ = make_declarations($1, NULL, $2, $3); }
-| param_decl var_decl type_decls { $$ = make_declarations($1, NULL, $3, $2); }
-| param_decl var_decl { $$ = make_declarations($1, NULL, empty_typedecllist(), $2); }
-| param_decl type_decls { $$ = make_declarations($1, NULL, $2, empty_vardecllist()); }
-| param_decl { $$ = make_declarations($1, NULL, empty_typedecllist(), empty_vardecllist()); }
+ param_decl type_decls var_decl { $$ = make_declarations($1, empty_constdecllist(), $2, $3); }
+| param_decl var_decl type_decls { $$ = make_declarations($1, empty_constdecllist(), $3, $2); }
+| param_decl var_decl { $$ = make_declarations($1, empty_constdecllist(), empty_typedecllist(), $2); }
+| param_decl type_decls { $$ = make_declarations($1, empty_constdecllist(), $2, empty_vardecllist()); }
+| param_decl { $$ = make_declarations($1, empty_constdecllist(), empty_typedecllist(), empty_vardecllist()); }
+| param_decl const_decls type_decls var_decl { $$ = make_declarations($1, $2, $3, $4); }
+| param_decl type_decls const_decls var_decl { $$ = make_declarations($1, $3, $2, $4); }
+| param_decl type_decls var_decl const_decls { $$ = make_declarations($1, $4, $2, $3); }
+| param_decl const_decls var_decl type_decls { $$ = make_declarations($1, $2, $4, $3); }
+| param_decl var_decl const_decls type_decls { $$ = make_declarations($1, $3, $4, $2); }
+| param_decl var_decl type_decls const_decls { $$ = make_declarations($1, $4, $3, $2); }
+| param_decl const_decls var_decl { $$ = make_declarations($1, $2, empty_typedecllist(), $3); }
+| param_decl var_decl const_decls { $$ = make_declarations($1, $3, empty_typedecllist(), $2); }
+| param_decl const_decls type_decls { $$ = make_declarations($1, $2, $3, empty_vardecllist()); }
+| param_decl type_decls const_decls { $$ = make_declarations($1, $3, $2, empty_vardecllist()); }
+| param_decl const_decls { $$ = make_declarations($1, $2, empty_typedecllist(), empty_vardecllist()); }
+
+const_decls:
+  "constantes" _EOL const_decl_list { $$ = $3; }
+
+const_decl_list:
+ const_decl { $$ = empty_constdecllist(); list_push_back($$, $1); }
+| const_decl_list const_decl { $$ = $1; list_push_back($$, $2); }
+
+const_decl:
+ IDENT IDENT "=" val _EOL { $$ = make_constdecl($1, $2, $4); }
 
 type_decls:
  "types" _EOL type_decl_list { $$ = $3; }
@@ -217,8 +248,8 @@ pointer_def:
  "^" IDENT { $$ = make_pointer_def($2); }
 
 dims:
- INT { $$ = empty_intlist(); list_push_back($$, ($1)->val.intval); free($1); }
-| dims "x" INT { $$ = $1; list_push_back($$, ($3)->val.intval); free($3); }
+ INT { $$ = empty_intlist(); list_push_back($$, $1); }
+| dims "x" INT { $$ = $1; list_push_back($$, $3); }
 
 param_decl:
  lp_decl gp_decl { $$ = make_param_decl(true, $1, $2); }
@@ -284,7 +315,9 @@ assign:
  exp "<-" exp { $$ = assign($1, $3); }
 
 exp:
- exp "+" exp  { $$ = binopexpr($1, PLUS, $3); }
+ val { $$ = expr_from_val($1); }
+| IDENT   { $$ = identexpr($1); }
+| exp "+" exp  { $$ = binopexpr($1, PLUS, $3); }
 | exp "-" exp  { $$ = binopexpr($1, MINUS, $3); }
 | exp "ou" exp  { $$ = binopexpr($1, OR, $3); }
 | exp "oue" exp  { $$ = binopexpr($1, XOR, $3); }
@@ -299,12 +332,6 @@ exp:
 | exp "<" exp  { $$ = binopexpr($1, LT, $3); }
 | exp ">" exp  { $$ = binopexpr($1, GT, $3); }
 | exp "<>" exp  { $$ = binopexpr($1, NEQ, $3); }
-| INT     { $$ = $1; }
-| REAL    { $$ = $1; }
-| IDENT   { $$ = identexpr($1); }
-| STRING { $$ = stringexpr($1); }
-| TRUE { $$ = boolexpr(true); }
-| FALSE { $$ = boolexpr(false); }
 | "(" exp ")"  { $$ = $2; }
 | "non" exp  { $$ = unopexpr(NO, $2); }
 | "+" exp      { $$ = $2; }
@@ -316,6 +343,14 @@ exp:
 explist:
           { $$ = empty_exprlist(); }
 | nonempty_explist { $$ = $1; }
+
+val:
+ INT     { $$ = intval($1); }
+| REAL    { $$ = $1; }
+| STRING { $$ = strval($1); }
+| TRUE { $$ = boolval(true); }
+| FALSE { $$ = boolval(false); }
+| CHAR { $$ = $1; }
 
 nonempty_explist:
  exp     { $$ = empty_exprlist(); list_push_back($$, $1); }

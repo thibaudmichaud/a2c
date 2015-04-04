@@ -161,108 +161,101 @@ bool check_expr(struct expr *e)
 }
 
 type get_expr_type(struct expr *e){
-  switch(e->exprtype){
+  switch (e->exprtype)
+  {
+    case valtype:
+      {
+        switch(e->val.val->valtype) {
 
-    case nulltype:
-      return t_NUL;
-      break;
+          case nulltype:
+            return t_NUL;
+            break;
 
-    case chartype:
-      return t_CHAR;
-      break;
+          case chartype:
+            return t_CHAR;
+            break;
 
-    case stringtype:
-      return t_STR;
-      break;
+          case stringtype:
+            return t_STR;
+            break;
 
-    case booltype:
-      return t_BOOL;
-      break;
+          case booltype:
+            return t_BOOL;
+            break;
 
-    case inttype:
-      return t_INT;
-      break;
+          case inttype:
+            return t_INT;
+            break;
 
-    case realtype:
-      return t_REAL;
-      break;
-
-    case identtype:
-      break;
-
-    case funcalltype :
-      break;
-
-    case binopexprtype:
-        if (   get_expr_type(e->val.binopexpr.e1) == t_INT
-            || get_expr_type(e->val.binopexpr.e1) == t_REAL
-            || get_expr_type(e->val.binopexpr.e1) == t_BOOL)
-        {
-          if (get_expr_type(e->val.binopexpr.e2) == get_expr_type(e->val.binopexpr.e1) )
-          {
-            return get_expr_type(e->val.binopexpr.e1);
-          }
-          else
-          {
-            printf("expression left was of type : ");
-            printf("%s ", expr_type(e->val.binopexpr.e1));
-            printf("and expression right was of type : ");
-            printf("%s\n", expr_type(e->val.binopexpr.e2));
-          }
+          case realtype:
+            return t_REAL;
+            break;
         }
-        return t_error;
-      break;
+      }
+    case binopexprtype:
+      if (   get_expr_type(e->val.binopexpr.e1) == t_INT
+          || get_expr_type(e->val.binopexpr.e1) == t_REAL
+          || get_expr_type(e->val.binopexpr.e1) == t_BOOL)
+      {
+        if (get_expr_type(e->val.binopexpr.e2) == get_expr_type(e->val.binopexpr.e1) )
+        {
+          return get_expr_type(e->val.binopexpr.e1);
+        }
+        else
+        {
+          printf("expression left was of type : ");
+          printf("%s ", expr_type(e->val.binopexpr.e1));
+          printf("and expression right was of type : ");
+          printf("%s\n", expr_type(e->val.binopexpr.e2));
+        }
+      }
+      return t_error;
 
     case unopexprtype:
-        if(    get_expr_type(e->val.unopexpr.e) == t_INT
-            || get_expr_type(e->val.unopexpr.e) == t_REAL
-            || get_expr_type(e->val.unopexpr.e) == t_BOOL)
-          return get_expr_type(e->val.unopexpr.e);
+      if(    get_expr_type(e->val.unopexpr.e) == t_INT
+          || get_expr_type(e->val.unopexpr.e) == t_REAL
+          || get_expr_type(e->val.unopexpr.e) == t_BOOL)
+        return get_expr_type(e->val.unopexpr.e);
 
-        return t_error;
-      break;
-
-    case arrayexprtype:
-      //something strange is happening here
-      break;
-
-    case structelttype:
-      break;
-
-    case dereftype:
-      break;
+      return t_error;
+    default: // TODO handle missing expression types
+      return t_STR;
   }
-  return t_STR;
 }
+
 char* expr_type (struct expr* e)
 {
   switch(e->exprtype)
   {
+    case valtype:
+    {
+      switch (e->val.val->valtype)
+      {
+        case nulltype:
+          return "null";
+          break;
 
-    case nulltype:
-      return "null";
-      break;
+        case chartype:
+          return "char";
+          break;
 
-    case chartype:
-      return "char";
-      break;
+        case stringtype:
+          return "string";
+          break;
 
-    case stringtype:
-      return "string";
-      break;
+        case booltype:
+          return "bool";
+          break;
 
-    case booltype:
-      return "bool";
-      break;
+        case inttype:
+          return "int";
+          break;
 
-    case inttype:
-      return "int";
-      break;
-
-    case realtype:
-      return "real";
-      break;
-
+        case realtype:
+          return "real";
+          break;
+      }
+    }
     case identtype:
       break;
 

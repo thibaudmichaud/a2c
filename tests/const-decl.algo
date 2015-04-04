@@ -1,0 +1,23 @@
+algorithme fonction fibo : entier
+parametres locaux
+  entier n
+variables
+  entier i, a, b
+constantes
+  entier a = 0
+  reel r = 4.2
+debut
+  a <- 0
+  b <- 1
+  pour i <- 1 jusqu'a n faire
+    b <- a + b
+    a <- b - a
+  fin pour
+  retourne a
+fin algorithme fonction fibo
+
+variables
+  booleen variable_globale
+debut
+  ecrire(fibo(10))
+fin

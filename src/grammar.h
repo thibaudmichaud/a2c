@@ -18,6 +18,7 @@ typedef list_tpl(struct single_var_decl *) vardecllist_t;
 typedef list_tpl(struct type_decl *) typedecllist_t;
 typedef list_tpl(int) intlist_t;
 typedef list_tpl(struct algo *) algolist_t;
+typedef list_tpl(struct const_decl *) constdecllist_t;
 
 struct prog
 {
@@ -76,7 +77,7 @@ struct funcall
   exprlist_t args;
 };
 
-struct expr
+struct val
 {
   enum
   {
@@ -85,8 +86,25 @@ struct expr
     stringtype,
     inttype,
     realtype,
-    identtype,
     booltype,
+  } valtype;
+  union
+  {
+    char charval;
+    char *stringval;
+    int intval;
+    double realval;
+    bool boolval;
+  } val;
+};
+
+struct expr
+{
+  // TODO use struct val here
+  enum
+  {
+    valtype,
+    identtype,
     funcalltype,
     binopexprtype,
     unopexprtype,
@@ -96,13 +114,8 @@ struct expr
   } exprtype;
   union
   {
-    bool nullval;
-    char charval;
-    char *stringval;
-    int intval;
-    double realval;
+    struct val *val;
     char *ident;
-    bool boolval;
     struct funcall funcall;
     struct binopexpr binopexpr;
     struct unopexpr unopexpr;
@@ -258,6 +271,9 @@ struct param_decl
 
 struct const_decl
 {
+  char *type;
+  char *ident;
+  struct val *val;
 };
 
 struct type_decl
@@ -269,7 +285,7 @@ struct type_decl
 struct declarations
 {
   struct param_decl *param_decl;
-  struct const_decl *const_decl;
+  constdecllist_t const_decls;
   typedecllist_t type_decls;
   vardecllist_t var_decl;
 };
@@ -300,24 +316,6 @@ struct expr *binopexpr(struct expr *e1, int op, struct expr *e2)
 }
 
 static inline
-struct expr *intexpr(int i)
-{
-  struct expr *e = malloc(sizeof(struct expr));
-  e->exprtype = inttype;
-  e->val.intval = i;
-  return e;
-}
-
-static inline
-struct expr *realexpr(double i)
-{
-  struct expr *e = malloc(sizeof(struct expr));
-  e->exprtype = realtype;
-  e->val.realval = i;
-  return e;
-}
-
-static inline
 struct expr *unopexpr(int op, struct expr *e1)
 {
   struct expr *e = malloc(sizeof(struct expr));
@@ -333,15 +331,6 @@ struct expr *identexpr(char *ident)
   struct expr *e = malloc(sizeof(struct expr));
   e->exprtype = identtype;
   e->val.ident = ident;
-  return e;
-}
-
-static inline
-struct expr *stringexpr(char *str)
-{
-  struct expr *e = malloc(sizeof(struct expr));
-  e->exprtype = stringtype;
-  e->val.stringval = str;
   return e;
 }
 
@@ -412,6 +401,14 @@ algolist_t empty_algolist(void)
 }
 
 static inline
+constdecllist_t empty_constdecllist(void)
+{
+  constdecllist_t l;
+  list_init(l);
+  return l;
+}
+
+static inline
 struct instruction *whileblock(struct expr *cond, instructionlist_t b)
 {
   struct instruction *i = malloc(sizeof(struct instruction));
@@ -431,15 +428,6 @@ struct instruction *dowhileblock(instructionlist_t b, struct expr *cond)
   i->instr.dowhile->cond = cond;
   i->instr.dowhile->instructions = b;
   return i;
-}
-
-static inline
-struct expr *boolexpr(bool b)
-{
-  struct expr *e = malloc(sizeof(struct expr));
-  e->exprtype = booltype;
-  e->val.boolval = b;
-  return e;
 }
 
 static inline
@@ -549,16 +537,26 @@ struct instruction *ifthenelseblock(struct expr *cond, instructionlist_t instruc
 
 static inline
 struct declarations *make_declarations(struct param_decl *param_decl,
-    struct const_decl *const_decl,
+    constdecllist_t const_decl,
     typedecllist_t type_decls,
     vardecllist_t var_decl)
 {
   struct declarations *d = malloc(sizeof(struct declarations));
   d->param_decl = param_decl;
-  d->const_decl = const_decl;
+  d->const_decls = const_decl;
   d->type_decls = type_decls;
   d->var_decl = var_decl;
   return d;
+}
+
+static inline
+struct const_decl *make_constdecl(char *type, char *ident, struct val *val)
+{
+  struct const_decl *c = malloc(sizeof(struct const_decl));
+  c->type = type;
+  c->ident = ident;
+  c->val = val;
+  return c;
 }
 
 static inline
@@ -668,6 +666,60 @@ struct type_def *make_pointer_def(char *ident)
   t->type_type = pointer_type;
   t->def.pointer_def = p;
   return t;
+}
+
+static inline
+struct val *boolval(bool b)
+{
+  struct val *v = malloc(sizeof(struct val));
+  v->valtype = booltype;
+  v->val.boolval = b;
+  return v;
+}
+
+static inline
+struct val *intval(int i)
+{
+  struct val *v = malloc(sizeof(struct val));
+  v->valtype = inttype;
+  v->val.intval = i;
+  return v;
+}
+
+static inline
+struct val *realval(double d)
+{
+  struct val *v = malloc(sizeof(struct val));
+  v->valtype = realtype;
+  v->val.realval = d;
+  return v;
+}
+
+static inline
+struct val *charval(char c)
+{
+  struct val *v = malloc(sizeof(struct val));
+  v->valtype = chartype;
+  v->val.charval = c;
+  return v;
+}
+
+static inline
+struct val *strval(char *str)
+{
+  struct val *v = malloc(sizeof(struct val));
+  v->valtype = stringtype;
+  v->val.stringval = str;
+  return v;
+}
+
+static inline
+struct expr *expr_from_val(struct val *v)
+{
+  struct expr *e = malloc(sizeof(struct expr));
+  e->exprtype = valtype;
+  e->val.val = v;
+  return e;
 }
 
 #endif

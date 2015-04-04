@@ -4,8 +4,9 @@
 #include "parser.h"
 #include "grammar.h"
 
-#define SAVE_INT (yylval->expression = intexpr(strtol(yytext, NULL, 10)))
-#define SAVE_REAL (yylval->expression = realexpr(strtof(yytext, NULL)))
+#define SAVE_INT (yylval->integer = strtol(yytext, NULL, 10))
+#define SAVE_REAL (yylval->val = realval(strtof(yytext, NULL)))
+#define SAVE_CHAR (yylval->val = charval(yytext[0]))
 #define SAVE_STRING (yylval->str = strdup(yytext))
 #define yyterminate() return _EOF
 
@@ -24,7 +25,7 @@
 "algorithme"            return ALGORITHM;
 "alors"                 return THEN;
 "autrement"             printf("keyword: %s\n", yytext);
-"constantes"            printf("keyword: %s\n", yytext);
+"constantes"            return CONST;
 "debut"                 return START;
 "decroissant"           return DECREASING;
 "div"                   return DIV;

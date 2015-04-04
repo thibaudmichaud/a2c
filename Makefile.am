@@ -20,4 +20,5 @@ TESTS = tests/parser.test \
 	tests/test-typedecl.test \
 	tests/algolist.test \
 	tests/emptyalgolist.test \
+	tests/const-decl.test \
 	tests/fibo.test
