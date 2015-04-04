@@ -2,7 +2,7 @@
 #include "grammar.h"
 #include "codegen.h"
 #include "parser.h"
-#include "typechecking/typecheck.h"
+#include "typecheck.h"
 #define INDENT_WIDTH 2
 
 void print_indent(int indent)

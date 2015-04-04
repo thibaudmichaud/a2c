@@ -5,7 +5,7 @@
 #include "parser.h"
 #include "grammar.h"
 #include "codegen.h"
-#include "typechecking/typecheck.h"
+#include "typecheck.h"
 #include "data_struct/list/list.h"
 
 // Global variable filled by yyparse().
