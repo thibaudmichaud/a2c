@@ -119,6 +119,7 @@ int yylineno;
 %token RECORD "enregistrement"
 %token <val> CHAR
 %token CONST "constantes"
+%token OTHERWISE
 
 /* operators */
 %token PLUS "+" MINUS "-"
@@ -137,7 +138,6 @@ int yylineno;
 %token COMMA ","
 %token _EOL
 %token _EOF 0
-
 
 /* expressions */
 %token <integer> INT
@@ -308,6 +308,13 @@ instruction:
   ELSE _EOL
     instructions
   END IF _EOL { $$ = ifthenelseblock($2, $5, $8); }
+| SWITCH exp DO _EOL
+    explist ":" instructions
+  END SWITCH _EOL { $$ = switchblock($2, make_block($5, $7), empty_instructionlist());}
+| SWITCH exp DO _EOL
+    explist ":" instructions
+  OTHERWISE instructions
+  END SWITCH _EOL { $$ = switchblock($2, make_block($5, $7), $9);}
 | "retourne" exp _EOL { $$ = return_stmt($2); }
 | "retourne" _EOL { $$ = return_stmt(NULL); }
 

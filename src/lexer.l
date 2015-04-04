@@ -24,8 +24,8 @@
 \n+                     return _EOL;
 "algorithme"            return ALGORITHM;
 "alors"                 return THEN;
-"autrement"             printf("keyword: %s\n", yytext);
 "constantes"            return CONST;
+"autrement"             return OTHERWISE;
 "debut"                 return START;
 "decroissant"           return DECREASING;
 "div"                   return DIV;
