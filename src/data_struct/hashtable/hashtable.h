@@ -92,7 +92,7 @@ do {                                                                          \
       b = next;                                                               \
     }                                                                         \
   }                                                                           \
-  free(ht.buckets);                                                           \
+  free((_ht).buckets);                                                          \
 } while(0)
 
 #endif
