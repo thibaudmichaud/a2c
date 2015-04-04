@@ -1,9 +1,9 @@
 #include "typecheck.h"
 //top level doesn't exist so name is always the algo name
 
-funtable functions;
-var_table_t variables;
-type_table_t types;
+fun_table_t functions = empty_fun_table();
+var_table_t variables = empty_var_table();
+type_table_t types = empty_type_table();
 
 /*bool equals_expr(struct expr *e1, struct expr *e2){
     return get_expr_type(e1) == get_expr_type(e2);
