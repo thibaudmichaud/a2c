@@ -96,7 +96,12 @@ bool check_inst(struct instruction *i)
 
 bool check_prog(struct prog* prog)
 {
-  return check_algo(prog->algo);
+  for (unsigned i = 0; i < prog->algos.size; ++i)
+  {
+    if (!check_algo(prog->algos.data[i]))
+      return false;
+  }
+  return true;
 }
 
 bool check_algo(struct algo* al){

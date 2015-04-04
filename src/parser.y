@@ -48,6 +48,7 @@ int yylineno;
   struct enum_def *enum_def;
   typedecllist_t type_decls;
   intlist_t intlist;
+  algolist_t algolist;
   char *str;
 };
 
@@ -77,6 +78,7 @@ int yylineno;
 %type <intlist> dims
 %type <type_def> record_def
 %type <type_def> pointer_def
+%type <algolist> algolist
 
 /* ################# */
 /* TOKEN DECLARATION */
@@ -146,14 +148,18 @@ int yylineno;
 %%
 
 prog:
- algo _EOL
- entry_point _EOL { prog = make_prog($1, $3); }
+ algolist
+ entry_point _EOL { prog = make_prog($1, $2); }
 
 entry_point:
  var_decl
  "debut" _EOL
  instructions
  "fin" { $$ = make_entry_point($1, $4); }
+
+algolist:
+  { $$ = empty_algolist(); }
+| algolist algo _EOL { $$ = $1; list_push_back($$, $2); }
 
 algo: proc | fun
 

@@ -17,10 +17,11 @@ typedef list_tpl(struct instruction *) instructionlist_t;
 typedef list_tpl(struct single_var_decl *) vardecllist_t;
 typedef list_tpl(struct type_decl *) typedecllist_t;
 typedef list_tpl(int) intlist_t;
+typedef list_tpl(struct algo *) algolist_t;
 
 struct prog
 {
-  struct algo *algo;
+  algolist_t algos;
   struct entry_point *entry_point;
 };
 
@@ -403,6 +404,14 @@ exprlist_t empty_exprlist(void)
 }
 
 static inline
+algolist_t empty_algolist(void)
+{
+  algolist_t l;
+  list_init(l);
+  return l;
+}
+
+static inline
 struct instruction *whileblock(struct expr *cond, instructionlist_t b)
 {
   struct instruction *i = malloc(sizeof(struct instruction));
@@ -507,10 +516,10 @@ struct entry_point *make_entry_point(vardecllist_t var_decl, instructionlist_t i
 }
 
 static inline
-struct prog *make_prog(struct algo *algo, struct entry_point *entry_point)
+struct prog *make_prog(algolist_t algos, struct entry_point *entry_point)
 {
   struct prog *p = malloc(sizeof(struct prog));
-  p->algo = algo;
+  p->algos = algos;
   p->entry_point = entry_point;
   return p;
 }

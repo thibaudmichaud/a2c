@@ -130,9 +130,11 @@ void print_type_decls(typedecllist_t type_decls)
 
 void print_prog(struct prog *prog)
 {
-  print_type_decls(prog->algo->declarations->type_decls);
+  for (unsigned i = 0; i < prog->algos.size; ++i)
+    print_type_decls(prog->algos.data[i]->declarations->type_decls);
   print_var_decl(prog->entry_point->var_decl, 0);
-  print_algo(prog->algo);
+  for (unsigned i = 0; i < prog->algos.size; ++i)
+    print_algo(prog->algos.data[i]);
   printf("int main(void)\n{\n");
   print_instructions(prog->entry_point->instructions, INDENT_WIDTH);
   printf("}\n");
@@ -617,5 +619,7 @@ void free_prog(struct prog *prog)
   free_var_decl(prog->entry_point->var_decl);
   free_instructions(prog->entry_point->instructions);
   free(prog->entry_point);
-  free_algo(prog->algo);
+  for (unsigned i = 0; i < prog->algos.size; ++i)
+    free_algo(prog->algos.data[i]);
+  list_free(prog->algos);
 }

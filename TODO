@@ -5,7 +5,7 @@ parseur & génération de code
 [X] parser identifiants
 [X] parser tableaux
 [X] parser fonctions
-[ ] parser une liste d'algos
+[X] parser une liste d'algos
 [X] parser variables globales et main
 - parser l'en-tête des algos
  [X] var

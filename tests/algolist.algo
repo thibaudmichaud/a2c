@@ -1,0 +1,25 @@
+algorithme fonction truc : entier
+parametres locaux
+  booleen b
+  entier n, m
+variables
+  caractere c
+debut
+  n <- 20 + 22
+  retourne n
+fin algorithme fonction truc
+
+algorithme fonction machin : entier
+parametres locaux
+  entier n
+variables
+  entier i, a, b
+debut
+  retourne truc()
+fin algorithme fonction machin
+
+variables
+  booleen variable_globale
+debut
+  ecrire(fibo(10))
+fin

@@ -1,0 +1,4 @@
+variables
+debut
+  ecrire("hello world")
+fin

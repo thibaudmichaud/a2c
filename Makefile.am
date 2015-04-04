@@ -18,4 +18,6 @@ TESTS = tests/parser.test \
 	tests/parser-testfail.test \
 	tests/hashtable.test \
 	tests/test-typedecl.test \
+	tests/algolist.test \
+	tests/emptyalgolist.test \
 	tests/fibo.test
