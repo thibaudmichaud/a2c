@@ -5,10 +5,10 @@ bin_PROGRAMS = a2c
 a2c_SOURCES = src/lexer.l \
 	      src/parser.y \
 	      src/type_table.c \
-	      src/funtable.c
-	      src/var_table.c \
 	      src/get_line.c \
-	      src/typechecking/typecheck.c \
+	      src/funtable.c \
+	      src/var_table.c \
+	      src/typecheck.c \
 	      src/codegen.c \
 	      src/a2c.c
 

@@ -16,24 +16,24 @@ static int equal(struct function* f1, struct function *f2)
     return (strcmp(f1->ident,f2->ident) == 0);
 }
 
-funtable init(void)
+fun_table_t empty_fun_table(void)
 {
-    funtable table;
+    fun_table_t table;
     ht_init(table, 97, hash, equal);
     return table;
 }
 
-void add_function(funtable table, struct function* f)
+void add_function(fun_table_t table, struct function* f)
 {
     ht_add(table,f);
 }
 
-void delete_function(funtable table, struct function* f)
+void delete_function(fun_table_t table, struct function* f)
 {
     ht_del(table, f);
 }
 
-struct function* get_function(funtable table, char* ident)
+struct function* get_function(fun_table_t table, char* ident)
 {
     struct function *f = malloc(sizeof(struct function));
     f->ident = ident;

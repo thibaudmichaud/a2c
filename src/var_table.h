@@ -1,8 +1,8 @@
-#ifndef VAR_TABLE_H_
-#define VAR_TABLE_H_
+#ifndef _VAR_TABLE_H
+#define _VAR_TABLE_H
 
 #include "data_struct/hashtable/hashtable.h"
-#include <typechecking/typecheck.h>
+#include "type.h"
 #include <string.h>
 
 struct var_sym

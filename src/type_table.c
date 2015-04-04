@@ -1,6 +1,3 @@
-#include "data_struct/hashtable/hashtable.h"
-#include "typechecking/typecheck.h"
-#include <string.h>
 #include "type_table.h"
 
 static size_t hash(struct type_sym *s)

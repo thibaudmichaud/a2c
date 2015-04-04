@@ -1,37 +1,31 @@
 #ifndef _FUNTABLE_H
 #define _FUNTABLE_H
 
-#include <string.h>
-
 #include "data_struct/hashtable/hashtable.h"
-#include "typechecking/typecheck.h"
-
-typedef enum
-{
-    global,
-    local,
-}parametre;
+#include "data_struct/list/list.h"
+#include "type.h"
+#include <string.h>
 
 struct argument
 {
     type type;
-    parametre par;
+    int global;
 };
 
-typedef list_tpl(struct argument *) args;
+typedef list_tpl(struct argument *) args_t;
 
 struct function
 {
     char* ident;
     type ret;
-    args arg;
+    args_t arg;
 };
 
-typedef ht_tpl(struct function*) funtable;
-funtable init(void);
-void add_function(funtable fun, struct function* f);
-int find_function(funtable table, char* ident);
-void delete_function(funtable table, struct function* f);
-struct function* get_function(funtable table, char *ident);
+typedef ht_tpl(struct function*) fun_table_t;
+fun_table_t empty_fun_table(void);
+void add_function(fun_table_t fun, struct function* f);
+int find_function(fun_table_t table, char* ident);
+void delete_function(fun_table_t table, struct function* f);
+struct function* get_function(fun_table_t table, char *ident);
 
 #endif
