@@ -8,7 +8,7 @@
 struct var_sym
 {
   char *ident;
-  type type;
+  struct type type;
 };
 
 typedef ht_tpl(struct var_sym *) var_table_t;

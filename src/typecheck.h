@@ -15,6 +15,6 @@ bool check_prog(struct prog* prog);
 bool check_inst(struct instruction *e, struct function* f,  fun_table_t functions, var_table_t variables, type_table_t types);
 bool check_expr(struct expr *e, fun_table_t functions, var_table_t variables, type_table_t types);
 char* expr_type(struct expr *e);
-type get_expr_type(struct expr *e, fun_table_t functions, var_table_t variables, type_table_t types);
+struct type* get_expr_type(struct expr *e, fun_table_t functions, var_table_t variables, type_table_t types);
 
 #endif

@@ -8,7 +8,7 @@
 
 struct argument
 {
-    type type;
+    struct type* type;
     int global;
 };
 
@@ -17,7 +17,7 @@ typedef list_tpl(struct argument *) args_t;
 struct function
 {
     char* ident;
-    type ret;
+    struct type* ret;
     args_t arg;
 };
 
