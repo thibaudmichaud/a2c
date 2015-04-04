@@ -7,8 +7,8 @@ debut
   a <- 0
   b <- 0
   selon n faire
-    1 : b <- 1
-    2 : b <- 0
+    1, 2 : b <- 1
+    3 : b <- 2
   autrement b <- 0
   fin selon
   retourne b

@@ -432,13 +432,16 @@ void print_assignment(struct assignment *a)
 
 void print_case(struct caseblock *c, int indent)
 {
-  printf("case ");
-  print_exprlist(c->exprlist);
-  printf(":\n");
-  print_indent(indent+2);
-  print_instructions(c->instructions, indent);
-  print_indent(indent + 2 * INDENT_WIDTH);
-  printf("break;\n");
+  for(size_t i = 0; i<c->exprlist.size;i++)
+  {
+    print_indent(indent);
+    printf("case ");
+    print_expression(c->exprlist.data[i]);
+    printf(":\n");
+  }
+  print_instructions(c->instructions, indent + INDENT_WIDTH);
+  print_indent(indent + INDENT_WIDTH);
+  printf("break;\n"); 
 }
 
 void print_caselist(caseblocklist_t caselist, int indent)
@@ -546,11 +549,10 @@ void print_instruction(struct instruction *i, int indent)
       printf(")\n");
       print_indent(indent);
       printf("{\n");
-      print_indent(indent+2);
-      print_caselist(i->instr.switchcase->caseblocklist, indent);
+      print_caselist(i->instr.switchcase->caseblocklist, indent+ INDENT_WIDTH);
       if(i->instr.switchcase->otherwiseblock.size > 0)
       {
-        print_indent(indent + 2);
+        print_indent(indent + INDENT_WIDTH);
         printf("default:\n");
         print_indent(indent +2);
         print_instructions(i->instr.switchcase->otherwiseblock, indent);
@@ -570,6 +572,20 @@ void free_instructions(instructionlist_t instructions)
   list_free(instructions);
 }
 
+void free_caseblock(struct caseblock *caseblock)
+{
+  free_expressions(caseblock->exprlist);
+  free_instructions(caseblock->instructions);
+  free(caseblock);
+}
+
+void free_caseblocklist(caseblocklist_t caseblocklist)
+{
+  for (unsigned i = 0; i < caseblocklist.size; ++i)
+    free_caseblock(caseblocklist.data[i]);
+  list_free(caseblocklist);
+}
+
 void free_instruction(struct instruction *i)
 {
   switch (i->kind)
@@ -580,12 +596,10 @@ void free_instruction(struct instruction *i)
       free(i->instr.assignment);
       break;
     case switchcase:
-      /* free_expression(i->instr.switchcase->cond); */
-      /* free_instructions(i->instr.switchcase->caseblocklist); */
-      /* free_expressions(i->instr.switchcase->caseblocklist->exprlist); */
-      /* free_instructions(i->instr.switchcase->otherwiseblock); */
-      /* free(i->instr.switchcase->caseblocklist); */
-      /* free(i->instr.ifthenelse); */
+      free_caseblocklist(i->instr.switchcase->caseblocklist);
+      free_instructions(i->instr.switchcase->otherwiseblock);
+      free_expression(i->instr.switchcase->cond);
+      free(i->instr.switchcase);
       break;
     case dowhile:
       free_expression(i->instr.dowhile->cond);

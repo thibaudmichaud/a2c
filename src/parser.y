@@ -30,7 +30,6 @@ int yylineno;
   struct expr *expression;
   struct instruction *instruction;
   instructionlist_t instructions;
-  struct caseblock *caseblock;
   caseblocklist_t caseblocklist;
   struct algo *algo;
   exprlist_t exprlist;
@@ -57,39 +56,38 @@ int yylineno;
   int integer;
 };
 
-%type <expression> exp
-%type <val> val
-%type <algo> proc
-%type <algo> fun
 %type <algo> algo
-%type <lp> lp_decl
-%type <gp> gp_decl
-%type <param_decl> param_decl
-%type <instructions> instructions
-%type <instruction> instruction
-%type <exprlist> explist nonempty_explist
-%type <identlist> identlist
-%type <single_var_decl> single_var_decl
-%type <var_decl> var_decl var_decl2
-%type <decls> decls
-%type <assignment> assign
-%type <entry_point> entry_point
-%type <prog> prog
-%type <type_decl> type_decl
-%type <type_decls> type_decls
-%type <type_decls> type_decl_list
-%type <type_def> type_def
-%type <type_def> enum_def
-%type <type_def> array_def
-%type <intlist> dims
-%type <type_def> record_def
-%type <type_def> pointer_def
+%type <algo> fun
+%type <algo> proc
 %type <algolist> algolist
+%type <assignment> assign
 %type <const_decls> const_decls
 %type <const_decls> const_decl_list
 %type <const_decl> const_decl
-%type <caseblock> caseblock
 %type <caseblocklist> caseblocklist
+%type <decls> decls
+%type <entry_point> entry_point
+%type <expression> exp
+%type <exprlist> explist nonempty_explist
+%type <gp> gp_decl
+%type <identlist> identlist
+%type <instruction> instruction
+%type <instructions> instructions
+%type <intlist> dims
+%type <lp> lp_decl
+%type <param_decl> param_decl
+%type <prog> prog
+%type <single_var_decl> single_var_decl
+%type <type_decl> type_decl
+%type <type_decls> type_decl_list
+%type <type_decls> type_decls
+%type <type_def> array_def
+%type <type_def> enum_def
+%type <type_def> pointer_def
+%type <type_def> record_def
+%type <type_def> type_def
+%type <val> val
+%type <var_decl> var_decl var_decl2
 
 /* ################# */
 /* TOKEN DECLARATION */
@@ -150,7 +148,7 @@ int yylineno;
 
 /* priority */
 %right ASSIGN
-%precedence IDENT WHILE
+%precedence IDENT WHILE ":"
 %left "=" "<>"
 %left  "<" ">" "<=" ">="
 %left PLUS MINUS OR XOR
@@ -280,11 +278,9 @@ var_decl2:
 single_var_decl:
  IDENT identlist _EOL { $$ = single_var_decl($1, $2); }
 
-caseblock:
-explist ":" instructions {$$ = make_block($1, $3);}
-
 caseblocklist:
-| caseblocklist caseblock {$$ = $1; list_push_back($$, $2);}
+nonempty_explist ":" instructions { $$ = empty_caseblocklist(); list_push_front($$,make_block($1,$3));}
+|nonempty_explist ":" instructions caseblocklist {$$ = $4; list_push_front($$, make_block($1,$3));}
 
 identlist:
 IDENT { $$ = empty_identlist(); list_push_back($$, $1); }

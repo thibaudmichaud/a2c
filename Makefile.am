@@ -13,13 +13,14 @@ a2c_SOURCES = src/parser.y \
 check_PROGRAMS = tests/hashtable tests/list
 
 TESTS = tests/parser.test \
-	tests/test-ifthen.test \
-	tests/list.test \
-	tests/parser-testfail.test \
-	tests/hashtable.test \
-	tests/test-typedecl.test \
 	tests/algolist.test \
 	tests/emptyalgolist.test \
 	tests/const-decl.test \
 	tests/fibo.test \
-  tests/switch.test
+	tests/hashtable.test \
+	tests/list.test \
+	tests/parser-testfail.test \
+	tests/test-ifthen.test \
+	tests/test-typedecl.test \
+  tests/switch.test \
+  tests/switchnodef.test

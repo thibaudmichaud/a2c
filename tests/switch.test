@@ -4,4 +4,3 @@ set -e
 valgrind --error-exitcode=1 --leak-check=full --show-leak-kinds=all ./a2c tests/switch.algo > tests/out
 diff tests/switch.c tests/out
 set +e
-

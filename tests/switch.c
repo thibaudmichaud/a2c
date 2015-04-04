@@ -7,7 +7,11 @@ int testswitch(int n)
   switch (n)
   {
     case 1:
+    case 2:
       b = 1;
+      break;
+    case 3:
+      b = 2;
       break;
     default:
       b = 0;

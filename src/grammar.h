@@ -394,6 +394,14 @@ exprlist_t empty_exprlist(void)
 }
 
 static inline
+caseblocklist_t empty_caseblocklist(void)
+{
+  caseblocklist_t c;
+  list_init(c);
+  return c;
+}
+
+static inline
 algolist_t empty_algolist(void)
 {
   algolist_t l;
