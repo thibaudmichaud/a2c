@@ -519,6 +519,30 @@ void print_instruction(struct instruction *i, int indent)
       break;
     default:
       printf("instruction not handled yet\n");
+    case switchcase:
+      print_indent(indent);
+      printf("switch (");
+      print_expression(i->instr.switchcase->cond);
+      printf(")\n");
+      print_indent(indent);
+      printf("{\n");
+      printf("case ");
+      print_exprlist(i->instr.switchcase->caseblock->exprlist);
+      printf(":");
+      print_instructions(i->instr.switchcase->caseblock->instructions, indent);
+      print_indent(indent);
+      printf("break;");
+      if(i->instr.switchcase->otherwiseblock.size > 0)
+      {
+        print_indent(indent);
+        printf("default:\n");
+        print_indent(indent);
+        print_instructions(i->instr.switchcase->otherwiseblock, indent);
+        print_indent(indent);
+        printf("break;");
+      }
+      printf("}\n");
+      break;
   }
 }
 
