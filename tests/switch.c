@@ -1,16 +1,13 @@
 int variable_globale;
-int testswitch(int a)
+int testswitch(int n)
 {
-  int b;
+  int a, b;
   a = 0;
   b = 0;
-  switch(a)
+  switch (n)
   {
     case 1:
       b = 1;
-      break;
-    case 2:
-      b = 2;
       break;
     default:
       b = 0;

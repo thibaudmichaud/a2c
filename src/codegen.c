@@ -526,21 +526,24 @@ void print_instruction(struct instruction *i, int indent)
       printf(")\n");
       print_indent(indent);
       printf("{\n");
+      print_indent(indent+2);
       printf("case ");
       print_exprlist(i->instr.switchcase->caseblock->exprlist);
-      printf(":");
+      printf(":\n");
+      print_indent(indent+2);
       print_instructions(i->instr.switchcase->caseblock->instructions, indent);
-      print_indent(indent);
-      printf("break;");
+      print_indent(indent + 2 * INDENT_WIDTH);
+      printf("break;\n");
       if(i->instr.switchcase->otherwiseblock.size > 0)
       {
-        print_indent(indent);
+        print_indent(indent + 2);
         printf("default:\n");
-        print_indent(indent);
+        print_indent(indent +2);
         print_instructions(i->instr.switchcase->otherwiseblock, indent);
-        print_indent(indent);
-        printf("break;");
+        print_indent(indent + 2 * INDENT_WIDTH);
+        printf("break;\n");
       }
+      print_indent(indent);
       printf("}\n");
       break;
   }
@@ -563,7 +566,12 @@ void free_instruction(struct instruction *i)
       free(i->instr.assignment);
       break;
     case switchcase:
-      // TODO free list of instructions once lists are implemented
+      free_expression(i->instr.switchcase->cond);
+      free_instructions(i->instr.switchcase->caseblock->instructions);
+      free_expressions(i->instr.switchcase->caseblock->exprlist);
+      free_instructions(i->instr.switchcase->otherwiseblock);
+      free(i->instr.switchcase->caseblock);
+      free(i->instr.ifthenelse);
       break;
     case dowhile:
       free_expression(i->instr.dowhile->cond);

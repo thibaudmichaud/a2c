@@ -1,14 +1,13 @@
 algorithme fonction testswitch : entier
 parametres locaux
-  entier a
+  entier n
 variables
-  entier b
+  entier a, b
 debut
   a <- 0
   b <- 0
-  selon a faire
+  selon n faire
     1 : b <- 1
-    2 : b <- 2
   autrement b <- 0
   fin selon
   retourne b
