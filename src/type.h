@@ -2,20 +2,17 @@
 #define _TYPE_H
 
 #include "data_struct/list/list.h"
-
+#include "grammar.h"
 struct field
 {
     char* ident;
-    struct type* t;
+    struct type* type;
 };
 
 typedef list_tpl(struct field *) fieldlist_t;
-typedef list_tpl(int) indiceslist_t;
-typedef list_tpl(char *) idents;
 
 struct records {
-    char* ident;
-    fieldlist_t fields;
+    fieldlist_t* fields;
 };
 
 typedef enum {
@@ -30,18 +27,18 @@ typedef enum {
 struct pointer
 {
     char* ident;
-    struct type* t;
+    struct type* type;
 };
 
-struct tab
+struct array
 {
-    char* ident;
-    indiceslist_t indices;
+    struct type* type;
+    intlist_t dims;
 };
 
 struct enum_type 
 {
-    idents idents;
+    identlist_t idents;
 };
 
 struct type {
@@ -49,7 +46,7 @@ struct type {
     {
         primary_t,
         records_t,
-        tab_t,
+        array_t,
         pointer_t,
         enum_t,
     }type_kind;
@@ -57,7 +54,7 @@ struct type {
     {
         primary_type   primary;
         struct records*      records_type;
-        struct tab*          tab_type;
+        struct array*        array_type;
         struct pointer*      pointer_type;
         struct enum_type*    enum_type;
     }type_val;
