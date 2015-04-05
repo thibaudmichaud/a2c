@@ -1,14 +1,48 @@
 #include "typecheck.h"
-//top level doesn't exist so name is always the algo name
+
+struct type* char_to_type(char* ident_type)
+{
+    struct type* t = malloc(sizeof( struct type));
+    if(strcmp(ident_type, "entier") == 0)
+    {
+        t->type_kind = primary_t;
+        t->type_val.primary  = int_t;
+    }
+    else if(strcmp(ident_type, "reel") == 0)
+    {
+        t->type_kind = primary_t;
+        t->type_val.primary = real_t;
+    }
+    else if(strcmp(ident_type, "boolen") == 0)
+    {
+        t->type_kind = primary_t;
+        t->type_val.primary = bool_t;
+    }
+    else if(strcmp(ident_type, "caractere") == 0)
+    {
+        t->type_kind = primary_t;
+        t->type_val.primary = char_t;
+    }
+    else if(strcmp(ident_type, "chaine") == 0)
+    {
+        t->type_kind = primary_t;
+        t->type_val.primary = str_t;
+    }
+
+    return t;
+
+}
 
 bool equal_types(struct type* t1, struct type* t2)
 {
+    printf("equal\n");
     if(t1->type_kind != t2->type_kind)
         return false;
 
     switch(t1->type_kind)
     {
         case primary_t:
+            printf("primary type\n");
             return t1->type_val.primary == t1->type_val.primary; 
             break;
         case records_t:
@@ -18,6 +52,7 @@ bool equal_types(struct type* t1, struct type* t2)
             {
                 struct field* field1 = list_nth(t1->type_val.records_type->fields, i);
                 struct field* field2 = list_nth(t2->type_val.records_type->fields, i);
+
                 if(!equal_types(field1->t, field2->t))
                     return false;
             }
@@ -36,7 +71,7 @@ bool equal_types(struct type* t1, struct type* t2)
 }
 
 bool check_args(struct function* f, struct funcall call, 
-        fun_table_t functions, var_table_t variables, type_table_t types)
+        fun_table_t functions, var_table_t* variables, type_table_t types)
 {
     if(f->arg.size != call.args.size)
         return false;
@@ -79,28 +114,55 @@ bool check_prog(struct prog* prog)
     return true;
 }
 
+void add_variable(var_table_t* variables,struct single_var_decl* var)
+{
+    for(unsigned int j = 0; j < var->var_idents.size; ++j)
+    {
+        struct var_sym* sym = malloc(sizeof(struct var_sym));
+        sym->ident = list_nth(var->var_idents, j);
+        sym->type = char_to_type(var->type_ident);
+        add_var(variables, sym);
+    }
+}
+
 bool check_algo(struct algo* al, fun_table_t functions)
 {
     struct function* f = malloc(sizeof(struct function));
-    var_table_t variables = empty_var_table();
+    var_table_t* variables = empty_var_table();
     type_table_t types = empty_type_table();
+    struct declarations* decl = al->declarations;
+    if(decl != NULL)
+    {
+        struct param_decl* p_decl = decl->param_decl;
+        struct local_param* loc = p_decl->local_param;
+        struct global_param* glo = p_decl->global_param;
+        vardecllist_t vars = decl->var_decl;
+        if(loc != NULL)
+
+        {
+            for(unsigned int i = 0; i < loc->param.size; i++)
+            {
+                struct single_var_decl* var = list_nth(loc->param,i);
+                add_variable(variables, var);
+            }
+        }
+        if(glo != NULL)
+        {
+            for(unsigned int i = 0; i < glo->param.size; i++)
+            {
+                struct single_var_decl* var = list_nth(glo->param,i);
+                add_variable(variables, var);
+            }
+        }
+        for(unsigned i =0; i < vars.size; ++i)
+        {
+            struct single_var_decl* var = list_nth(vars, i);
+            add_variable(variables, var);
+        }
+    }
     for(unsigned i = 0; i < al->instructions.size; i++)
     {
-        /*struct declarations* decl = al->declarations;
-          struct param_decl* p_decl = decl->param_decl;
-          struct local_param* loc = p_decl->local_param;
-          for(unsigned int i = 0; i < loc->param.size; ++i)
-          {
-          struct single_var_decl* var = list_nth(loc->param,i);
-          for(unsigned int j = 0; j < var->var_idents.size; ++j)
-          {
-          struct var_sym* sym = malloc(sizeof(struct var_sym));
-          sym->ident = list_nth(var->var_idents, i);
-          sym->type = int_t;
-          add_var(variables, sym);
-          }
-          }*/
-
+        printf("instr\n");
         if(!check_inst(list_nth(al->instructions, i), f, functions, variables, types) 
                 && list_nth(al->instructions, i)->kind == assignment)
         {
@@ -116,8 +178,9 @@ bool check_algo(struct algo* al, fun_table_t functions)
     return true;
 }
 
-bool check_inst(struct instruction *i, struct function* f, fun_table_t functions, var_table_t variables, type_table_t types)
+bool check_inst(struct instruction *i, struct function* f, fun_table_t functions, var_table_t* variables, type_table_t types)
 {
+    printf("new instr\n");
     switch(i->kind)
     {
         case funcall:
@@ -139,6 +202,7 @@ bool check_inst(struct instruction *i, struct function* f, fun_table_t functions
             break;
 
         case assignment:
+            printf("assignment");
             if(check_expr(i->instr.assignment->e1, functions, variables, types) 
                     && check_expr(i->instr.assignment->e2, functions, variables, types)){
 
@@ -260,7 +324,7 @@ bool check_inst(struct instruction *i, struct function* f, fun_table_t functions
 
 }
 
-bool check_expr(struct expr *e, fun_table_t functions, var_table_t variables, type_table_t types)
+bool check_expr(struct expr *e, fun_table_t functions, var_table_t* variables, type_table_t types)
 {
     switch(e->exprtype)
     {
@@ -305,7 +369,7 @@ bool check_expr(struct expr *e, fun_table_t functions, var_table_t variables, ty
 
 }
 
-struct type* get_expr_type(struct expr *e, fun_table_t functions, var_table_t variables, type_table_t types)
+struct type* get_expr_type(struct expr *e, fun_table_t functions, var_table_t* variables, type_table_t types)
 {
 
     switch(e->exprtype)
@@ -313,126 +377,122 @@ struct type* get_expr_type(struct expr *e, fun_table_t functions, var_table_t va
         case valtype:
             switch(e->val.val->valtype)
             {
-
-
-
-
-        case nulltype:
-            {
-                struct type* t = malloc(sizeof(struct type));
-                t->type_kind = primary_t;
-                primary_type p = nul_t;
-                t->type_val.primary = p;
-                return t;
-            
-            break;
-            }
-        case chartype:
-            {
-                struct type* t = malloc(sizeof(struct type));
-                t->type_kind = primary_t;
-                primary_type p = char_t;
-                t->type_val.primary = p;
-                return t;
-            
-            break;
-            }
-        case stringtype:
-            {
-                struct type* t = malloc(sizeof(struct type));
-                t->type_kind = primary_t;
-                primary_type p = str_t;
-                t->type_val.primary = p;
-                return t;
-            
-            break;
-            }
-        case booltype:
-            {
-                struct type* t = malloc(sizeof(struct type));
-                t->type_kind = primary_t;
-                primary_type p = bool_t;
-                t->type_val.primary = p;
-                return t;
-            
-            break;
-            }
-        case inttype:
-            {
-                struct type* t = malloc(sizeof(struct type));
-                t->type_kind = primary_t;
-                primary_type p = int_t;
-                t->type_val.primary = p;
-                return t;
-            
-            break;
-            }
-        case realtype:
-            {
-                struct type* t = malloc(sizeof(struct type));
-                t->type_kind = primary_t;
-                primary_type p = real_t;
-                t->type_val.primary = p;
-                return t;
-            
-            break;
-            }
-            }
-            case identtype:
-                    break;
-
-                    case funcalltype :
+                case nulltype:
                     {
-                        struct function* f = malloc(sizeof(struct function));
-                        if((f = get_function(functions, e->val.funcall.fun_ident)) != NULL 
-                             && check_args(f, e->val.funcall, functions, variables, types)) 
-                            return f->ret;
-                    }
-                    break;
+                        struct type* t = malloc(sizeof(struct type));
+                        t->type_kind = primary_t;
+                        primary_type p = nul_t;
+                        t->type_val.primary = p;
+                        return t;
 
-                    case binopexprtype:
-                    if (  equal_types(get_expr_type(e->val.binopexpr.e1, functions, variables, types),
-                            (struct type*)int_t)
-                       || equal_types(get_expr_type(e->val.binopexpr.e1, functions, variables, types),
-                           (struct type*)real_t)
-                       || equal_types(get_expr_type(e->val.binopexpr.e1, functions, variables, types), 
-                           (struct type*)bool_t)) 
+                        break;
+                    }
+                case chartype:
                     {
-                        if (equal_types(get_expr_type(e->val.binopexpr.e2, functions, variables, types), 
-                                    get_expr_type(e->val.binopexpr.e1, functions, variables, types)))
-                        {
-                            return get_expr_type(e->val.binopexpr.e1, functions, variables, types);
-                        }
-                        else
-                        {
-                            printf("expression left was of type : ");
-                            printf("%s ", expr_type(e->val.binopexpr.e1));
-                            printf("and expression right was of type : ");
-                            printf("%s\n", expr_type(e->val.binopexpr.e2));
-                        }
+                        struct type* t = malloc(sizeof(struct type));
+                        t->type_kind = primary_t;
+                        primary_type p = char_t;
+                        t->type_val.primary = p;
+                        return t;
+
+                        break;
                     }
-                    break;
+                case stringtype:
+                    {
+                        struct type* t = malloc(sizeof(struct type));
+                        t->type_kind = primary_t;
+                        primary_type p = str_t;
+                        t->type_val.primary = p;
+                        return t;
 
-                    case unopexprtype:
-                    if (  equal_types(get_expr_type(e->val.binopexpr.e1, functions, variables, types), 
-                            (struct type*)int_t)
-                       || equal_types(get_expr_type(e->val.binopexpr.e1, functions, variables, types), 
-                           (struct type*)real_t)
-                       || equal_types(get_expr_type(e->val.binopexpr.e1, functions, variables, types), 
-                           (struct type*)bool_t)) 
-                        return get_expr_type(e->val.unopexpr.e, functions, variables, types);
+                        break;
+                    }
+                case booltype:
+                    {
+                        struct type* t = malloc(sizeof(struct type));
+                        t->type_kind = primary_t;
+                        primary_type p = bool_t;
+                        t->type_val.primary = p;
+                        return t;
 
-                    break;
+                        break;
+                    }
+                case inttype:
+                    {
+                        struct type* t = malloc(sizeof(struct type));
+                        t->type_kind = primary_t;
+                        primary_type p = int_t;
+                        t->type_val.primary = p;
+                        return t;
 
-                    case arrayexprtype:
-                    //something strange is happening here
-                    break;
+                        break;
+                    }
+                case realtype:
+                    {
+                        struct type* t = malloc(sizeof(struct type));
+                        t->type_kind = primary_t;
+                        primary_type p = real_t;
+                        t->type_val.primary = p;
+                        return t;
 
-                    case structelttype:
-                    break;
+                        break;
+                    }
+            }
+        case identtype:
+            break;
 
-                    case dereftype:
-                    break;
+        case funcalltype :
+            {
+                struct function* f = malloc(sizeof(struct function));
+                if((f = get_function(functions, e->val.funcall.fun_ident)) != NULL 
+                        && check_args(f, e->val.funcall, functions, variables, types)) 
+                    return f->ret;
+            }
+            break;
+
+        case binopexprtype:
+            if (  equal_types(get_expr_type(e->val.binopexpr.e1, functions, variables, types),
+                        (struct type*)int_t)
+                    || equal_types(get_expr_type(e->val.binopexpr.e1, functions, variables, types),
+                        (struct type*)real_t)
+                    || equal_types(get_expr_type(e->val.binopexpr.e1, functions, variables, types), 
+                        (struct type*)bool_t)) 
+            {
+                if (equal_types(get_expr_type(e->val.binopexpr.e2, functions, variables, types), 
+                            get_expr_type(e->val.binopexpr.e1, functions, variables, types)))
+                {
+                    return get_expr_type(e->val.binopexpr.e1, functions, variables, types);
+                }
+                else
+                {
+                    printf("expression left was of type : ");
+                    printf("%s ", expr_type(e->val.binopexpr.e1));
+                    printf("and expression right was of type : ");
+                    printf("%s\n", expr_type(e->val.binopexpr.e2));
+                }
+            }
+            break;
+
+        case unopexprtype:
+            if (  equal_types(get_expr_type(e->val.binopexpr.e1, functions, variables, types), 
+                        (struct type*)int_t)
+                    || equal_types(get_expr_type(e->val.binopexpr.e1, functions, variables, types), 
+                        (struct type*)real_t)
+                    || equal_types(get_expr_type(e->val.binopexpr.e1, functions, variables, types), 
+                        (struct type*)bool_t)) 
+                return get_expr_type(e->val.unopexpr.e, functions, variables, types);
+
+            break;
+
+        case arrayexprtype:
+            //something strange is happening here
+            break;
+
+        case structelttype:
+            break;
+
+        case dereftype:
+            break;
     }
     return (struct type*)str_t;
 }
@@ -442,29 +502,29 @@ char* expr_type (struct expr* e)
     switch(e->exprtype)
     {
         case valtype:
-        switch(e->val.val->valtype)
-        {
-            case nulltype:
-                return "null";
-                break;
+            switch(e->val.val->valtype)
+            {
+                case nulltype:
+                    return "null";
+                    break;
 
-            case chartype:
-                return "char";
-                break;
+                case chartype:
+                    return "char";
+                    break;
 
-            case stringtype:
-                return "string";
+                case stringtype:
+                    return "string";
 
-            case booltype:
-                return "bool";
+                case booltype:
+                    return "bool";
 
-            case inttype:
-                return "int";
+                case inttype:
+                    return "int";
 
-            case realtype:
-                return "real";
-        }
-        break;
+                case realtype:
+                    return "real";
+            }
+            break;
 
         case identtype:
             break;
