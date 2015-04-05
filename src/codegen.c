@@ -441,7 +441,7 @@ void print_case(struct caseblock *c, int indent)
   }
   print_instructions(c->instructions, indent + INDENT_WIDTH);
   print_indent(indent + INDENT_WIDTH);
-  printf("break;\n"); 
+  printf("break;\n");
 }
 
 void print_caselist(caseblocklist_t caselist, int indent)
