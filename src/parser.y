@@ -279,8 +279,8 @@ single_var_decl:
  IDENT identlist _EOL { $$ = single_var_decl($1, $2); }
 
 caseblocklist:
-nonempty_explist ":" instructions { $$ = empty_caseblocklist(); list_push_front($$,make_block($1,$3));}
-|nonempty_explist ":" instructions caseblocklist {$$ = $4; list_push_front($$, make_block($1,$3));}
+ nonempty_explist ":" instructions { $$ = empty_caseblocklist(); list_push_front($$,make_block($1,$3));}
+| nonempty_explist ":" instructions caseblocklist {$$ = $4; list_push_front($$, make_block($1,$3));}
 
 identlist:
 IDENT { $$ = empty_identlist(); list_push_back($$, $1); }
@@ -367,7 +367,6 @@ val:
 nonempty_explist:
  exp     { $$ = empty_exprlist(); list_push_back($$, $1); }
 | explist "," exp { $$ = $1; list_push_back($$, $3); }
-;
 
 %%
 

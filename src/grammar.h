@@ -394,14 +394,6 @@ exprlist_t empty_exprlist(void)
 }
 
 static inline
-caseblocklist_t empty_caseblocklist(void)
-{
-  caseblocklist_t c;
-  list_init(c);
-  return c;
-}
-
-static inline
 algolist_t empty_algolist(void)
 {
   algolist_t l;
@@ -445,6 +437,14 @@ identlist_t empty_identlist(void)
   identlist_t l;
   list_init(l);
   return l;
+}
+
+static inline
+caseblocklist_t empty_caseblocklist(void)
+{
+  caseblocklist_t c;
+  list_init(c);
+  return c;
 }
 
 static inline
@@ -731,6 +731,7 @@ struct expr *expr_from_val(struct val *v)
   return e;
 }
 
+static inline
 struct caseblock *make_block(exprlist_t exprlist, instructionlist_t instructions)
 {
   struct caseblock *i = malloc(sizeof(struct caseblock));
