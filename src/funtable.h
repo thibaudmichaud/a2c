@@ -22,9 +22,9 @@ struct function
 };
 
 typedef ht_tpl(struct function*) fun_table_t;
-fun_table_t empty_fun_table(void);
-void add_function(fun_table_t fun, struct function* f);
-void delete_function(fun_table_t table, struct function* f);
-struct function* get_function(fun_table_t table, char *ident);
-void free_fun_table(fun_table_t table);
+fun_table_t* empty_fun_table(void);
+void add_function(fun_table_t* fun, struct function* f);
+void delete_function(fun_table_t* table, struct function* f);
+struct function* get_function(fun_table_t* table, char *ident);
+void free_fun_table(fun_table_t* table);
 #endif

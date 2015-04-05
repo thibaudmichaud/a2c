@@ -10,6 +10,12 @@ static size_t hash(struct var_sym *s)
   return hash;
 }
 
+void free_var(struct var_sym* sym)
+{
+    free(sym->type);
+    free(sym);
+}
+
 static int equal(struct var_sym *s1, struct var_sym *s2)
 {
   return (strcmp(s1->ident, s2->ident) == 0);
@@ -18,7 +24,7 @@ static int equal(struct var_sym *s1, struct var_sym *s2)
 var_table_t* empty_var_table(void)
 {
   var_table_t* var_table = malloc(sizeof(var_table_t));
-  ht_init(*var_table, 97, hash, equal);
+  ht_init(*var_table, 97, hash, equal, free_var);
   return var_table;
 }
 

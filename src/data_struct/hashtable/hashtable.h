@@ -11,16 +11,18 @@ struct                                                                        \
   size_t length;                                                              \
   size_t (*hash)(type);                                                       \
   int (*equal)(type, type);                                                   \
-  struct { type elt; void *next; } **buckets;                 \
+  void(*free_type)(type);                                                          \
+  struct { type elt; void *next; } **buckets;                                 \
 }
 
-#define ht_init(_ht, _size, _hash, _equal)                                    \
+#define ht_init(_ht, _size, _hash, _equal, _free)                                    \
 do                                                                            \
 {                                                                             \
   (_ht).size = (_size);                                                       \
   (_ht).length = 0;                                                           \
   (_ht).hash = _hash;                                                         \
   (_ht).equal = _equal;                                                       \
+  (_ht).free_type = _free;                                                         \
   (_ht).buckets = calloc(_size, sizeof(*(_ht).buckets));                      \
 } while(0)
 
@@ -88,6 +90,7 @@ do {                                                                          \
     while (b)                                                                 \
     {                                                                         \
       next = (bucket)b->next;                                                 \
+      (_ht).free_type(b->elt);                                                \
       free(b);                                                                \
       b = next;                                                               \
     }                                                                         \
