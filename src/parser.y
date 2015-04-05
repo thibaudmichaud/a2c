@@ -304,7 +304,7 @@ instruction:
 | FOR assign UPTO exp DECREASING DO _EOL
     instructions
   END FOR _EOL { $$ = forblock($2, $4, 1, $8); }
-| IDENT "(" explist ")" _EOL { $$ = funcallinstr($1, $3); }
+| IDENT "(" explist ")" _EOL { $$ = funcallinstr($1, $3); $$->lineno = yylineno; }
 | IF exp THEN _EOL
     instructions
   END IF _EOL { $$ = ifthenelseblock($2, $5, empty_instructionlist()); }
@@ -327,30 +327,30 @@ assign:
  exp "<-" exp { $$ = assign($1, $3); }
 
 exp:
- val { $$ = expr_from_val($1); }
-| IDENT   { $$ = identexpr($1); }
-| exp "+" exp  { $$ = binopexpr($1, PLUS, $3); }
-| exp "-" exp  { $$ = binopexpr($1, MINUS, $3); }
-| exp "ou" exp  { $$ = binopexpr($1, OR, $3); }
-| exp "oue" exp  { $$ = binopexpr($1, XOR, $3); }
-| exp "*" exp  { $$ = binopexpr($1, STAR, $3); }
-| exp "/" exp  { $$ = binopexpr($1, SLASH, $3); }
-| exp "div" exp  { $$ = binopexpr($1, DIV, $3); }
-| exp "et" exp  { $$ = binopexpr($1, AND, $3); }
-| exp "mod" exp  { $$ = binopexpr($1, MOD, $3); }
-| exp "=" exp  { $$ = binopexpr($1, EQ, $3); }
-| exp "<=" exp  { $$ = binopexpr($1, LE, $3); }
-| exp ">=" exp  { $$ = binopexpr($1, GE, $3); }
-| exp "<" exp  { $$ = binopexpr($1, LT, $3); }
-| exp ">" exp  { $$ = binopexpr($1, GT, $3); }
-| exp "<>" exp  { $$ = binopexpr($1, NEQ, $3); }
-| "(" exp ")"  { $$ = $2; }
-| "non" exp  { $$ = unopexpr(NO, $2); }
-| "+" exp      { $$ = $2; }
-| "-" exp      { $$ = unopexpr(MINUS, $2); }
-| IDENT "(" explist ")" { $$ = funcallexpr($1, $3); }
-| "^" exp { $$ = derefexpr($2); }
-| exp "[" nonempty_explist "]" { $$ = arrayexpr($1, $3); }
+ val { $$ = expr_from_val($1); $$->lineno = yylineno; }
+| IDENT   { $$ = identexpr($1); $$->lineno = yylineno; }
+| exp "+" exp  { $$ = binopexpr($1, PLUS, $3); $$->lineno = yylineno; }
+| exp "-" exp  { $$ = binopexpr($1, MINUS, $3); $$->lineno = yylineno; }
+| exp "ou" exp  { $$ = binopexpr($1, OR, $3); $$->lineno = yylineno; }
+| exp "oue" exp  { $$ = binopexpr($1, XOR, $3); $$->lineno = yylineno; }
+| exp "*" exp  { $$ = binopexpr($1, STAR, $3); $$->lineno = yylineno; }
+| exp "/" exp  { $$ = binopexpr($1, SLASH, $3); $$->lineno = yylineno; }
+| exp "div" exp  { $$ = binopexpr($1, DIV, $3); $$->lineno = yylineno; }
+| exp "et" exp  { $$ = binopexpr($1, AND, $3); $$->lineno = yylineno; }
+| exp "mod" exp  { $$ = binopexpr($1, MOD, $3); $$->lineno = yylineno; }
+| exp "=" exp  { $$ = binopexpr($1, EQ, $3); $$->lineno = yylineno; }
+| exp "<=" exp  { $$ = binopexpr($1, LE, $3); $$->lineno = yylineno; }
+| exp ">=" exp  { $$ = binopexpr($1, GE, $3); $$->lineno = yylineno; }
+| exp "<" exp  { $$ = binopexpr($1, LT, $3); $$->lineno = yylineno; }
+| exp ">" exp  { $$ = binopexpr($1, GT, $3); $$->lineno = yylineno; }
+| exp "<>" exp  { $$ = binopexpr($1, NEQ, $3); $$->lineno = yylineno; }
+| "(" exp ")"  { $$ = $2; $$->lineno = yylineno; }
+| "non" exp  { $$ = unopexpr(NO, $2); $$->lineno = yylineno; }
+| "+" exp      { $$ = $2; $$->lineno = yylineno; }
+| "-" exp      { $$ = unopexpr(MINUS, $2); $$->lineno = yylineno; }
+| IDENT "(" explist ")" { $$ = funcallexpr($1, $3); $$->lineno = yylineno; }
+| "^" exp { $$ = derefexpr($2); $$->lineno = yylineno; }
+| exp "[" nonempty_explist "]" { $$ = arrayexpr($1, $3); $$->lineno = yylineno; }
 
 explist:
           { $$ = empty_exprlist(); }

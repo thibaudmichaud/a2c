@@ -15,11 +15,16 @@ int int_equal(int i, int j)
   return i == j;
 }
 
+void noop(int i)
+{
+  (void)i;
+}
+
 int main()
 {
   int a;
   ht_tpl(int) ht;
-  ht_init(ht, HT_CAPACITY, hash_int, int_equal);
+  ht_init(ht, HT_CAPACITY, hash_int, int_equal, noop);
 
   for (int n = 0; n < N; ++n)
     ht_add(ht, n);

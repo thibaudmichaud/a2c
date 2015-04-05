@@ -75,6 +75,7 @@ struct funcall
 {
   char *fun_ident;
   exprlist_t args;
+  int lineno;
 };
 
 struct val
@@ -123,6 +124,7 @@ struct expr
     struct structelt structelt;
     struct deref deref;
   } val;
+  unsigned lineno;
 };
 
 /*--------------*/
@@ -205,6 +207,7 @@ struct instruction
     struct forloop *forloop;
     struct returnstmt *returnstmt;
   } instr;
+  int lineno;
 };
 
 struct enum_def
