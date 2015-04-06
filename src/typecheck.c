@@ -119,6 +119,7 @@ char *algo_to_c_type(char *ident)
 
 bool check_prog(struct prog* prog)
 {
+    bool correct = true;
     fun_table_t* functions = empty_fun_table();
     for(unsigned i = 0; i < prog->algos.size; ++i)
     {
@@ -133,11 +134,11 @@ bool check_prog(struct prog* prog)
     {
         struct algo* al = list_nth(prog->algos, i);
         if (!check_algo(al, functions))
-          return false;
+            correct = false;
     }
     free_fun_table(functions);
     free(functions);
-    return true;
+    return correct;
 }
 
 void add_variable(var_table_t* variables, type_table_t* types, struct single_var_decl* var)
@@ -414,6 +415,7 @@ bool check_inst(struct instruction *i, struct function* fun, fun_table_t* functi
                 struct type* t2 = get_expr_type(i->instr.assignment->e2, functions, variables, types); 
                 if(!equal_types(t1,t2))
                 {
+                  printf("ls. %d: ", i->instr.assignment->e1->lineno);
                     printf("error in assignment\n");
                     return false;
                 }
@@ -580,7 +582,9 @@ bool check_expr(struct expr *e, fun_table_t* functions, var_table_t* variables, 
                 printf("%s ", expr_type(e->val.binopexpr.e1));
                 printf("and ");
                 printf("%s.\n", expr_type(e->val.binopexpr.e2));
-                printf("%s", get_line(yyin, e->lineno));
+                char *error_line = get_line(yyin, e->lineno);
+                printf("%s", error_line);
+                free(error_line);
                 return false;
             }
             break;

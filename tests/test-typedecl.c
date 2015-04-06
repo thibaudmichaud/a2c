@@ -20,7 +20,6 @@ void test(int b, int *gp, int *bla, char *z)
   t_tab_bool tab;
   int a, b;
   double c;
-  tab[2][3] = 4;
   a = 0;
   c = 4.5;
   if ((a == b))
@@ -36,4 +35,3 @@ int main(void)
 {
   test(variable_globale, n);
 }
-error in assignment
