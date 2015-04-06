@@ -36,12 +36,6 @@ struct type* char_to_type(char* ident_type)
         t->type_kind = primary_t;
         t->type_val.primary = str_t;
     }
-    else
-    {
-        t->type_kind = primary_t;
-        t->type_val.primary = nul_t;
-
-    }
 
     return t;
 
@@ -155,7 +149,7 @@ void add_variable(var_table_t* variables, type_table_t* types, struct single_var
 bool check_algo(struct algo* al, fun_table_t* functions)
 {
     struct function* f = malloc(sizeof(struct function));
-    f->ret = char_to_type(al->ident);
+    f->ret = char_to_type(al->return_type);
     var_table_t* variables = empty_var_table();
     type_table_t* types = empty_type_table();
     struct declarations* decl = al->declarations;
@@ -387,6 +381,7 @@ bool check_algo(struct algo* al, fun_table_t* functions)
 bool check_inst(struct instruction *i, struct function* fun, fun_table_t* functions, 
         var_table_t* variables, type_table_t* types)
 {
+    warn("newinst");
     switch(i->kind)
     {
         case funcall:
@@ -415,7 +410,7 @@ bool check_inst(struct instruction *i, struct function* fun, fun_table_t* functi
                 struct type* t2 = get_expr_type(i->instr.assignment->e2, functions, variables, types); 
                 if(!equal_types(t1,t2))
                 {
-                  printf("ls. %d: ", i->instr.assignment->e1->lineno);
+                    printf("ls. %d: ", i->instr.assignment->e1->lineno);
                     printf("error in assignment\n");
                     return false;
                 }
@@ -469,7 +464,50 @@ bool check_inst(struct instruction *i, struct function* fun, fun_table_t* functi
             break;
 
         case switchcase:
-            //TODO: implement switchcase
+            if(!check_expr(i->instr.switchcase->cond, functions, variables, types))
+            {
+                printf("error in switch expression\n");
+                return false;
+            }
+            for(unsigned int l = 0; l < i->instr.switchcase->caseblocklist.size; ++l)
+            {
+                for( unsigned int j = 0; j < i->instr.switchcase->caseblocklist.data[l]->exprlist.size; ++j)
+                {
+                    if(!(check_expr(i->instr.switchcase->caseblocklist.data[l]->exprlist.data[j],
+                                    functions,variables,types)
+                                && equal_types(
+                                    get_expr_type(
+                                        i->instr.switchcase->caseblocklist.data[l]->exprlist.data[j], 
+                                        functions, variables, types), 
+                                    get_expr_type(i->instr.switchcase->cond, functions, variables, types))))
+                    {
+                        printf("error in difference type between switch and case\n");
+                        return false;
+                    }
+                }
+                for(int unsigned k = 0; 
+                        k < i->instr.switchcase->caseblocklist.data[l]->instructions.size; ++k)
+                {
+                    if(!check_inst(i->instr.switchcase->caseblocklist.data[l]->instructions.data[k], fun,
+                                functions, variables,types ))
+                    {
+                        printf("error while checking case instruction\n");
+                        return false;
+                    }
+                }
+
+            }
+            for(unsigned int l = 0; l < i->instr.switchcase->otherwiseblock.size; ++l)
+            {
+                if(!check_inst(i->instr.switchcase->otherwiseblock.data[l], fun,
+                            functions, variables, types))
+                {
+                    printf("error while checking case instruction\n");
+                    return false;
+                }
+
+            }
+            return true;
             break;
 
         case dowhile:
@@ -539,8 +577,10 @@ bool check_inst(struct instruction *i, struct function* fun, fun_table_t* functi
             break;
 
         case returnstmt:
-            return equal_types(get_expr_type(i->instr.returnstmt->expr, functions, variables, types), 
-                    fun->ret);
+            if(equal_types(get_expr_type(i->instr.returnstmt->expr, functions, variables, types), fun->ret))
+                return true;
+            printf("error in return statement\n");
+            return false;
             break;
     }
     return false;
