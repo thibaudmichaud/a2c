@@ -7,13 +7,9 @@
 #include "codegen.h"
 #include "typecheck.h"
 #include "data_struct/list/list.h"
+#include "a2c.h"
 
-// Global variable filled by yyparse().
-struct prog *prog;
-extern FILE *yyin;
-
-// This is needed to free the global variables allocated by the lexer.
-int yylex_destroy(void);
+char *srcfilename = NULL;
 
 int main(int argc, char **argv)
 {
@@ -23,14 +19,15 @@ int main(int argc, char **argv)
     _exit(1);
   }
 
-  yyin = fopen(argv[1], "r");
+  srcfilename = argv[1];
+  yyin = fopen(srcfilename, "r");
   if (yyin == NULL)
     err(1, "Couldn't open file %s", argv[1]);
 
   yyparse();
   
-  print_prog(prog);
-  check_prog(prog);
+  if (!check_prog(prog))
+    print_prog(prog);
   fclose(yyin);
   yylex_destroy();
   free_prog(prog);

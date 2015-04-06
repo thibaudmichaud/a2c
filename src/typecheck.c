@@ -1,4 +1,7 @@
 #include "typecheck.h"
+#include "get_line.h"
+#include "parser.h"
+#include "a2c.h"
 
 struct type* char_to_type(char* ident_type)
 {
@@ -417,7 +420,6 @@ bool check_inst(struct instruction *i, struct function* fun, fun_table_t* functi
             }
             else
             {
-                print_instruction(i,0);
                 return false;
             }
             break;
@@ -572,11 +574,12 @@ bool check_expr(struct expr *e, fun_table_t* functions, var_table_t* variables, 
             }
             else
             {
-                printf("expression left was of type : ");
+                printf("%s:%d: ", srcfilename, e->lineno);
+                printf("incompatible types: ");
                 printf("%s ", expr_type(e->val.binopexpr.e1));
-                printf("and expression right was of type : ");
-                printf("%s\n", expr_type(e->val.binopexpr.e2));
-                printf("l.%d : ",e->lineno);
+                printf("and ");
+                printf("%s.\n", expr_type(e->val.binopexpr.e2));
+                printf("%s", get_line(yyin, e->lineno));
                 return false;
             }
             break;
