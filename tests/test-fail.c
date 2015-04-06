@@ -19,4 +19,4 @@ int main(void)
   test();
 }
 expression left was of type : real and expression right was of type : string
-In instruction : c = (4.5 + "a");
+l.8 : c = (4.5 + "a");

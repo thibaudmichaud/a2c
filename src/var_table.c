@@ -1,4 +1,5 @@
 #include "var_table.h"
+#include <err.h>
 
 static size_t hash(struct var_sym *s)
 {
@@ -12,7 +13,22 @@ static size_t hash(struct var_sym *s)
 
 void free_var(struct var_sym* sym)
 {
-    free(sym->type);
+   switch(sym->type->type_kind)
+    {
+        case primary_t:
+            break;
+        case records_t:
+            free_records(sym->type->type_val.records_type);
+            break;
+        case array_t:
+            break;
+        case pointer_t:
+            free_pointer(sym->type->type_val.pointer_type);
+            break;
+        case enum_t:
+            free_enum(sym->type->type_val.enum_type);
+            break;
+    }
     free(sym);
 }
 

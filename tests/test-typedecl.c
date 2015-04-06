@@ -36,3 +36,4 @@ int main(void)
 {
   test(variable_globale, n);
 }
+error in assignment

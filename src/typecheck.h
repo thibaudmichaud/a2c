@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <err.h>
+#include "parser.h"
+#include "codegen.h"
 #include "data_struct/list/list.h"
 #include "codegen.h"
 #include "funtable.h"

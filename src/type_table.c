@@ -2,7 +2,36 @@
 
 void free_type(struct type_sym* sym)
 {
-    free(sym->type);
+    switch(sym->type->type_kind)
+    {
+        case primary_t:
+            break;
+        case records_t:
+            {
+                for(unsigned i = 0; i < sym->type->type_val.records_type->fields->size; ++i)
+                {
+                    //free(list_nth(*(sym->type->type_val.records_type->fields), i)->type);
+                    //free(list_nth(*(sym->type->type_val.records_type->fields), i)->ident);
+                    free(sym->type->type_val.records_type->fields->data[i]);
+                }
+                list_free(*sym->type->type_val.records_type->fields);
+                free(sym->type->type_val.records_type);
+                free(sym->type);
+            }
+            break;
+        case array_t:
+            free(sym->type->type_val.array_type);
+            free(sym->type);
+            break;
+        case pointer_t:
+            free(sym->type);
+            free_pointer(sym->type->type_val.pointer_type);
+            break;
+        case enum_t:
+            free(sym->type->type_val.enum_type);
+            free(sym->type);
+            break;
+    }
     free(sym);
 }
 
@@ -23,7 +52,7 @@ static int equal(struct type_sym *s1, struct type_sym *s2)
 
 type_table_t* empty_type_table(void)
 {
-  type_table_t* type_table = malloc(sizeof(type_table_t));
+  type_table_t* type_table= malloc(sizeof(type_table_t));
   ht_init(*type_table, 97, hash, equal, free_type);
   return type_table;
 }

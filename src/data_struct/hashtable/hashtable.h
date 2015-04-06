@@ -90,8 +90,8 @@ do {                                                                          \
     while (b)                                                                 \
     {                                                                         \
       next = (bucket)b->next;                                                 \
-      (_ht).free_type(b->elt);                                                \
-      free(b);                                                                \
+      (_ht).free_type(b->elt);                                                           \
+      free(b);                                                              \
       b = next;                                                               \
     }                                                                         \
   }                                                                           \

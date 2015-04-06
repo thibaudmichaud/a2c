@@ -59,4 +59,9 @@ struct type {
         struct enum_type*    enum_type;
     }type_val;
 };
+
+void free_pointer(struct pointer* p);
+void free_records(struct records* p);
+void free_enum(struct enum_type* _enum);
+
 #endif
