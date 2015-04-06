@@ -26,7 +26,7 @@ int main(int argc, char **argv)
 
   yyparse();
   
-  if (!check_prog(prog))
+  if (check_prog(prog))
     print_prog(prog);
   fclose(yyin);
   yylex_destroy();

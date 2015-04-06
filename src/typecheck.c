@@ -132,7 +132,8 @@ bool check_prog(struct prog* prog)
     for(unsigned i = 0; i < prog->algos.size; ++i)
     {
         struct algo* al = list_nth(prog->algos, i);
-        check_algo(al, functions);
+        if (!check_algo(al, functions))
+          return false;
     }
     free_fun_table(functions);
     free(functions);
