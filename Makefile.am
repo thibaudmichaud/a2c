@@ -27,6 +27,7 @@ TESTS = tests/parser.test \
 	tests/emptyalgolist.test \
 	tests/const-decl.test \
 	tests/fibo.test \
+	tests/all.test \
 	tests/switch.test \
 	tests/switchnodef.test
 	tests/fibo.test

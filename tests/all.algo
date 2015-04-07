@@ -1,0 +1,45 @@
+algorithme fonction coucou:entier
+parametres locaux
+    booleen a
+    entier b
+variables
+    caractere c
+    entier i , n
+debut 
+
+n <- 10
+
+pour i <- 1 jusqu'a n faire
+    b <- b + 1
+fin pour
+
+tant que b < 10 faire
+    b <- b + 1
+fin tant que
+
+faire 
+    a <- vrai
+tant que b < 20
+
+si b < 10 alors
+    a <- faux 
+sinon
+    b <-1
+fin si
+
+selon n faire
+    1: b <- 1
+    2: b <- 2
+fin selon
+
+retourne 0
+
+fin algorithme fonction coucou
+
+variables
+    booleen variable_globale
+debut
+
+    coucou(1,1.5)
+
+fin

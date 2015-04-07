@@ -445,18 +445,15 @@ bool check_inst(struct instruction *i, struct function* fun, fun_table_t* functi
                     {
                         if(!check_inst(list_nth(e->elseblock,i), fun, functions, variables, types))
                         {
-                            free(t1);
                             free(t);
                             return false;
                         }
                     }
-                    free(t1);
                     free(t);
                     return true;
                 }
 
                 printf("error in condition statement");
-                free(t1);
                 free(t);
                 return false;
             }
@@ -512,7 +509,8 @@ bool check_inst(struct instruction *i, struct function* fun, fun_table_t* functi
         case dowhile:
             {
                 struct dowhile* e = i->instr.dowhile;
-                if(equal_types(get_expr_type(e->cond, functions, variables, types), (struct type*) bool_t))
+                if(equal_types(get_expr_type(e->cond, functions, variables, types), 
+                            find_type(types,"booleen")->type))
                 {
                     for(unsigned int i = 0; i < e->instructions.size; ++i)
                     {
@@ -532,7 +530,8 @@ bool check_inst(struct instruction *i, struct function* fun, fun_table_t* functi
         case whiledo:
             {
                 struct whiledo* e = i->instr.whiledo;
-                if(equal_types(get_expr_type(e->cond, functions, variables, types), (struct type*)bool_t))
+                if(equal_types(get_expr_type(e->cond, functions, variables, types), 
+                            find_type(types,"booleen")->type))
                 {
                     for(unsigned int i = 0; i < e->instructions.size; ++i)
                     {
@@ -605,7 +604,11 @@ bool check_expr(struct expr *e, fun_table_t* functions, var_table_t* variables, 
             if (equal_types(get_expr_type(e->val.binopexpr.e2, functions, variables, types),
                         get_expr_type(e->val.binopexpr.e1, functions, variables, types)))
             {
-                if(e->val.binopexpr.op == EQ)
+                if(e->val.binopexpr.op == EQ 
+                    || e->val.binopexpr.op == LT
+                    || e->val.binopexpr.op == GT
+                    || e->val.binopexpr.op == LE
+                    || e->val.binopexpr.op == GE)
                 {
                     struct type* t = malloc(sizeof(struct type));
                     t->type_kind = primary_t;
@@ -613,6 +616,7 @@ bool check_expr(struct expr *e, fun_table_t* functions, var_table_t* variables, 
                     t->type_val.primary = p;
                     return true;
                 }
+                return true;
             }
             else
             {
@@ -705,13 +709,14 @@ struct type* get_expr_type(struct expr *e, fun_table_t* functions, var_table_t* 
             if (equal_types(get_expr_type(e->val.binopexpr.e2, functions, variables, types),
                         get_expr_type(e->val.binopexpr.e1, functions, variables, types)))
             {
-                if(e->val.binopexpr.op == EQ)
+                if(e->val.binopexpr.op == EQ 
+                        || e->val.binopexpr.op == LT
+                        || e->val.binopexpr.op == GT
+                        || e->val.binopexpr.op == LE
+                        || e->val.binopexpr.op == GE)
+                        
                 {
-                    struct type* t = malloc(sizeof(struct type));
-                    t->type_kind = primary_t;
-                    primary_type p = bool_t;
-                    t->type_val.primary = p;
-                    return t;
+                    return find_type(types,"booleen")->type;
                 }
                 return get_expr_type(e->val.binopexpr.e1, functions, variables, types);
             }
