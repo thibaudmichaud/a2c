@@ -516,13 +516,13 @@ bool check_inst(struct instruction *i, struct function* fun, fun_table_t* functi
                     {
                         if(!check_inst(list_nth(e->instructions,i), fun, functions, variables, types))
                         {
-                            printf("error in instruction switch");
+                            printf("error in do while loop\n");
                             return false;
                         }
                     }
                     return true;
                 }
-                printf("error in condition of switch");
+                printf("error in condition of do while loop\n");
                 return false;
             }
             break;
@@ -537,13 +537,13 @@ bool check_inst(struct instruction *i, struct function* fun, fun_table_t* functi
                     {
                         if(!check_inst(list_nth(e->instructions,i), fun, functions, variables, types))
                         {
-                            printf("error in instruction switch");
+                            printf("error in while loop");
                             return false;
                         }
                     }
                     return true;
                 }
-                printf("error in condition of switch");
+                printf("error in condition of while loop");
                 return false;
             }
             break;
