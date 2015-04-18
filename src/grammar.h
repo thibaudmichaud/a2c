@@ -728,7 +728,7 @@ struct expr *expr_from_val(struct val *v)
 }
 
 static inline
-struct caseblock *make_block(exprlist_t exprlist, instructionlist_t instructions)
+struct caseblock *caseblock(exprlist_t exprlist, instructionlist_t instructions)
 {
   struct caseblock *i = malloc(sizeof(struct caseblock));
   i->exprlist = exprlist;

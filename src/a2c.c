@@ -8,10 +8,11 @@
 #include "typecheck.h"
 #include "data_struct/list/list.h"
 #include "a2c.h"
+#include "lexer.h"
 
 FILE *fin = NULL;
 char *srcfilename = NULL;
-struct expr *expr = NULL;
+instructionlist_t block;
 
 int main(int argc, char **argv)
 {
@@ -26,13 +27,9 @@ int main(int argc, char **argv)
   if (fin == NULL)
     err(1, "Couldn't open file %s", argv[1]);
 
-  syntax_error = 0;
-  expr = parse();
-  if (expr)
-    print_expression(expr);
-
-  if (expr)
-    free_expression(expr);
+  block = parse();
+  print_instructions(block, 0);
+  free_instructions(block);
 
   fclose(fin);
   return 0;

@@ -9,47 +9,6 @@
 static int curline = 0;
 static int curchar = 0;
 
-char *toktypestr(enum tokentype toktype)
-{
-  switch (toktype)
-  {
-    case AND: return "et";
-    case ASSIGN: return "<-";
-    case COMMA: return ",";
-    case DEREF: return "^";
-    case DIV: return "div";
-    case ENDOFFILE: return "EOF";
-    case EQ: return "=";
-    case FOR: return "pour";
-    case FUNCTION: return "fonction";
-    case GE: return ">=";
-    case GT: return ">";
-    case IDENTIFIER: return "identifier";
-    case LE: return "<=";
-    case LPAREN: return "(";
-    case LSQBRACKET: return "[";
-    case LT: return "<";
-    case MINUS: return "-";
-    case MOD: return "mod";
-    case NEQ: return "<>";
-    case NOT: return "non";
-    case NULLKW: return "NUL";
-    case NUM: return "number";
-    case OR: return "ou";
-    case PLUS: return "+";
-    case PROCEDURE: return "procedure";
-    case RPAREN: return ")";
-    case RSQBRACKET: return "]";
-    case SLASH: return "/";
-    case STAR: return "*";
-    case TYPE: return "type";
-    case UMINUS: return "-";
-    case WHILE: return "tant que";
-    case XOR: return "oue";
-    default: return "(unknown token)";
-  }
-}
-
 char nextnonblank()
 {
   char c;
@@ -57,13 +16,14 @@ char nextnonblank()
   {
     switch (c = getc(fin))
     {
-      case '\n':
-        ++curline;
-        curchar = -1;
-        // Fall through.
       case ' ':
       case '\t':
         break;
+      case '\n':
+        curchar = 0;
+        do ++curline; while ((c = getc(fin)) == '\n');
+        ungetc(c, fin);
+        return '\n';
       default:
         return c;
     }
@@ -71,25 +31,30 @@ char nextnonblank()
   }
 }
 
-void getalnum(struct token *tok)
+char *getalnumstr(void)
 {
   unsigned i = -1;
   size_t len = 8;
-  tok->val = malloc(len);
+  char *str = malloc(len);
 
   do
   {
     ++i;
     ++curchar;
-    tok->val[i] = getc(fin);
+    str[i] = getc(fin);
     if (i + 1 >= len)
-      tok->val = realloc(tok->val, 2 * len);
+      str = realloc(str, 2 * len);
   }
-  while (isalnum(tok->val[i]));
-
-  ungetc(tok->val[i], fin);
+  while (isalnum(str[i]) || str[i] == '\'');
+  ungetc(str[i], fin);
   --curchar;
-  tok->val[i] = '\0';
+  str[i] = '\0';
+  return str;
+}
+
+void getalnum(struct token *tok)
+{
+  tok->val = getalnumstr();
 
   if (strcmp(tok->val, "ou") == 0)
     tok->type = OR;
@@ -103,6 +68,32 @@ void getalnum(struct token *tok)
     tok->type = MOD;
   else if (strcmp(tok->val, "non") == 0)
     tok->type = NOT;
+  else if (strcmp(tok->val, "tant") == 0)
+    tok->type = WHILE;
+  else if (strcmp(tok->val, "que") == 0)
+    tok->type = SO;
+  else if (strcmp(tok->val, "faire") == 0)
+    tok->type = DO;
+  else if (strcmp(tok->val, "fin") == 0)
+    tok->type = END;
+  else if (strcmp(tok->val, "retourne") == 0)
+    tok->type = RETURN;
+  else if (strcmp(tok->val, "pour") == 0)
+    tok->type = FOR;
+  else if (strcmp(tok->val, "jusqu'a") == 0)
+    tok->type = UNTIL;
+  else if (strcmp(tok->val, "decroissant") == 0)
+    tok->type = DECREASING;
+  else if (strcmp(tok->val, "si") == 0)
+    tok->type = IF;
+  else if (strcmp(tok->val, "sinon") == 0)
+    tok->type = ELSE;
+  else if (strcmp(tok->val, "alors") == 0)
+    tok->type = THEN;
+  else if (strcmp(tok->val, "selon") == 0)
+    tok->type = SWITCH;
+  else if (strcmp(tok->val, "autrement") == 0)
+    tok->type = OTHERWISE;
   else
     tok->type = IDENTIFIER;
 }
@@ -146,6 +137,7 @@ void getop(struct token *tok)
     case '^': tok->type = DEREF; break;
     case '[': tok->type = LSQBRACKET; break;
     case ']': tok->type = RSQBRACKET; break;
+    case ':': tok->type = COLON; break;
     case '<':
       ++curchar;
       lookahead = getc(fin);
@@ -190,7 +182,8 @@ struct token *gettok()
   char c = nextnonblank();
   tok->pos->line = curline;
   tok->pos->charstart = curchar;
-  ungetc(c, fin);
+  if (c != '\n')
+    ungetc(c, fin);
   if (isdigit(c) || c == '.')
     getnum(tok);
   else if (isalnum(c))
@@ -199,6 +192,11 @@ struct token *gettok()
   {
     tok->type = ENDOFFILE;
     tok->val = "EOF";
+  }
+  else if (c == '\n')
+  {
+    tok->type = EOL;
+    tok->val = "EOL";
   }
   else
     getop(tok);

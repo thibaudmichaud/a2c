@@ -541,7 +541,8 @@ void print_instruction(struct instruction *i, int indent)
     case returnstmt:
       print_indent(indent);
       printf("return ");
-      print_expression(i->instr.returnstmt->expr);
+      if (i->instr.returnstmt->expr)
+        print_expression(i->instr.returnstmt->expr);
       printf(";\n");
       break;
     default:
