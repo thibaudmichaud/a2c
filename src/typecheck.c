@@ -2,6 +2,7 @@
 #include "get_line.h"
 #include "parser.h"
 #include "a2c.h"
+#include "lexer.h"
 
 struct type* char_to_type(char* ident_type)
 {
@@ -625,7 +626,7 @@ bool check_expr(struct expr *e, fun_table_t* functions, var_table_t* variables, 
                 printf("%s ", expr_type(e->val.binopexpr.e1));
                 printf("and ");
                 printf("%s.\n", expr_type(e->val.binopexpr.e2));
-                char *error_line = get_line(yyin, e->lineno);
+                char *error_line = get_line(fin, e->lineno);
                 printf("%s", error_line);
                 free(error_line);
                 return false;

@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 struct prog *prog;
-extern FILE *yyin;
+extern FILE *fin;
 extern char *srcfilename;
 int syntax_error;
 

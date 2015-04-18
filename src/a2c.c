@@ -9,10 +9,9 @@
 #include "data_struct/list/list.h"
 #include "a2c.h"
 
+FILE *fin = NULL;
 char *srcfilename = NULL;
-
-// This is needed to free the global variables allocated by the lexer.
-int yylex_destroy(void);
+struct expr *expr = NULL;
 
 int main(int argc, char **argv)
 {
@@ -23,19 +22,18 @@ int main(int argc, char **argv)
   }
 
   srcfilename = argv[1];
-  yyin = fopen(srcfilename, "r");
-  if (yyin == NULL)
+  fin = fopen(srcfilename, "r");
+  if (fin == NULL)
     err(1, "Couldn't open file %s", argv[1]);
 
   syntax_error = 0;
-  yyparse();
-  if (!syntax_error && check_prog(prog))
-    print_prog(prog);
+  expr = parse();
+  if (expr)
+    print_expression(expr);
 
-  if (prog)
-    free_prog(prog);
+  if (expr)
+    free_expression(expr);
 
-  fclose(yyin);
-  yylex_destroy();
+  fclose(fin);
   return 0;
 }
