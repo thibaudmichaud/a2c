@@ -2,6 +2,7 @@
 #include "grammar.h"
 #include "codegen.h"
 #include "parser.h"
+#include "lexer.h"
 #include "typecheck.h"
 #define INDENT_WIDTH 2
 
@@ -11,7 +12,7 @@ void print_indent(int indent)
     printf(" ");
 }
 
-char *getopstr(int op)
+char *getopstr(enum tokentype op)
 {
   switch (op)
   {
@@ -20,6 +21,7 @@ char *getopstr(int op)
     case MINUS:
       return "-";
     case STAR:
+    case DEREF:
       return "*";
     case SLASH:
       return "/";
@@ -43,6 +45,8 @@ char *getopstr(int op)
       return ">=";
     case NEQ:
       return "<>";
+    case NOT:
+      return "!";
     default:
       return NULL;
   }

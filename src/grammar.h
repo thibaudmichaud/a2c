@@ -35,7 +35,7 @@ struct entry_point
 struct binopexpr
 {
   struct expr *e1;
-  int op; // should use tokens defined in parser.h
+  int op; // should use tokens defined in lexer.h
   struct expr *e2;
 };
 
@@ -58,16 +58,9 @@ struct deref
   struct expr *e;
 };
 
-enum unop
-{
-  UPLUS,
-  UMINUS,
-  NOT
-};
-
 struct unopexpr
 {
-  enum unop op;
+  int op;
   struct expr *e;
 };
 
