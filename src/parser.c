@@ -13,9 +13,6 @@ static struct token *lookahead[2] = { NULL };
 extern char *srcfilename;
 static int syntaxerror = 0;
 
-#define EXPR -1
-#define INSTR -2
-
 struct expr *prefix(char *expect);
 struct expr *infix(struct expr *left, char *expect);
 
@@ -33,17 +30,15 @@ int lbp(int type)
   switch (type)
   {
     case LPAREN: case LSQBRACKET:
-      return 130;
+      return 50;
     case NOT: case UMINUS: case DEREF:
-      return 120;
+      return 40;
     case STAR: case SLASH:
-      return 110;
+      return 30;
     case PLUS: case MINUS: case OR: case XOR: case AND:
-      return 100;
+      return 20;
     case LT: case LE: case GT: case GE: case NEQ: case EQ:
-      return 90;
-    case EXPR:
-      return 80;
+      return 10;
     default:
       return 0;
   }
@@ -65,35 +60,11 @@ void error(char *msg, ...)
   exit(1);
 }
 
-char *toktypestr(enum tokentype toktype)
-{
-  switch (toktype)
-  {
-    case ASSIGN: return "<-";
-    case BEGIN: return "debut";
-    case END: return "fin";
-    case EQ: return "=";
-    case VARIABLES: return "variables";
-    case ENDOFFILE: return "EOF";
-    case EOL: return "EOL";
-    case FUNCTION: return "fonction";
-    case IDENTIFIER: return "identifier";
-    case PROCEDURE: return "procedure";
-    case RETURN: return "retourne";
-    case RPAREN: return ")";
-    case RSQBRACKET: return "]";
-    case UNTIL: return "jusqu'a";
-    case FOR: return "pour";
-    case CONST: return "constantes";
-    default: return "something else";
-  }
-}
-
 void eat(enum tokentype expect)
 {
   next();
   if (tok->type != expect)
-    error("expected %s, not %s", toktypestr(expect), tok->val);
+    error("expected %s, not %s", describe(expect), tok->val);
 }
 
 /*
@@ -101,8 +72,10 @@ void eat(enum tokentype expect)
  * expressions.
  * Inspired by this article:
  * http://effbot.org/zone/simple-top-down-parsing.htm
- * The standard function names "nud" and "led" have been replaced by more
- * explicit names: "prefix" and "infix".
+ * original paper:
+ * http://hall.org.ua/halls/wizzard/pdf/Vaughan.Pratt.TDOP.pdf
+ * The function names used in the original paper, "nud" and "led", have been
+ * replaced by more explicit ones: "prefix" and "infix".
  */
 
 /*-------------*
@@ -132,7 +105,7 @@ struct expr *prefix(char *expect)
     case IDENTIFIER:
       return identexpr(strdup(tok->val));
     case LPAREN:
-      res = expression(lbp(EXPR));
+      res = expression(0);
       eat(RPAREN);
       return res;
     case PLUS: case MINUS: case NOT: case DEREF:
@@ -168,11 +141,11 @@ struct expr *infix(struct expr *left, char *expect)
         error("calling non-callable expression");
       args = empty_exprlist();
       if (lookahead[0]->type != COMMA && lookahead[0]->type != RPAREN)
-        list_push_back(args, expression(lbp(EXPR)));
+        list_push_back(args, expression(0));
       while (lookahead[0]->type == COMMA)
       {
         eat(COMMA);
-        list_push_back(args, expression(lbp(EXPR)));
+        list_push_back(args, expression(0));
       }
       eat(RPAREN);
       ident = strdup(left->val.ident);
@@ -180,11 +153,11 @@ struct expr *infix(struct expr *left, char *expect)
       return funcallexpr(ident, args);
     case LSQBRACKET:
       args = empty_exprlist();
-      list_push_back(args, expression(lbp(EXPR)));
+      list_push_back(args, expression(0));
       while (lookahead[0]->type == COMMA)
       {
         eat(COMMA);
-        list_push_back(args, expression(lbp(EXPR)));
+        list_push_back(args, expression(0));
       }
       eat(RSQBRACKET);
       return arrayexpr(left, args);
@@ -201,12 +174,12 @@ struct expr *infix(struct expr *left, char *expect)
 
 struct expr *parse_expression(void)
 {
-  return expression(lbp(EXPR));
+  return expression(0);
 }
 
 /*
- * LL(1) parser using the above TDOP parser for expressions and a few hacks to
- * handle non-LL(1) grammar structures.
+ * LL(2) parser using the above TDOP parser for expressions and a few hacks to
+ * handle non-LL(2) grammar structures.
  */
 
 /*--------------*
@@ -227,12 +200,10 @@ instructionlist_t parse_block(void)
 
 struct instruction *parse_while(void)
 {
-  struct expr *cond;
-  instructionlist_t block;
   eat(WHILE); eat(SO);
-  cond = parse_expression();
+  struct expr *cond = parse_expression();
   eat(DO); eat(EOL);
-  block = parse_block();
+  instructionlist_t block = parse_block();
   eat(END); eat(WHILE); eat(SO); eat(EOL);
   return whileblock(cond, block);
 }
@@ -383,8 +354,8 @@ struct instruction *parse_instruction(void)
            free(expr);
            return res;
          default:
-           error("unexpected %s", tok->val);
            next();
+           error("unexpected %s", tok->val);
            return parse_instruction();
        }
     case RETURN:
@@ -412,7 +383,7 @@ struct instruction *parse_instruction(void)
 
 /*--------------*
  | DECLARATIONS |
- *-------------*/
+ *--------------*/
 
 struct single_var_decl *parse_vardecl(void)
 {
@@ -423,7 +394,7 @@ struct single_var_decl *parse_vardecl(void)
   while (lookahead[0]->type == COMMA)
   {
     list_push_back(identlist, strdup(tok->val));
-    eat(COMMA); next();
+    eat(COMMA); eat(IDENTIFIER);
   }
   list_push_back(identlist, strdup(tok->val));
   eat(EOL);
@@ -434,7 +405,8 @@ vardecllist_t parse_vardecls()
 {
   vardecllist_t vardecllist = empty_vardecllist();
   while (lookahead[0]->type != BEGIN && lookahead[0]->type != TYPES
-      && lookahead[0]->type != CONST && lookahead[0]->type != VARIABLES)
+      && lookahead[0]->type != CONST && lookahead[0]->type != VARIABLES
+      && lookahead[0]->type != PARAM && lookahead[0]->type != END)
     list_push_back(vardecllist, parse_vardecl());
   return vardecllist;
 }
@@ -474,9 +446,88 @@ constdecllist_t parse_constdecls(void)
   eat(CONST); eat(EOL);
   constdecllist_t constdecllist = empty_constdecllist();
   while (lookahead[0]->type != BEGIN && lookahead[0]->type != TYPES
-      && lookahead[0]->type != VARIABLES)
+      && lookahead[0]->type != CONST && lookahead[0]->type != VARIABLES
+      && lookahead[0]->type != PARAM)
     list_push_back(constdecllist, parse_constdecl());
   return constdecllist;
+}
+
+struct type_def *parse_enum_def(void)
+{
+  eat(LPAREN);
+  identlist_t identlist = empty_identlist();
+  eat(IDENTIFIER);
+  list_push_back(identlist, strdup(tok->val));
+  while (lookahead[0]->type == COMMA)
+  {
+    eat(COMMA);
+    eat(IDENTIFIER);
+    list_push_back(identlist, strdup(tok->val));
+  }
+  eat(RPAREN); eat(EOL);
+  return make_enum_def(identlist);
+}
+
+struct type_def *parse_record_def(void)
+{
+  eat(RECORD); eat(EOL);
+  vardecllist_t vardecl = parse_vardecls();
+  eat(END); eat(RECORD); eat(IDENTIFIER); eat(EOL);
+  return make_record(vardecl);
+}
+
+struct type_def *parse_array_def(void)
+{
+  intlist_t dims = empty_intlist();
+  eat(INT);
+  list_push_back(dims, atoi(tok->val));
+  while (lookahead[0]->type == X)
+  {
+    eat(X);
+    eat(INT);
+    list_push_back(dims, atoi(tok->val));
+  }
+  eat(IDENTIFIER);
+  char *type = strdup(tok->val);
+  eat(EOL);
+  return make_array_def(dims, type);
+}
+
+struct type_def *parse_pointer_def(void)
+{
+  eat(DEREF);
+  eat(IDENTIFIER);
+  char *type = strdup(tok->val);
+  eat(EOL);
+  return make_pointer_def(type);
+}
+
+struct type_decl *parse_typedecl(void)
+{
+  eat(IDENTIFIER);
+  char *ident = strdup(tok->val);
+  struct type_def *type_def = NULL;
+  eat(EQ);
+  switch (lookahead[0]->type)
+  {
+    case LPAREN: type_def = parse_enum_def(); break;
+    case RECORD: type_def = parse_record_def(); break;
+    case INT:    type_def = parse_array_def(); break;
+    case DEREF:  type_def = parse_pointer_def(); break;
+    default: error("expected type definition, not %s", tok->val);
+  }
+  return make_type_decl(ident, type_def);
+}
+
+typedecllist_t parse_typedecls(void)
+{
+  eat(TYPES); eat(EOL);
+  typedecllist_t typedecllist = empty_typedecllist();
+  while (lookahead[0]->type != BEGIN && lookahead[0]->type != TYPES
+      && lookahead[0]->type != CONST && lookahead[0]->type != VARIABLES
+      && lookahead[0]->type != PARAM)
+    list_push_back(typedecllist, parse_typedecl());
+  return typedecllist;
 }
 
 /*------------*
@@ -511,15 +562,21 @@ struct declarations *parse_decls(void)
     if (lookahead[0]->type == LOCAL)
     {
       lp = parse_lp();
-      if (lookahead[0]->type == GLOBAL)
+      if (lookahead[0]->type == PARAM)
+      {
+        eat(PARAM);
         gp = parse_gp();
+      }
     }
     else if (lookahead[0]->type == GLOBAL)
     {
       local_first = 0;
       gp = parse_gp();
-      if (lookahead[0]->type == LOCAL)
+      if (lookahead[0]->type == PARAM)
+      {
+        eat(PARAM);
         lp = parse_lp();
+      }
     }
   }
   if (lookahead[0]->type == VARIABLES)
@@ -527,7 +584,17 @@ struct declarations *parse_decls(void)
     eat(VARIABLES); eat(EOL);
     declarations->var_decl = parse_vardecls();
     if (lookahead[0]->type == CONST)
+    {
       declarations->const_decls = parse_constdecls();
+      if (lookahead[0]->type == TYPES)
+        declarations->type_decls = parse_typedecls();
+    }
+    else if (lookahead[0]->type == TYPES)
+    {
+      declarations->type_decls = parse_typedecls();
+      if (lookahead[0]->type == CONST)
+        declarations->const_decls = parse_constdecls();
+    }
   }
   else if (lookahead[0]->type == CONST)
   {
@@ -536,6 +603,37 @@ struct declarations *parse_decls(void)
     {
       eat(VARIABLES); eat(EOL);
       declarations->var_decl = parse_vardecls();
+      if (lookahead[0]->type == TYPES)
+        declarations->type_decls = parse_typedecls();
+    }
+    else if (lookahead[0]->type == TYPES)
+    {
+      declarations->type_decls = parse_typedecls();
+      if (lookahead[0]->type == TYPES)
+      {
+        eat(VARIABLES); eat(EOL);
+        declarations->var_decl = parse_vardecls();
+      }
+    }
+  }
+  else if (lookahead[0]->type == TYPES)
+  {
+    declarations->type_decls = parse_typedecls();
+    if (lookahead[0]->type == CONST)
+    {
+      declarations->const_decls = parse_constdecls();
+      if (lookahead[0]->type == VARIABLES)
+      {
+        eat(VARIABLES); eat(EOL);
+        declarations->var_decl = parse_vardecls();
+      }
+    }
+    else if (lookahead[0]->type == VARIABLES)
+    {
+      eat(VARIABLES); eat(EOL);
+      declarations->var_decl = parse_vardecls();
+      if (lookahead[0]->type == CONST)
+        declarations->const_decls = parse_constdecls();
     }
   }
   declarations->param_decl = make_param_decl(local_first, lp, gp);
@@ -561,7 +659,7 @@ struct algo *parse_function()
 struct algo *parse_procedure()
 {
   eat(PROCEDURE);
-  next();
+  eat(IDENTIFIER);
   char *ident = strdup(tok->val);
   eat(EOL);
   struct declarations *decls = parse_decls();
@@ -600,6 +698,8 @@ struct prog *parse_prog(void)
     eat(VARIABLES); eat(EOL);
     globvar = parse_vardecls();
   }
+  else
+    globvar = empty_vardecllist();
   eat(BEGIN); eat(EOL);
   instructionlist_t instrs = parse_block();
   eat(END); eat(EOL);

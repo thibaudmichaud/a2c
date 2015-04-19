@@ -46,6 +46,7 @@ enum tokentype {
   PLUS,
   PROCEDURE,
   REAL,
+  RECORD,
   RETURN,
   RPAREN,
   RSQBRACKET,
@@ -62,6 +63,7 @@ enum tokentype {
   UNTIL,
   VARIABLES,
   WHILE,
+  X,
   XOR
 };
 
@@ -78,7 +80,7 @@ struct token {
     struct pos *pos;
 };
 
-char *toktypestr(enum tokentype toktype);
+char *describe(enum tokentype toktype);
 struct token *gettok(void);
 void freetok(struct token *tok);
 
