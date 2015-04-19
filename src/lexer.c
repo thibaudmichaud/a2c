@@ -121,6 +121,10 @@ void getalnum(struct token *tok)
     tok->type = LOCAL;
   else if (strcmp(tok->val, "globaux") == 0)
     tok->type = GLOBAL;
+  else if (strcmp(tok->val, "enregistrement") == 0)
+    tok->type = RECORD;
+  else if (strcmp(tok->val, "x") == 0)
+    tok->type = X;
   else
     tok->type = IDENTIFIER;
 }
@@ -267,4 +271,72 @@ void freetok(struct token *tok)
     free(tok->val);
   free(tok->pos);
   free(tok);
+}
+
+char *describe(enum tokentype toktype)
+{
+  switch (toktype)
+  {
+    case ALGORITHM: return "algorithme";
+    case AND: return "et";
+    case ASSIGN: return "<-";
+    case BEGIN: return "debut";
+    case CHAR: return "char";
+    case COLON: return ":";
+    case COMMA: return ",";
+    case CONST: return "constantes";
+    case DECREASING: return "decroissant";
+    case DEREF: return "";
+    case DIV: return "div";
+    case DO: return "faire";
+    case ELSE: return "sinon";
+    case END: return "fin";
+    case ENDOFFILE: return "EOF";
+    case EOL: return "EOL";
+    case EQ: return "=";
+    case FALSE: return "faux";
+    case FOR: return "pour";
+    case FUNCTION: return "fonction";
+    case GE: return ">=";
+    case GLOBAL: return "globaux";
+    case GT: return ">";
+    case IDENTIFIER: return "identifier";
+    case IF: return "si";
+    case INT: return "int";
+    case LE: return "<";
+    case LOCAL: return "locaux";
+    case LPAREN: return "(";
+    case LSQBRACKET: return "[";
+    case LT: return "<";
+    case MINUS: return "-";
+    case MOD: return "mod";
+    case NEQ: return "<>";
+    case NOT: return "non";
+    case NULLKW: return "NUL";
+    case OR: return "ou";
+    case OTHERWISE: return "autrement";
+    case PARAM: return "parametres";
+    case PLUS: return "+";
+    case PROCEDURE: return "procedure";
+    case REAL: return "real";
+    case RECORD: return "enregistrement";
+    case RETURN: return "retourne";
+    case RPAREN: return ")";
+    case RSQBRACKET: return "]";
+    case SLASH: return "/";
+    case SO: return "que";
+    case STAR: return "*";
+    case STRING: return "string";
+    case SWITCH: return "selon";
+    case THEN: return "alors";
+    case TRUE: return "vrai";
+    case TYPES: return "types";
+    case UMINUS: return "-";
+    case UNTIL: return "jusqu'a";
+    case VARIABLES: return "variables";
+    case WHILE: return "tant";
+    case X: return "x";
+    case XOR: return "oue";
+    default: return "";
+  }
 }

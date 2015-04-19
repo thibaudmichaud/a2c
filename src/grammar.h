@@ -216,7 +216,6 @@ struct array_def
 
 struct record_def
 {
-  char *ident;
   vardecllist_t var_decl;
 };
 
@@ -651,10 +650,9 @@ struct type_def *make_array_def(intlist_t dims, char *ident)
 }
 
 static inline
-struct type_def *make_record(vardecllist_t var_decl, char *ident)
+struct type_def *make_record(vardecllist_t var_decl)
 {
   struct record_def *s = malloc(sizeof(struct record_def));
-  s->ident = ident;
   s->var_decl = var_decl;
   struct type_def *t = malloc(sizeof(struct type_def));
   t->type_type = struct_type;
