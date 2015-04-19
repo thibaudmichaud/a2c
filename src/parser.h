@@ -4,6 +4,6 @@
 #include <grammar.h>
 
 struct expr *parse_expression(void);
-instructionlist_t parse(void);
+struct prog *parse(void);
 
 #endif

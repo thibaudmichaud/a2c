@@ -63,7 +63,7 @@ void print_val(struct val *val)
       printf("%g", val->val.realval);
       break;
     case stringtype:
-      printf("%s", val->val.stringval);
+      printf("\"%s\"", val->val.stringval);
       break;
     case booltype:
       printf("%d", val->val.boolval == true);
@@ -559,8 +559,7 @@ void print_instruction(struct instruction *i, int indent)
       {
         print_indent(indent + INDENT_WIDTH);
         printf("default:\n");
-        print_indent(indent +2);
-        print_instructions(i->instr.switchcase->otherwiseblock, indent);
+        print_instructions(i->instr.switchcase->otherwiseblock, indent + 2 * INDENT_WIDTH);
         print_indent(indent + 2 * INDENT_WIDTH);
         printf("break;\n");
       }
@@ -735,10 +734,11 @@ void free_expression(struct expr *e)
 
 void free_prog(struct prog *prog)
 {
-    free_var_decl(prog->entry_point->var_decl);
-    free_instructions(prog->entry_point->instructions);
+  free_var_decl(prog->entry_point->var_decl);
+  free_instructions(prog->entry_point->instructions);
   free(prog->entry_point);
   for (unsigned i = 0; i < prog->algos.size; ++i)
     free_algo(prog->algos.data[i]);
   list_free(prog->algos);
+  free(prog);
 }

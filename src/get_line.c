@@ -11,7 +11,7 @@ char* get_line(FILE *f, int line)
   if (f)
   {
     rewind(f);
-    for (int i = 0; i < line + 1 && (getline(&l, &len, f) != -1); i++)
+    for (int i = 0; i < line && (getline(&l, &len, f) != -1); i++)
       ;
   }
 
