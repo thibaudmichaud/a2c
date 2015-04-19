@@ -12,7 +12,7 @@
 
 FILE *fin = NULL;
 char *srcfilename = NULL;
-instructionlist_t block;
+struct prog *prog = NULL;
 
 int main(int argc, char **argv)
 {
@@ -27,9 +27,13 @@ int main(int argc, char **argv)
   if (fin == NULL)
     err(1, "Couldn't open file %s", argv[1]);
 
-  block = parse();
-  print_instructions(block, 0);
-  free_instructions(block);
+  prog = parse();
+  if (prog)
+  {
+    if (check_prog(prog))
+      print_prog(prog);
+    free_prog(prog);
+  }
 
   fclose(fin);
   return 0;

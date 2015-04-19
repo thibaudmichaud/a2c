@@ -5,8 +5,9 @@
 #include <ctype.h>
 #include "lexer.h"
 #include "a2c.h"
+#include <assert.h>
 
-static int curline = 0;
+static int curline = 1;
 static int curchar = 0;
 
 char nextnonblank()
@@ -40,14 +41,16 @@ char *getalnumstr(void)
   do
   {
     ++i;
-    ++curchar;
     str[i] = getc(fin);
     if (i + 1 >= len)
+    {
+      len *= 2;
       str = realloc(str, 2 * len);
+    }
   }
-  while (isalnum(str[i]) || str[i] == '\'');
+  while (isalnum(str[i]) || str[i] == '\'' || str[i] == '_');
+  curchar += i;
   ungetc(str[i], fin);
-  --curchar;
   str[i] = '\0';
   return str;
 }
@@ -56,7 +59,15 @@ void getalnum(struct token *tok)
 {
   tok->val = getalnumstr();
 
-  if (strcmp(tok->val, "ou") == 0)
+  if (strcmp(tok->val, "algorithme") == 0)
+    tok->type = ALGORITHM;
+  else if (strcmp(tok->val, "debut") == 0)
+    tok->type = BEGIN;
+  else if (strcmp(tok->val, "types") == 0)
+    tok->type = TYPES;
+  else if (strcmp(tok->val, "constantes") == 0)
+    tok->type = CONST;
+  else if (strcmp(tok->val, "ou") == 0)
     tok->type = OR;
   else if (strcmp(tok->val, "oue") == 0)
     tok->type = XOR;
@@ -94,13 +105,29 @@ void getalnum(struct token *tok)
     tok->type = SWITCH;
   else if (strcmp(tok->val, "autrement") == 0)
     tok->type = OTHERWISE;
+  else if (strcmp(tok->val, "procedure") == 0)
+    tok->type = PROCEDURE;
+  else if (strcmp(tok->val, "variables") == 0)
+    tok->type = VARIABLES;
+  else if (strcmp(tok->val, "fonction") == 0)
+    tok->type = FUNCTION;
+  else if (strcmp(tok->val, "vrai") == 0)
+    tok->type = TRUE;
+  else if (strcmp(tok->val, "faux") == 0)
+    tok->type = FALSE;
+  else if (strcmp(tok->val, "parametres") == 0)
+    tok->type = PARAM;
+  else if (strcmp(tok->val, "locaux") == 0)
+    tok->type = LOCAL;
+  else if (strcmp(tok->val, "globaux") == 0)
+    tok->type = GLOBAL;
   else
     tok->type = IDENTIFIER;
 }
 
 void getnum(struct token *tok)
 {
-  tok->type = NUM;
+  tok->type = INT;
   unsigned i = -1;
   size_t len = 4;
   tok->val = malloc(len);
@@ -109,10 +136,12 @@ void getnum(struct token *tok)
     ++i;
     ++curchar;
     tok->val[i] = getc(fin);
+    if (tok->val[i] == '.')
+      tok->type = REAL;
     if (i + 1 >= len)
       tok->val = realloc(tok->val, 2 * len);
   }
-  while (isdigit(tok->val[i]));
+  while (isdigit(tok->val[i]) || tok->val[i] == '.');
   ungetc(tok->val[i], fin);
   --curchar;
   tok->val[i] = '\0';
@@ -175,6 +204,26 @@ void getop(struct token *tok)
   }
 }
 
+void getstring(struct token *tok)
+{
+  tok->type = STRING;
+  char c = getc(fin);
+  assert(c == '"');
+  unsigned i = -1;
+  size_t len = 8;
+  tok->val = malloc(len);
+  do
+  {
+    ++i;
+    ++curchar;
+    tok->val[i] = getc(fin);
+    if (i + 1 >= len)
+      tok->val = realloc(tok->val, 2 * len);
+  }
+  while (tok->val[i] != '"');
+  tok->val[i] = '\0';
+}
+
 struct token *gettok()
 {
   struct token *tok = malloc(sizeof(struct token));
@@ -188,6 +237,14 @@ struct token *gettok()
     getnum(tok);
   else if (isalnum(c))
     getalnum(tok);
+  else if (c == '\'')
+  {
+    tok->type = CHAR;
+    tok->val = malloc(1);
+    *tok->val = c;
+  }
+  else if (c == '\"')
+    getstring(tok);
   else if (c == EOF)
   {
     tok->type = ENDOFFILE;
@@ -202,4 +259,12 @@ struct token *gettok()
     getop(tok);
   tok->pos->charend = curchar;
   return tok;
+}
+
+void freetok(struct token *tok)
+{
+  if (tok->type != EOL && tok->type != ENDOFFILE)
+    free(tok->val);
+  free(tok->pos);
+  free(tok);
 }

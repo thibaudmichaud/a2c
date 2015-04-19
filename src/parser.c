@@ -6,6 +6,7 @@
 #include "get_line.h"
 #include <stdarg.h>
 #include <string.h>
+#include <assert.h>
 
 static struct token *tok;
 static struct token *lookahead[2] = { NULL };
@@ -20,6 +21,8 @@ struct expr *infix(struct expr *left, char *expect);
 
 void next(void)
 {
+  if (tok)
+    freetok(tok);
   tok = lookahead[0];
   lookahead[0] = lookahead[1];
   lookahead[1] = gettok();
@@ -67,16 +70,21 @@ char *toktypestr(enum tokentype toktype)
   switch (toktype)
   {
     case ASSIGN: return "<-";
+    case BEGIN: return "debut";
+    case END: return "fin";
+    case EQ: return "=";
+    case VARIABLES: return "variables";
     case ENDOFFILE: return "EOF";
     case EOL: return "EOL";
     case FUNCTION: return "fonction";
+    case IDENTIFIER: return "identifier";
     case PROCEDURE: return "procedure";
     case RETURN: return "retourne";
     case RPAREN: return ")";
     case RSQBRACKET: return "]";
     case UNTIL: return "jusqu'a";
     case FOR: return "pour";
-    case END: return "fin";
+    case CONST: return "constantes";
     default: return "something else";
   }
 }
@@ -105,10 +113,12 @@ struct expr *expression(int rbp)
 {
   next();
   struct expr *left = prefix("expression");
+  left->lineno = tok->pos->line;
   while (!syntaxerror && rbp < lbp(lookahead[0]->type))
   {
     next();
     left = infix(left, "expression");
+    left->lineno = tok->pos->line;
   }
   return left;
 }
@@ -120,17 +130,25 @@ struct expr *prefix(char *expect)
   switch (toktype)
   {
     case IDENTIFIER:
-      return identexpr(tok->val);
+      return identexpr(strdup(tok->val));
     case LPAREN:
       res = expression(lbp(EXPR));
       eat(RPAREN);
       return res;
     case PLUS: case MINUS: case NOT: case DEREF:
       return unopexpr(toktype, expression(lbp(toktype) - 1));
-    case NUM:
+    case REAL:
+      return expr_from_val(realval(atof(tok->val)));
+    case INT:
       return expr_from_val(intval(atoi(tok->val)));
+    case STRING:
+      return expr_from_val(strval(strdup(tok->val)));
+    case TRUE:
+      return expr_from_val(boolval(1));
+    case FALSE:
+      return expr_from_val(boolval(0));
     default:
-      error("expected %s, not '%s'", expect, tok->val);
+      error("expected %s, not %s", expect, tok->val);
       return NULL;
   }
 }
@@ -139,13 +157,15 @@ struct expr *infix(struct expr *left, char *expect)
 {
   exprlist_t args;
   int toktype = tok->type;
+  char *ident;
   switch (toktype)
   {
     case PLUS: case MINUS: case STAR: case SLASH: case OR: case XOR:
     case LT: case LE: case GT: case GE: case NEQ: case EQ: case AND:
       return binopexpr(left, toktype, expression(lbp(toktype)));
     case LPAREN:
-      // TODO : check that lhs is an identifier.
+      if (left->exprtype != identtype)
+        error("calling non-callable expression");
       args = empty_exprlist();
       if (lookahead[0]->type != COMMA && lookahead[0]->type != RPAREN)
         list_push_back(args, expression(lbp(EXPR)));
@@ -155,7 +175,9 @@ struct expr *infix(struct expr *left, char *expect)
         list_push_back(args, expression(lbp(EXPR)));
       }
       eat(RPAREN);
-      return funcallexpr(left->val.ident, args);
+      ident = strdup(left->val.ident);
+      free_expression(left);
+      return funcallexpr(ident, args);
     case LSQBRACKET:
       args = empty_exprlist();
       list_push_back(args, expression(lbp(EXPR)));
@@ -198,7 +220,7 @@ instructionlist_t parse_block(void)
   instructionlist_t block = empty_instructionlist();
   while (lookahead[0]->type != END && lookahead[0]->type != ENDOFFILE
       && lookahead[0]->type != ELSE && lookahead[1]->type != COMMA
-      && lookahead[1]->type != COLON)
+      && lookahead[1]->type != COLON && lookahead[0]->type != OTHERWISE)
     list_push_back(block, parse_instruction());
   return block;
 }
@@ -326,7 +348,7 @@ struct instruction *parse_switch(void)
     list_push_back(caselist, parse_caseblock());
   if (lookahead[0]->type == OTHERWISE)
   {
-    eat(OTHERWISE); eat(EOL);
+    eat(OTHERWISE);
     otherwiseblock = parse_block();
   } else otherwiseblock = empty_instructionlist();
   eat(END); eat(SWITCH); eat(EOL);
@@ -336,6 +358,7 @@ struct instruction *parse_switch(void)
 struct instruction *parse_instruction(void)
 {
   struct expr *expr;
+  struct instruction *res;
   switch (lookahead[0]->type)
   {
     case WHILE: return parse_while();
@@ -346,9 +369,19 @@ struct instruction *parse_instruction(void)
        {
          case ASSIGN: return parse_assignment_instr(expr);
          case EOL:
+           if (expr->exprtype != funcalltype)
+           {
+             if (expr->exprtype == binopexprtype
+                 && expr->val.binopexpr.op == EQ)
+               error("unexpected =, did you mean <- ?");
+             else
+               error("expected instruction, not expression");
+           }
            eat(EOL);
-           return funcallinstr(expr->val.funcall.fun_ident,
+           res = funcallinstr(expr->val.funcall.fun_ident,
                expr->val.funcall.args);
+           free(expr);
+           return res;
          default:
            error("unexpected %s", tok->val);
            next();
@@ -377,15 +410,213 @@ struct instruction *parse_instruction(void)
   }
 }
 
+/*--------------*
+ | DECLARATIONS |
+ *-------------*/
+
+struct single_var_decl *parse_vardecl(void)
+{
+  identlist_t identlist = empty_identlist();
+  eat(IDENTIFIER);
+  char *type = strdup(tok->val);
+  eat(IDENTIFIER);
+  while (lookahead[0]->type == COMMA)
+  {
+    list_push_back(identlist, strdup(tok->val));
+    eat(COMMA); next();
+  }
+  list_push_back(identlist, strdup(tok->val));
+  eat(EOL);
+  return single_var_decl(type, identlist);
+}
+
+vardecllist_t parse_vardecls()
+{
+  vardecllist_t vardecllist = empty_vardecllist();
+  while (lookahead[0]->type != BEGIN && lookahead[0]->type != TYPES
+      && lookahead[0]->type != CONST && lookahead[0]->type != VARIABLES)
+    list_push_back(vardecllist, parse_vardecl());
+  return vardecllist;
+}
+
+struct val *parse_val(void)
+{
+  next();
+  switch (tok->type)
+  {
+    case INT: return intval(atoi(tok->val));
+    case REAL: return realval(atof(tok->val));
+    case STRING: return strval(tok->val);
+    case TRUE: return boolval(true);
+    case FALSE: return boolval(false);
+    case CHAR: return charval(tok->val[0]);
+    default:
+      error("expected a value, not %s", tok->val);
+      return intval(0);
+  }
+}
+
+struct const_decl *parse_constdecl(void)
+{
+  struct const_decl *constdecl = malloc(sizeof(struct const_decl));
+  eat(IDENTIFIER);
+  constdecl->type = strdup(tok->val);
+  eat(IDENTIFIER);
+  constdecl->ident = strdup(tok->val);
+  eat(EQ);
+  constdecl->val = parse_val();
+  eat(EOL);
+  return constdecl;
+}
+
+constdecllist_t parse_constdecls(void)
+{
+  eat(CONST); eat(EOL);
+  constdecllist_t constdecllist = empty_constdecllist();
+  while (lookahead[0]->type != BEGIN && lookahead[0]->type != TYPES
+      && lookahead[0]->type != VARIABLES)
+    list_push_back(constdecllist, parse_constdecl());
+  return constdecllist;
+}
+
+/*------------*
+ | ALGORITHMS |
+ *------------*/
+
+struct local_param *parse_lp(void)
+{
+  eat(LOCAL); eat(EOL);
+  struct local_param *local_param = malloc(sizeof(struct local_param));
+  local_param->param = parse_vardecls();
+  return local_param;
+}
+
+struct global_param *parse_gp(void)
+{
+  eat(GLOBAL); eat(EOL);
+  struct global_param *global = malloc(sizeof(struct local_param));
+  global->param = parse_vardecls();
+  return global;
+}
+
+struct declarations *parse_decls(void)
+{
+  struct declarations *declarations = calloc(1, sizeof(struct declarations));
+  struct local_param *lp = NULL;
+  struct global_param *gp = NULL;
+  int local_first = 1;
+  if (lookahead[0]->type == PARAM)
+  {
+    eat(PARAM);
+    if (lookahead[0]->type == LOCAL)
+    {
+      lp = parse_lp();
+      if (lookahead[0]->type == GLOBAL)
+        gp = parse_gp();
+    }
+    else if (lookahead[0]->type == GLOBAL)
+    {
+      local_first = 0;
+      gp = parse_gp();
+      if (lookahead[0]->type == LOCAL)
+        lp = parse_lp();
+    }
+  }
+  if (lookahead[0]->type == VARIABLES)
+  {
+    eat(VARIABLES); eat(EOL);
+    declarations->var_decl = parse_vardecls();
+    if (lookahead[0]->type == CONST)
+      declarations->const_decls = parse_constdecls();
+  }
+  else if (lookahead[0]->type == CONST)
+  {
+    declarations->const_decls = parse_constdecls();
+    if (lookahead[0]->type == VARIABLES)
+    {
+      eat(VARIABLES); eat(EOL);
+      declarations->var_decl = parse_vardecls();
+    }
+  }
+  declarations->param_decl = make_param_decl(local_first, lp, gp);
+  return declarations;
+}
+
+struct algo *parse_function()
+{
+  eat(FUNCTION);
+  eat(IDENTIFIER);
+  char *ident = strdup(tok->val);
+  eat(COLON); eat(IDENTIFIER);
+  char *returntype = strdup(tok->val);
+  eat(EOL);
+  struct declarations *decls = parse_decls();
+  eat(BEGIN); eat(EOL);
+  instructionlist_t block = parse_block();
+  eat(END); eat(ALGORITHM); eat(FUNCTION); eat(IDENTIFIER);
+  if (lookahead[0]->type == EOL) eat(EOL);
+  return algo(ident, returntype, decls, block);
+}
+
+struct algo *parse_procedure()
+{
+  eat(PROCEDURE);
+  next();
+  char *ident = strdup(tok->val);
+  eat(EOL);
+  struct declarations *decls = parse_decls();
+  eat(BEGIN); eat(EOL);
+  instructionlist_t block = parse_block();
+  eat(END); eat(ALGORITHM); eat(PROCEDURE); eat(IDENTIFIER);
+  if (lookahead[0]->type == EOL) eat(EOL);
+  return algo(ident, NULL, decls, block);
+}
+
+struct algo *parse_algo(void)
+{
+  eat(ALGORITHM);
+  if (lookahead[0]->type == PROCEDURE)
+    return parse_procedure();
+  else
+    return parse_function();
+}
+
+algolist_t parse_algolist(void)
+{
+  algolist_t algolist = empty_algolist();
+  while (lookahead[0]->type == ALGORITHM)
+  {
+    list_push_back(algolist, parse_algo());
+  }
+  return algolist;
+}
+
+struct prog *parse_prog(void)
+{
+  algolist_t algolist = parse_algolist();
+  vardecllist_t globvar;
+  if (lookahead[0]->type == VARIABLES)
+  {
+    eat(VARIABLES); eat(EOL);
+    globvar = parse_vardecls();
+  }
+  eat(BEGIN); eat(EOL);
+  instructionlist_t instrs = parse_block();
+  eat(END); eat(EOL);
+  struct entry_point *entrypoint = make_entry_point(globvar, instrs);
+  return make_prog(algolist, entrypoint);
+}
+
 /*--------------------*
- * PARSER ENTRY POINT |
+ | PARSER ENTRY POINT |
  * -------------------*/
 
-instructionlist_t parse(void)
+struct prog *parse(void)
 {
   lookahead[0] = gettok(); lookahead[1] = gettok();
-  instructionlist_t block = parse_block();
+  struct prog *prog = parse_prog();
+  freetok(tok); freetok(lookahead[0]); freetok(lookahead[1]);
   if (!syntaxerror)
-    return block;
-  else return empty_instructionlist();
+    return prog;
+  else return NULL;
 }
