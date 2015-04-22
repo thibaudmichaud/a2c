@@ -42,6 +42,25 @@ struct type* char_to_type(char* ident_type)
 
 }
 
+bool equal_dims(intlist_t dim1, intlist_t dim2)
+{
+  if (dim1.size != dim2.size)
+    return false;
+  for (unsigned i = 0; i < dim1.size; ++i)
+    if (dim1.data[i] != dim2.data[i])
+      return false;
+  return true;
+}
+
+bool equal_identlist(identlist_t idents1, identlist_t idents2)
+{
+  if (idents1.size != idents2.size) return false;
+  for (unsigned i = 0; i < idents1.size; ++i)
+    if (strcmp(idents1.data[i], idents2.data[i]) != 0)
+      return false;
+  return true;
+}
+
 bool equal_types(struct type* t1, struct type* t2)
 {
 
@@ -67,11 +86,18 @@ bool equal_types(struct type* t1, struct type* t2)
             return true;
             break;
         case array_t:
-
+            return equal_dims(t1->type_val.array_type->dims,
+                t2->type_val.array_type->dims)
+              && equal_types(t1->type_val.array_type->type,
+                  t2->type_val.array_type->type);
             break;
         case pointer_t:
+            return equal_types(t1->type_val.pointer_type->type,
+                t2->type_val.pointer_type->type);
             break;
         case enum_t:
+            return equal_identlist(t1->type_val.enum_type->idents,
+                t2->type_val.enum_type->idents);
             break;
 
     }
@@ -136,7 +162,8 @@ bool check_prog(struct prog* prog)
     return correct;
 }
 
-void add_variable(var_table_t* variables, type_table_t* types, struct single_var_decl* var)
+void add_header_variables(var_table_t* variables,
+    type_table_t* types, struct single_var_decl* var)
 {
     for(unsigned int j = 0; j < var->var_idents.size; ++j)
     {
@@ -212,7 +239,7 @@ bool check_algo(struct algo* al, fun_table_t* functions)
             for(unsigned int i = 0; i < loc->param.size; i++)
             {
                 struct single_var_decl* var = list_nth(loc->param,i);
-                add_variable(variables, types, var);
+                add_header_variables(variables, types, var);
             }
         }
         if(glo != NULL)
@@ -220,7 +247,7 @@ bool check_algo(struct algo* al, fun_table_t* functions)
             for(unsigned int i = 0; i < glo->param.size; i++)
             {
                 struct single_var_decl* var = list_nth(glo->param,i);
-                add_variable(variables, types, var);
+                add_header_variables(variables, types, var);
             }
         }
         for(unsigned i = 0; i < typelist.size; ++i)
@@ -313,7 +340,7 @@ bool check_algo(struct algo* al, fun_table_t* functions)
         for(unsigned i =0; i < vars.size; ++i)
         {
             struct single_var_decl* var = list_nth(vars, i);
-            add_variable(variables, types, var);
+            add_header_variables(variables, types, var);
         }
         for(unsigned i =0; i < consts.size; ++i)
         {
