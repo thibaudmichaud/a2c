@@ -2,8 +2,8 @@ AM_CFLAGS = -Wall -Werror -Wextra -g -std=c99 -I$(srcdir)/src -O0 -g -D_DEFAULT_
 AM_YFLAGS = --report=state -d
 
 bin_PROGRAMS = a2c
-a2c_SOURCES = src/lexer.l \
-	      src/parser.y \
+a2c_SOURCES = src/parser.y \
+	      src/lexer.l \
 	      src/type.c \
 	      src/type_table.c \
 	      src/get_line.c \
