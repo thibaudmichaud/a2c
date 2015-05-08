@@ -13,14 +13,19 @@
 #include "type_table.h"
 #include "grammar.h"
 
+struct symtable
+{
+  type_table_t *types;
+  fun_table_t *functions;
+  var_table_t *variables;
+};
+
 char *algo_to_c_type(char *ident);
-bool check_algo(struct algo* al, fun_table_t* functions);
+bool check_algo(struct algo* al, struct symtable *syms);
 bool check_prog(struct prog* prog);
-bool check_inst(struct instruction *e, struct function* f,  fun_table_t* functions, var_table_t* variables,
-        type_table_t* types);
-bool check_expr(struct expr *e, fun_table_t* functions, var_table_t* variables, type_table_t* types);
+bool check_inst(struct instruction *e, struct function* f,  struct symtable *syms);
+bool check_expr(struct expr *e, struct symtable *syms);
 char* expr_type(struct expr *e);
-struct type* get_expr_type(struct expr *e, fun_table_t* functions, var_table_t* variables, 
-        type_table_t* types);
+struct type* get_expr_type(struct expr *e, struct symtable *syms);
 
 #endif

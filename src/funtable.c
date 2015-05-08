@@ -59,4 +59,5 @@ struct function* get_function(fun_table_t* table, char* ident)
 void free_fun_table(fun_table_t* table)
 {
     ht_free(*table);
+    free(table);
 }
