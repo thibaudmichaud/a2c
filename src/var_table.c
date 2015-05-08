@@ -68,4 +68,5 @@ struct var_sym *find_var(var_table_t* var_table, char *ident)
 void free_var_table(var_table_t* var_table)
 {
     ht_free(*var_table);
+    free(var_table);
 }

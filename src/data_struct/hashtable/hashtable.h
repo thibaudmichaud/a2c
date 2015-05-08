@@ -11,18 +11,18 @@ struct                                                                        \
   size_t length;                                                              \
   size_t (*hash)(type);                                                       \
   int (*equal)(type, type);                                                   \
-  void(*free_type)(type);                                                          \
+  void(*free_elt)(type);                                                      \
   struct { type elt; void *next; } **buckets;                                 \
 }
 
-#define ht_init(_ht, _size, _hash, _equal, _free)                                    \
+#define ht_init(_ht, _size, _hash, _equal, _free)                             \
 do                                                                            \
 {                                                                             \
   (_ht).size = (_size);                                                       \
   (_ht).length = 0;                                                           \
   (_ht).hash = _hash;                                                         \
   (_ht).equal = _equal;                                                       \
-  (_ht).free_type = _free;                                                         \
+  (_ht).free_elt = _free;                                                     \
   (_ht).buckets = calloc(_size, sizeof(*(_ht).buckets));                      \
 } while(0)
 
@@ -44,7 +44,7 @@ do {                                                                          \
   size_t i = (_ht).hash(_elt) % (_ht).size;                                   \
   bucket prev = NULL;                                                         \
   bucket b = (_ht).buckets[i];                                                \
-  while(b)                                                                   \
+  while(b)                                                                    \
   {                                                                           \
     if ((_ht).equal(b->elt, _elt))                                            \
     {                                                                         \
@@ -90,12 +90,12 @@ do {                                                                          \
     while (b)                                                                 \
     {                                                                         \
       next = (bucket)b->next;                                                 \
-      (_ht).free_type(b->elt);                                                           \
-      free(b);                                                              \
+      (_ht).free_elt(b->elt);                                                 \
+      free(b);                                                                \
       b = next;                                                               \
     }                                                                         \
   }                                                                           \
-  free((_ht).buckets);                                                          \
+  free((_ht).buckets);                                                        \
 } while(0)
 
 #endif
