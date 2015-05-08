@@ -44,7 +44,7 @@ int lbp(int type)
   }
 }
 
-void error(char *msg, ...)
+static void error(char *msg, ...)
 {
   va_list args;
   va_start(args, msg);

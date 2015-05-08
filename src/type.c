@@ -1,11 +1,29 @@
 #include "type.h"
 
+// void copy_type(struct type *t)
+// {
+//   struct type *newt = malloc(sizeof(struct type));
+//   newt->type_kind = t->type_kind;
+//   switch (t->type_kind)
+//   {
+//     case primary_t:
+//       newt->type_val = t->type_val;
+//       break;
+//     case records_t:
+//       newt->type_val.records_type = malloc(sizeof(struct record_type));
+//       newt->type_val.records_type->fields
+//       for (unsigned i = 0; i < t->type_val.records_type->fields->size; ++i)
+//       {
+//         newt->type_val.records_type->fields
+//       }
+//   }
+// }
+
 void free_pointer(struct pointer* p)
 {
     switch(p->type->type_kind)
     {
         case primary_t:
-            free(p->type);
             break;
         case records_t:
             free_records(p->type->type_val.records_type);
@@ -18,13 +36,14 @@ void free_pointer(struct pointer* p)
         case enum_t:
             break;
     }
+    free(p);
 }
 
 void free_records(struct records* r)
 {
-    for(unsigned int i = 0 ; i < r->fields->size; ++i)
+    for(unsigned int i = 0 ; i < r->fields.size; ++i)
     {
-        struct field* field = list_nth(*r->fields, i);
+        struct field* field = list_nth(r->fields, i);
         switch(field->type->type_kind)
         {
             case primary_t:

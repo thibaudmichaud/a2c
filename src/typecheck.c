@@ -1,8 +1,27 @@
+#include <stdarg.h>
 #include "typecheck.h"
 #include "get_line.h"
 #include "parser.h"
 #include "a2c.h"
 #include "lexer.h"
+
+void error(unsigned line, unsigned charstart, unsigned len, char *msg, ...)
+{
+  va_list args;
+  va_start(args, msg);
+  fprintf(stderr, "%s:%d:%d: error: ",
+      srcfilename, line, charstart);
+  vfprintf(stderr, msg, args);
+  fprintf(stderr, "\n");
+  char *linestr = get_line(fin, line);
+  fprintf(stderr, "%s", linestr);
+  free(linestr);
+  for (unsigned i = 0; i < charstart; ++i)
+    fprintf(stderr, " ");
+  for (unsigned i = 0; i < len; ++i)
+    fprintf(stderr, "^");
+  fprintf(stderr, "\n");
+}
 
 struct type* char_to_type(char* ident_type)
 {
@@ -73,12 +92,12 @@ bool equal_types(struct type* t1, struct type* t2)
             return t1->type_val.primary == t2->type_val.primary;
             break;
         case records_t:
-            if(t1->type_val.records_type->fields->size != t2->type_val.records_type->fields->size)
+            if(t1->type_val.records_type->fields.size != t2->type_val.records_type->fields.size)
                 return false;
-            for(unsigned i = 0; i < t1->type_val.records_type->fields->size; ++i)
+            for(unsigned i = 0; i < t1->type_val.records_type->fields.size; ++i)
             {
-                struct field* field1 = list_nth(*(t1->type_val.records_type->fields), i);
-                struct field* field2 = list_nth(*(t2->type_val.records_type->fields), i);
+                struct field* field1 = list_nth(t1->type_val.records_type->fields, i);
+                struct field* field2 = list_nth(t2->type_val.records_type->fields, i);
 
                 if(!equal_types(field1->type, field2->type))
                     return false;
@@ -162,20 +181,34 @@ bool check_prog(struct prog* prog)
     return correct;
 }
 
-void add_header_variables(var_table_t* variables,
+bool add_header_variables(var_table_t* variables,
     type_table_t* types, struct single_var_decl* var)
 {
+    bool noerr = true;
     for(unsigned int j = 0; j < var->var_idents.size; ++j)
     {
         struct var_sym* sym = malloc(sizeof(struct var_sym));
         sym->ident = list_nth(var->var_idents, j);
-        sym->type = find_type(types, var->type_ident)->type;
-        add_var(variables, sym);
+        struct type_sym *s = find_type(types, var->type_ident);
+        if (s)
+        {
+          sym->type = s->type;
+          add_var(variables, sym);
+        }
+        else
+        {
+          // TODO get the right line/char
+          error(1, 1, 1, "unknown type %s", var->type_ident);
+          free(sym);
+          noerr = false;
+        }
     }
+    return noerr;
 }
 
 bool check_algo(struct algo* al, fun_table_t* functions)
 {
+    bool noerr = true;
     struct function* f = malloc(sizeof(struct function));
     f->ret = char_to_type(al->return_type);
     var_table_t* variables = empty_var_table();
@@ -239,7 +272,7 @@ bool check_algo(struct algo* al, fun_table_t* functions)
             for(unsigned int i = 0; i < loc->param.size; i++)
             {
                 struct single_var_decl* var = list_nth(loc->param,i);
-                add_header_variables(variables, types, var);
+                noerr = noerr && add_header_variables(variables, types, var);
             }
         }
         if(glo != NULL)
@@ -247,18 +280,19 @@ bool check_algo(struct algo* al, fun_table_t* functions)
             for(unsigned int i = 0; i < glo->param.size; i++)
             {
                 struct single_var_decl* var = list_nth(glo->param,i);
-                add_header_variables(variables, types, var);
+                noerr = noerr && add_header_variables(variables, types, var);
             }
         }
         for(unsigned i = 0; i < typelist.size; ++i)
         {
             struct type_decl* type_decl = list_nth(typelist, i);
             struct type_def*  type_def  = type_decl->type_def;
+            struct type* type = malloc(sizeof(struct type));
+            struct type_sym* sym = malloc(sizeof(struct type_sym));
             switch(type_def->type_type)
             {
                 case enum_type:
                     {
-                        struct type* type = malloc(sizeof(struct type));
                         type->type_kind = enum_t;
 
                         struct enum_type* _enum = malloc(sizeof(struct enum_type));
@@ -266,7 +300,6 @@ bool check_algo(struct algo* al, fun_table_t* functions)
 
                         type->type_val.enum_type = _enum;
 
-                        struct type_sym* sym = malloc(sizeof(struct type_sym));
                         sym->type = type;
                         sym->ident = type_decl->ident;
 
@@ -275,7 +308,6 @@ bool check_algo(struct algo* al, fun_table_t* functions)
                     break;
                 case array_type:
                     {
-                        struct type* type = malloc(sizeof(struct type));
                         type->type_kind = array_t;
 
                         struct array* array = malloc(sizeof(struct array));
@@ -289,7 +321,6 @@ bool check_algo(struct algo* al, fun_table_t* functions)
 
                         type->type_val.array_type = array;
 
-                        struct type_sym* sym = malloc(sizeof(struct type_sym));
                         sym->type = type;
                         sym->ident = type_decl->ident;
 
@@ -298,7 +329,6 @@ bool check_algo(struct algo* al, fun_table_t* functions)
                     break;
                 case struct_type:
                     {
-                        struct type* type = malloc(sizeof(struct type));
                         type->type_kind = records_t;
 
                         struct records* record = malloc(sizeof(struct records));
@@ -321,11 +351,10 @@ bool check_algo(struct algo* al, fun_table_t* functions)
                             }
                         }
 
-                        record->fields = &fields;
+                        record->fields = fields;
 
                         type->type_val.records_type = record;
 
-                        struct type_sym* sym = malloc(sizeof(struct type_sym));
                         sym->type = type;
                         sym->ident = type_decl->ident;
 
@@ -333,6 +362,15 @@ bool check_algo(struct algo* al, fun_table_t* functions)
                     }
                     break;
                 case pointer_type:
+                    {
+                      type->type_kind = pointer_type;
+                      type->type_val.pointer_type = malloc(sizeof(struct pointer));
+                      type->type_val.pointer_type->type = find_type(types,
+                        type_decl->type_def->def.pointer_def->pointed_type_ident)->type;
+                      sym->type = type;
+                      sym->ident = type_decl->ident;
+                      add_type(types, sym);
+                    }
                     break;
 
             }
@@ -340,7 +378,7 @@ bool check_algo(struct algo* al, fun_table_t* functions)
         for(unsigned i =0; i < vars.size; ++i)
         {
             struct single_var_decl* var = list_nth(vars, i);
-            add_header_variables(variables, types, var);
+            noerr = noerr && add_header_variables(variables, types, var);
         }
         for(unsigned i =0; i < consts.size; ++i)
         {
@@ -374,23 +412,8 @@ bool check_algo(struct algo* al, fun_table_t* functions)
         }
     }
     for(unsigned i = 0; i < al->instructions.size; i++)
-    {
-        if(!check_inst(list_nth(al->instructions, i), f, functions, variables, types))
-        {
-            free(f->ret);
-            free(f);
-            free_var_table(variables);
-            free_type_table(types);
-            free(variables);
-            free(types);
-            free(t_char_);
-            free(t_str_);
-            free(t_int_);
-            free(t_bool_);
-            free(t_reel_);
-            return false;
-        }
-    }
+      if(!check_inst(list_nth(al->instructions, i), f, functions, variables, types))
+        noerr = false;
 
     free(f->ret);
     free_var_table(variables);
@@ -403,7 +426,7 @@ bool check_algo(struct algo* al, fun_table_t* functions)
     free(t_int_);
     free(variables);
     free(types);
-    return true;
+    return noerr;
 }
 
 bool check_inst(struct instruction *i, struct function* fun, fun_table_t* functions,
