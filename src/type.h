@@ -12,7 +12,7 @@ struct field
 typedef list_tpl(struct field *) fieldlist_t;
 
 struct records {
-    fieldlist_t* fields;
+    fieldlist_t fields;
 };
 
 typedef enum {
@@ -26,7 +26,6 @@ typedef enum {
 
 struct pointer
 {
-    char* ident;
     struct type* type;
 };
 
