@@ -2,11 +2,12 @@
 #include "typecheck.h"
 #include "get_line.h"
 #include "parser.h"
+#include "lexer.h"
 #include "a2c.h"
 #include <string.h>
 #include <assert.h>
 
-struct type* t_bool, t_int, t_str, t_reel, t_char;
+struct type *t_bool, *t_int, *t_str, *t_reel, *t_char;
 
 void error(unsigned line, unsigned charstart, unsigned len, char *msg, ...)
 {
@@ -24,44 +25,6 @@ void error(unsigned line, unsigned charstart, unsigned len, char *msg, ...)
   for (unsigned i = 0; i < len; ++i)
     fprintf(stderr, "^");
   fprintf(stderr, "\n");
-}
-
-struct type* char_to_type(char* ident_type)
-{
-    struct type* t = malloc(sizeof( struct type));
-    if(ident_type == NULL)
-    {
-        t->type_kind = primary_t;
-        t->type_val.primary = nul_t;
-    }
-    else if(strcmp(ident_type, "entier") == 0)
-    {
-        t->type_kind = primary_t;
-        t->type_val.primary  = int_t;
-    }
-    else if(strcmp(ident_type, "reel") == 0)
-    {
-        t->type_kind = primary_t;
-        t->type_val.primary = real_t;
-    }
-    else if(strcmp(ident_type, "boolen") == 0)
-    {
-        t->type_kind = primary_t;
-        t->type_val.primary = bool_t;
-    }
-    else if(strcmp(ident_type, "caractere") == 0)
-    {
-        t->type_kind = primary_t;
-        t->type_val.primary = char_t;
-    }
-    else if(strcmp(ident_type, "chaine") == 0)
-    {
-        t->type_kind = primary_t;
-        t->type_val.primary = str_t;
-    }
-
-    return t;
-
 }
 
 bool equal_dims(intlist_t dim1, intlist_t dim2)
@@ -83,61 +46,18 @@ bool equal_identlist(identlist_t idents1, identlist_t idents2)
   return true;
 }
 
-bool equal_types(struct type* t1, struct type* t2)
-{
-
-    if(t1->type_kind != t2->type_kind)
-        return false;
-
-    switch(t1->type_kind)
-    {
-        case primary_t:
-            return t1->type_val.primary == t2->type_val.primary;
-            break;
-        case records_t:
-            if(t1->type_val.records_type->fields.size != t2->type_val.records_type->fields.size)
-                return false;
-            for(unsigned i = 0; i < t1->type_val.records_type->fields.size; ++i)
-            {
-                struct field* field1 = list_nth(t1->type_val.records_type->fields, i);
-                struct field* field2 = list_nth(t2->type_val.records_type->fields, i);
-
-                if(!equal_types(field1->type, field2->type))
-                    return false;
-            }
-            return true;
-            break;
-        case array_t:
-            return equal_dims(t1->type_val.array_type->dims,
-                t2->type_val.array_type->dims)
-              && equal_types(t1->type_val.array_type->type,
-                  t2->type_val.array_type->type);
-            break;
-        case pointer_t:
-            return equal_types(t1->type_val.pointer_type->type,
-                t2->type_val.pointer_type->type);
-            break;
-        case enum_t:
-            return equal_identlist(t1->type_val.enum_type->idents,
-                t2->type_val.enum_type->idents);
-            break;
-
-    }
-    return true;
-}
-
 bool check_args(struct function* f, struct funcall call,
     struct symtable *syms)
 {
-    if(f->arg != NULL)
+    if(f->arg.size != 0)
     {
-        if(f->arg->size != call.args.size)
+        if(f->arg.size != call.args.size)
             return false;
         for(unsigned i = 0; i < call.args.size; ++i)
         {
-            if(!equal_types(
-                  get_expr_type((struct expr *)list_nth(call.args,i), syms),
-                  list_nth(*f->arg,i)->type))
+            if(strcmp(
+                  check_expr((struct expr *)list_nth(call.args,i), syms),
+                  list_nth(f->arg,i)->type->name) != 0)
                 return false;
         }
     }
@@ -180,64 +100,111 @@ void free_symtable(struct symtable *syms)
 
 void fill_std_syms(struct symtable *syms)
 {
-    struct type* t_bool_ = malloc(sizeof(struct type));
-    t_bool_->type_kind = primary_t;
-    primary_type p1 = bool_t;
-    t_bool_->type_val.primary = p1;
-    struct type_sym* type_bool = malloc(sizeof(struct type_sym));
-    type_bool->ident = "booleen";
-    type_bool->type = t_bool_;
-    add_type(syms->types,type_bool);
+    t_bool = malloc(sizeof(struct type));
+    t_bool->type_kind = primary_t;
+    t_bool->name = strdup("booleen");
+    t_bool->type_val.primary = bool_t;
+    add_type(syms->types, t_bool);
 
-    struct type* t_int_ = malloc(sizeof(struct type));
-    t_int_->type_kind = primary_t;
-    primary_type p2 = int_t;
-    t_int_->type_val.primary = p2;
-    struct type_sym* type_int = malloc(sizeof(struct type_sym));
-    type_int->ident = "entier";
-    type_int->type = t_int_;
-    add_type(syms->types,type_int);
+    t_int = malloc(sizeof(struct type));
+    t_int->type_kind = primary_t;
+    t_int->name = strdup("entier");
+    t_int->type_val.primary = int_t;
+    add_type(syms->types, t_int);
 
-    struct type* t_str_ = malloc(sizeof(struct type));
-    t_str_->type_kind = primary_t;
-    t_str_->type_val.primary = str_t;
-    struct type_sym* type_string = malloc(sizeof(struct type_sym));
-    type_string->ident = "chaine";
-    type_string->type = t_str_;
-    add_type(syms->types,type_string);
+    t_str = malloc(sizeof(struct type));
+    t_str->type_kind = primary_t;
+    t_str->name = strdup("chaine");
+    t_str->type_val.primary = str_t;
+    add_type(syms->types, t_str);
 
-    struct type* t_reel_ = malloc(sizeof(struct type));
-    t_reel_->type_kind = primary_t;
-    primary_type p3 = bool_t;
-    t_reel_->type_val.primary = p3;
-    struct type_sym* type_reel = malloc(sizeof(struct type_sym));
-    type_reel->ident = "reel";
-    type_reel->type = t_reel_;
-    add_type(syms->types,type_reel);
+    t_reel = malloc(sizeof(struct type));
+    t_reel->type_kind = primary_t;
+    t_reel->name = strdup("reel");
+    t_reel->type_val.primary = real_t;
+    add_type(syms->types,t_reel);
 
-    struct type* t_char_ = malloc(sizeof(struct type));
-    t_char_->type_kind = primary_t;
-    primary_type p4 = char_t;
-    t_char_->type_val.primary = p4;
-    struct type_sym* type_char = malloc(sizeof(struct type_sym));
-    type_char->ident = "caractere";
-    type_char->type = t_char_;
-    add_type(syms->types,type_char);
+    t_char = malloc(sizeof(struct type));
+    t_char->type_kind = primary_t;
+    t_char->name = strdup("caractere");
+    t_char->type_val.primary = char_t;
+    add_type(syms->types, t_char);
+}
+
+args_t get_args(struct param_decl *params, struct symtable *syms)
+{
+  args_t args;
+  list_init(args);
+  for (unsigned i = 0; i < params->local_param.size; ++i)
+  {
+    for (unsigned j = 0; j < params->local_param.data[i]->var_idents.size; ++j)
+    {
+      struct argument *arg = malloc(sizeof(struct argument));
+      arg->global = 0;
+      arg->type = find_type(syms->types, params->local_param.data[i]->type_ident);
+      list_push_back(args, arg);
+    }
+  }
+  for (unsigned i = 0; i < params->global_param.size; ++i)
+  {
+    for (unsigned j = 0; j < params->global_param.data[i]->var_idents.size; ++j)
+    {
+      struct argument *arg = malloc(sizeof(struct argument));
+      arg->global = 0;
+      arg->type = find_type(syms->types, params->global_param.data[i]->type_ident);
+      list_push_back(args, arg);
+    }
+  }
+  return args;
+}
+
+bool add_variables(struct symtable *syms, vardecllist_t var_decls)
+{
+    bool noerr = true;
+    for (unsigned i = 0; i < var_decls.size; ++i)
+    {
+      for(unsigned j = 0; j < var_decls.data[i]->var_idents.size; ++j)
+      {
+        struct var_sym* sym = malloc(sizeof(struct var_sym));
+        sym->ident = list_nth(var_decls.data[i]->var_idents, j);
+        struct type *s = find_type(syms->types, var_decls.data[i]->type_ident);
+        if (s)
+        {
+          sym->type = s;
+          add_var(syms->variables, sym);
+        }
+        else
+        {
+          // TODO get the right line/char
+          error(1, 1, 1, "unknown type %s", var_decls.data[i]->type_ident);
+          free(sym);
+          noerr = false;
+        }
+      }
+    }
+    return noerr;
 }
 
 bool check_prog(struct prog* prog)
 {
     bool correct = true;
     struct symtable *syms = empty_symtable();
+    fill_std_syms(syms);
     for(unsigned i = 0; i < prog->algos.size; ++i)
     {
         struct algo* al = list_nth(prog->algos, i);
         struct function* f = malloc(sizeof(struct function));
         f->ident = al->ident;
-        f->ret = char_to_type(al->return_type);
-        f->arg = NULL;
+        f->ret = find_type(syms->types, al->return_type);
+        f->arg = get_args(al->declarations->param_decl, syms);
         add_function(syms->functions, f);
     }
+    add_variables(syms, prog->entry_point->var_decl);
+    for (unsigned i = 0; i < prog->entry_point->instructions.size; ++i)
+      if (!check_inst(
+            prog->entry_point->instructions.data[i],
+            find_type(syms->types, "entier"), syms))
+          correct = false;
     for(unsigned i = 0; i < prog->algos.size; ++i)
     {
         struct algo* al = list_nth(prog->algos, i);
@@ -248,83 +215,45 @@ bool check_prog(struct prog* prog)
     return correct;
 }
 
-bool add_header_variables(struct symtable *syms, struct single_var_decl* var)
-{
-    bool noerr = true;
-    for(unsigned int j = 0; j < var->var_idents.size; ++j)
-    {
-        struct var_sym* sym = malloc(sizeof(struct var_sym));
-        sym->ident = list_nth(var->var_idents, j);
-        struct type_sym *s = find_type(syms->types, var->type_ident);
-        if (s)
-        {
-          sym->type = s->type;
-          add_var(syms->variables, sym);
-        }
-        else
-        {
-          // TODO get the right line/char
-          error(1, 1, 1, "unknown type %s", var->type_ident);
-          free(sym);
-          noerr = false;
-        }
-    }
-    return noerr;
-}
-
 bool check_algo(struct algo* al, struct symtable *syms)
 {
     bool noerr = true;
     struct function* f = malloc(sizeof(struct function));
-    f->ret = char_to_type(al->return_type);
+    f->ret = find_type(syms->types, al->return_type);
     struct declarations* decl = al->declarations;
-    fill_std_syms(syms);
 
     if(decl != NULL)
     {
         struct param_decl* p_decl = decl->param_decl;
-        struct local_param* loc = p_decl->local_param;
-        struct global_param* glo = p_decl->global_param;
+        vardecllist_t loc = p_decl->local_param;
+        vardecllist_t glo = p_decl->global_param;
         vardecllist_t vars = decl->var_decl;
         typedecllist_t typelist = decl->type_decls;
         constdecllist_t consts = decl->const_decls;
-        if(loc != NULL)
+        if(loc.size > 0)
         {
-            for(unsigned int i = 0; i < loc->param.size; i++)
-            {
-                struct single_var_decl* var = list_nth(loc->param,i);
-                noerr = noerr && add_header_variables(syms, var);
-            }
+          noerr = noerr && add_variables(syms, loc);
         }
-        if(glo != NULL)
+        if(glo.size > 0)
         {
-            for(unsigned int i = 0; i < glo->param.size; i++)
-            {
-                struct single_var_decl* var = list_nth(glo->param,i);
-                noerr = noerr && add_header_variables(syms, var);
-            }
+            for(unsigned int i = 0; i < glo.size; i++)
+                noerr = noerr && add_variables(syms, glo);
         }
         for(unsigned i = 0; i < typelist.size; ++i)
         {
             struct type_decl* type_decl = list_nth(typelist, i);
             struct type_def*  type_def  = type_decl->type_def;
             struct type* type = malloc(sizeof(struct type));
-            struct type_sym* sym = malloc(sizeof(struct type_sym));
+            type->name = strdup(type_decl->ident);
             switch(type_def->type_type)
             {
                 case enum_type:
                     {
                         type->type_kind = enum_t;
-
                         struct enum_type* _enum = malloc(sizeof(struct enum_type));
                         _enum->idents = type_def->def.enum_def->identlist;
-
                         type->type_val.enum_type = _enum;
-
-                        sym->type = type;
-                        sym->ident = type_decl->ident;
-
-                        add_type(syms->types, sym);
+                        add_type(syms->types, type);
                     }
                     break;
                 case array_type:
@@ -332,20 +261,15 @@ bool check_algo(struct algo* al, struct symtable *syms)
                         type->type_kind = array_t;
 
                         struct array* array = malloc(sizeof(struct array));
-                        if((array->type = find_type(syms->types, type_def->def.array_def->elt_type)->type)
+                        if((array->type = find_type(syms->types, type_def->def.array_def->elt_type))
                                 == NULL)
                         {
-                            printf("unknown type\n");
+                          // TODO get the right line/char
+                          error(1, 1, 1, "Unkown type");
                         }
-
                         array->dims = type_def->def.array_def->dims;
-
                         type->type_val.array_type = array;
-
-                        sym->type = type;
-                        sym->ident = type_decl->ident;
-
-                        add_type(syms->types, sym);
+                        add_type(syms->types, type);
                     }
                     break;
                 case struct_type:
@@ -366,20 +290,14 @@ bool check_algo(struct algo* al, struct symtable *syms)
                             {
                                 struct field* field = malloc(sizeof(struct field));
                                 field->ident = list_nth(var->var_idents,i);
-                                field->type = find_type(syms->types, var->type_ident)->type;
+                                field->type = find_type(syms->types, var->type_ident);
 
                                 list_push_back(fields, field);
                             }
                         }
-
                         record->fields = fields;
-
                         type->type_val.records_type = record;
-
-                        sym->type = type;
-                        sym->ident = type_decl->ident;
-
-                        add_type(syms->types, sym);
+                        add_type(syms->types, type);
                     }
                     break;
                 case pointer_type:
@@ -387,20 +305,14 @@ bool check_algo(struct algo* al, struct symtable *syms)
                       type->type_kind = pointer_type;
                       type->type_val.pointer_type = malloc(sizeof(struct pointer));
                       type->type_val.pointer_type->type = find_type(syms->types,
-                        type_decl->type_def->def.pointer_def->pointed_type_ident)->type;
-                      sym->type = type;
-                      sym->ident = type_decl->ident;
-                      add_type(syms->types, sym);
+                        type_decl->type_def->def.pointer_def->pointed_type_ident);
+                      add_type(syms->types, type);
                     }
                     break;
 
             }
         }
-        for(unsigned i =0; i < vars.size; ++i)
-        {
-            struct single_var_decl* var = list_nth(vars, i);
-            noerr = noerr && add_header_variables(syms, var);
-        }
+        noerr = noerr && add_variables(syms, vars);
         for(unsigned i =0; i < consts.size; ++i)
         {
             struct const_decl* cons = list_nth(consts, i);
@@ -408,22 +320,22 @@ bool check_algo(struct algo* al, struct symtable *syms)
             switch(cons->val->valtype)
             {
                 case nulltype:
-                    sym->type = find_type(syms->types, "nul")->type;
+                    sym->type = find_type(syms->types, "nul");
                     break;
                 case chartype:
-                    sym->type = find_type(syms->types, "caractere")->type;
+                    sym->type = find_type(syms->types, "caractere");
                     break;
                 case stringtype:
-                    sym->type = find_type(syms->types, "chaine")->type;
+                    sym->type = find_type(syms->types, "chaine");
                     break;
                 case inttype:
-                    sym->type = find_type(syms->types, "entier")->type;
+                    sym->type = find_type(syms->types, "entier");
                     break;
                 case realtype:
-                    sym->type = find_type(syms->types, "reel")->type;
+                    sym->type = find_type(syms->types, "reel");
                     break;
                 case booltype:
-                    sym->type = find_type(syms->types, "booleen")->type;
+                    sym->type = find_type(syms->types, "booleen");
                     break;
 
 
@@ -433,149 +345,175 @@ bool check_algo(struct algo* al, struct symtable *syms)
         }
     }
     for(unsigned i = 0; i < al->instructions.size; i++)
-      if(!check_inst(list_nth(al->instructions, i), f, syms))
+      if(!check_inst(list_nth(al->instructions, i), f->ret, syms))
         noerr = false;
 
-    free(f->ret);
     free(f);
     return noerr;
 }
 
-bool check_inst(struct instruction *i, struct function* fun, struct symtable *syms)
+bool check_assignment(struct assignment *assignment, struct symtable *syms)
+{
+    char *t1 = check_expr(assignment->e1, syms);
+    char *t2 = check_expr(assignment->e2, syms);
+    if (!t1 || !t2)
+      return false;
+    if (strcmp(t1, t2) != 0)
+    {
+      error(assignment->e1->lineno, 1, 1, "incompatible types in assignment");
+      return false;
+    }
+    return true;
+}
+
+struct type *check_funcall(struct funcall *f, struct symtable *syms)
+{
+  if (strcmp(f->fun_ident, "ecrire") == 0)
+  {
+    for (unsigned i = 0; i < f->args.size; ++i)
+    {
+      if (!check_expr(f->args.data[i], syms))
+        return NULL;
+    }
+    // Return a non-zero value to indicate success.
+    // It is a procedure so this function should be called from check_inst,
+    // which doesn't use the return value as a type but just as a bool.
+    return (void *)1;
+  }
+  struct function *proto = get_function(syms->functions, f->fun_ident);
+  if (!proto)
+  {
+    // TODO get the right line/char
+    error(1, 1, 1, "implicit declaration of function %s", f->fun_ident);
+    return NULL;
+  }
+  else if (proto->arg.size != f->args.size)
+  {
+    // TODO get the right line/char
+    error(1, 1, 1, "function %s expects %d arguments but %d were given",
+        f->fun_ident, proto->arg.size, f->args.size);
+    return NULL;
+  }
+  else
+  {
+    bool ok = true;
+    for (unsigned i = 0; i < proto->arg.size; ++i)
+    {
+      char *argtype = check_expr(f->args.data[i], syms);
+      if (!argtype)
+        return NULL;
+      if (strcmp(proto->arg.data[i]->type->name, argtype) != 0)
+      {
+        error(f->lineno, 1, 1,
+            "wrong type for argument %d in function %s", i + 1, f->fun_ident);
+        ok = false;
+      }
+    }
+    if (ok)
+      // If it is a procedure the return type is 0 which would be interpreted as
+      // an error, instead 1 is returned. Since it is a procedure it means it is
+      // called by check_inst (rather than check_expr) and the return value will
+      // only be used as a boolean.
+      return proto->ret ? proto->ret : (void *)1;
+  }
+  return NULL;
+}
+
+bool check_inst(struct instruction *i, struct type *ret, struct symtable *syms)
 {
     switch(i->kind)
     {
         case funcall:
-            {
-                struct function* f = malloc(sizeof(struct function));
-                f->ident = i->instr.funcall->fun_ident;
-                if (get_function(syms->functions, f->ident) != NULL)
-                {
-                    free(f);
-                    return true;
-                }
-                else
-                {
-                    printf("implicit declaration of function %s\n",f->ident);
-                    free(f);
-                    return false;
-                }
-            }
-            break;
+            return check_funcall(i->instr.funcall, syms);
 
         case assignment:
-            if(check_expr(i->instr.assignment->e1, syms)
-                    && check_expr(i->instr.assignment->e2, syms))
-            {
-                struct type* t1 = get_expr_type(i->instr.assignment->e1, syms);
-                struct type* t2 = get_expr_type(i->instr.assignment->e2, syms);
-                if(!equal_types(t1,t2))
-                {
-                    printf("ls. %d: ", i->instr.assignment->e1->lineno);
-                    printf("error in assignment\n");
-                    return false;
-                }
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-            break;
+            return check_assignment(i->instr.assignment, syms);
 
         case ifthenelse:
             {
                 struct ifthenelse* e = i->instr.ifthenelse;
 
-                struct type* t = malloc(sizeof(struct type));
-                t->type_kind = primary_t;
-                primary_type p = bool_t;
-                t->type_val.primary = p;
-                struct type* t1 = get_expr_type(e->cond, syms);
-                if(equal_types(t1, t))
+                char *t1 = check_expr(e->cond, syms);
+                if (!t1)
+                  return false;
+                if(strcmp(t1, "booleen") == 0)
                 {
                     for(unsigned int i =0; i < e->instructions.size; ++i)
                     {
-                        if (!check_inst(list_nth(e->instructions, i), fun, syms))
+                        if (!check_inst(list_nth(e->instructions, i), ret, syms))
                         {
-                            free(t1);
-                            free(t);
                             return false;
                         }
                     }
                     for(unsigned int i =0; i < e->elseblock.size; ++i)
                     {
-                        if(!check_inst(list_nth(e->elseblock,i), fun, syms))
+                        if(!check_inst(list_nth(e->elseblock,i), ret, syms))
                         {
-                            free(t);
                             return false;
                         }
                     }
-                    free(t);
                     return true;
                 }
 
                 printf("error in condition statement");
-                free(t);
                 return false;
             }
             break;
 
         case switchcase:
-            if(!check_expr(i->instr.switchcase->cond, syms))
             {
-                printf("error in switch expression\n");
+              char *t1 = check_expr(i->instr.switchcase->cond, syms);
+              if(!t1)
                 return false;
-            }
-            for(unsigned int l = 0; l < i->instr.switchcase->caseblocklist.size; ++l)
-            {
+              for(unsigned int l = 0; l < i->instr.switchcase->caseblocklist.size; ++l)
+              {
                 for( unsigned int j = 0; j < i->instr.switchcase->caseblocklist.data[l]->exprlist.size; ++j)
                 {
-                    if(!(check_expr(i->instr.switchcase->caseblocklist.data[l]->exprlist.data[j],
-                                    syms)
-                                && equal_types(
-                                    get_expr_type(
-                                        i->instr.switchcase->caseblocklist.data[l]->exprlist.data[j],
-                                        syms),
-                                    get_expr_type(i->instr.switchcase->cond, syms))))
-                    {
-                        printf("error in difference type between switch and case\n");
-                        return false;
-                    }
+                  char *t2 =
+                    check_expr(i->instr.switchcase->caseblocklist.data[l]->exprlist.data[j],
+                        syms);
+                  if(!t2)
+                    return false;
+                  if (strcmp(t1, t2) != 0)
+                  {
+                    error(i->instr.switchcase->cond->lineno, 1, 1,
+                        "different types between switch and case\n");
+                    return false;
+                  }
                 }
                 for(int unsigned k = 0;
-                        k < i->instr.switchcase->caseblocklist.data[l]->instructions.size; ++k)
+                    k < i->instr.switchcase->caseblocklist.data[l]->instructions.size; ++k)
                 {
-                    if(!check_inst(i->instr.switchcase->caseblocklist.data[l]->instructions.data[k], fun, syms))
-                    {
-                        printf("error while checking case instruction\n");
-                        return false;
-                    }
-                }
-
-            }
-            for(unsigned int l = 0; l < i->instr.switchcase->otherwiseblock.size; ++l)
-            {
-                if(!check_inst(i->instr.switchcase->otherwiseblock.data[l], fun, syms))
-                {
+                  if(!check_inst(i->instr.switchcase->caseblocklist.data[l]->instructions.data[k], ret, syms))
+                  {
                     printf("error while checking case instruction\n");
                     return false;
+                  }
                 }
 
+              }
+              for(unsigned int l = 0; l < i->instr.switchcase->otherwiseblock.size; ++l)
+              {
+                if(!check_inst(i->instr.switchcase->otherwiseblock.data[l], ret, syms))
+                {
+                  printf("error while checking case instruction\n");
+                  return false;
+                }
+
+              }
+              return true;
+              break;
             }
-            return true;
-            break;
 
         case dowhile:
             {
                 struct dowhile* e = i->instr.dowhile;
-                if(equal_types(
-                      get_expr_type(e->cond, syms),
-                      find_type(syms->types,"booleen")->type))
+                char *t = check_expr(e->cond, syms);
+                if(strcmp(t, "booleen") == 0)
                 {
                     for(unsigned int i = 0; i < e->instructions.size; ++i)
                     {
-                        if(!check_inst(list_nth(e->instructions,i), fun, syms))
+                        if(!check_inst(list_nth(e->instructions,i), ret, syms))
                         {
                             printf("error in do while loop\n");
                             return false;
@@ -591,13 +529,12 @@ bool check_inst(struct instruction *i, struct function* fun, struct symtable *sy
         case whiledo:
             {
                 struct whiledo* e = i->instr.whiledo;
-                if(equal_types(
-                      get_expr_type(e->cond, syms),
-                      find_type(syms->types,"booleen")->type))
+                if(strcmp(check_expr(e->cond, syms),
+                      find_type(syms->types,"booleen")->name) == 0)
                 {
                     for(unsigned int i = 0; i < e->instructions.size; ++i)
                     {
-                        if(!check_inst(list_nth(e->instructions,i), fun, syms))
+                        if(!check_inst(list_nth(e->instructions,i), ret, syms))
                         {
                             printf("error in while loop");
                             return false;
@@ -613,290 +550,142 @@ bool check_inst(struct instruction *i, struct function* fun, struct symtable *sy
         case forloop:
             {
                 struct forloop* e = i->instr.forloop;
-                if(check_expr((struct expr *)e->assignment, syms))
-                {
-                    if(equal_types(
-                          get_expr_type(e->upto, syms),
-                          find_type(syms->types,"entier")->type) )
-                    {
+                if(check_assignment(e->assignment, syms))
+                    if(strcmp(check_expr(e->upto, syms),
+                          find_type(syms->types,"entier")->name) == 0)
                         for(unsigned int i = 0; i < e->instructions.size; ++i)
-                        {
-                            if(!check_inst(list_nth(e->instructions, i), fun, syms))
-                            {
-                                printf("error in for loop");
+                            if(!check_inst(list_nth(e->instructions, i), ret, syms))
                                 return false;
-                            }
-                        }
                         return true;
-                    }
                     printf("error in up to");
                     return false;
-                }
-                printf("error in assignement");
+                printf("error in assignment");
                 return false;
             }
             break;
 
         case returnstmt:
-            if(equal_types(
-                  get_expr_type(i->instr.returnstmt->expr, syms),
-                  fun->ret))
+            {
+              char *t = check_expr(i->instr.returnstmt->expr, syms);
+              if (!t)
+                return false;
+              if(strcmp(t, ret->name) == 0)
                 return true;
-            printf("error in return statement\n");
-            return false;
-            break;
+              printf("error in return statement\n");
+              return false;
+              break;
+            }
     }
     return false;
 
 }
 
-bool check_expr(struct expr *e, struct symtable *syms)
+char *check_expr(struct expr *e, struct symtable *syms)
 {
+    e->type = NULL;
     switch(e->exprtype)
     {
+        case valtype:
+          switch(e->val.val->valtype)
+          {
+            case nulltype:
+              e->type = strdup("nul");
+              break;
+            case chartype:
+              e->type = strdup("caractere");
+              break;
+            case stringtype:
+              e->type = strdup("chaine");
+              break;
+            case booltype:
+              e->type = strdup("booleen");
+              break;
+            case inttype:
+              e->type = strdup("entier");
+              break;
+            case realtype:
+              e->type = strdup("reel");
+              break;
+          }
+          break;
         case identtype:
-            return(find_var(syms->variables, e->val.ident) != NULL);
-            break;
-
+          {
+            struct var_sym *var = find_var(syms->variables, e->val.ident);
+            if (var)
+              e->type = strdup(var->type->name);
+            else
+              // TODO get the right line/char
+              error(e->lineno, 1, 1, "Use of undeclared variable %s", e->val.ident);
+          }
+          break;
         case funcalltype:
-            {
-                char* ident  = e->val.funcall.fun_ident;
-                return get_function(syms->functions, ident) != NULL;
-            }
+          {
+            struct type *rettype = check_funcall(&e->val.funcall, syms);
+            if (rettype)
+              e->type = strdup(rettype->name);
             break;
-
+          }
         case binopexprtype:
-            if (equal_types(get_expr_type(e->val.binopexpr.e2, syms),
-                        get_expr_type(e->val.binopexpr.e1, syms)))
             {
+              char *t1 = check_expr(e->val.binopexpr.e1, syms);
+              char *t2 = check_expr(e->val.binopexpr.e2, syms);
+              if (!t1 || !t2)
+                break;
+              if (strcmp(t1, t2) == 0)
+              {
                 if(e->val.binopexpr.op == EQ 
                     || e->val.binopexpr.op == LT
                     || e->val.binopexpr.op == GT
                     || e->val.binopexpr.op == LE
                     || e->val.binopexpr.op == GE)
                 {
-                    struct type* t = malloc(sizeof(struct type));
-                    t->type_kind = primary_t;
-                    primary_type p = bool_t;
-                    t->type_val.primary = p;
-                    return true;
+                  e->type = strdup(t_bool->name);
                 }
-                return true;
-            }
-            else
-            {
+                else
+                {
+                  e->type = strdup(t1);
+                }
+              }
+              else
+              {
                 printf("%s:%d: ", srcfilename, e->lineno);
                 printf("incompatible types: ");
-                printf("%s ", expr_type(e->val.binopexpr.e1));
+                printf("%s ", t1);
                 printf("and ");
-                printf("%s.\n", expr_type(e->val.binopexpr.e2));
+                printf("%s.\n", t2);
                 char *error_line = get_line(fin, e->lineno);
                 printf("%s", error_line);
                 free(error_line);
                 return false;
-            }
-            break;
-
-        case unopexprtype:
-            if(get_expr_type(e->val.unopexpr.e, syms))
-                return true;
-            printf("%d;",e->lineno);
-            return false;
-            break;
-
-        case arrayexprtype:
-            {
-
-
-            }
-            break;
-
-        case structelttype:
-            break;
-
-        case dereftype:
-            if(check_expr(e->val.deref.e, syms))
-                return true;
-            printf("%d;",e->lineno);
-            return false;
-            break;
-
-        default:
-            break;
-    }
-    return true;
-
-}
-
-struct type* get_expr_type(struct expr *e, struct symtable *syms)
-{
-    e->type = NULL;
-    switch(e->exprtype)
-    {
-        case valtype:
-            switch(e->val.val->valtype)
-            {
-                case nulltype:
-                    e->type = find_type(syms->types,"nul")->type;
-                    break;
-                case chartype:
-                    e->type = find_type(syms->types,"caractere")->type;
-                    break;
-                case stringtype:
-                    e->type = find_type(syms->types,"chaine")->type;
-                    break;
-                case booltype:
-                    e->type = find_type(syms->types,"booleen")->type;
-                    break;
-                case inttype:
-                    e->type = find_type(syms->types,"entier")->type;
-                    break;
-                case realtype:
-                    e->type = find_type(syms->types,"reel")->type;
-                    break;
-            }
-            break;
-        case identtype:
-            e->type = find_var(syms->variables, e->val.ident)->type;
-            break;
-        case funcalltype :
-            {
-                struct function* f;
-                if(( f = get_function(syms->functions, e->val.funcall.fun_ident)) != NULL
-                        && check_args(f, e->val.funcall, syms))
-                    e->type = f->ret;
-            }
-            break;
-        case binopexprtype:
-            /*if (  equal_types(get_expr_type(e->val.binopexpr.e1, functions, variables, types),
-              (struct type*)int_t)
-              || equal_types(get_expr_type(e->val.binopexpr.e1, functions, variables, types),
-              (struct type*)real_t)
-              || equal_types(get_expr_type(e->val.binopexpr.e1, functions, variables, types),
-              (struct type*)bool_t))
-              {*/
-            if (equal_types(get_expr_type(e->val.binopexpr.e2, syms),
-                        get_expr_type(e->val.binopexpr.e1, syms)))
-            {
-                if(e->val.binopexpr.op == EQ 
-                        || e->val.binopexpr.op == LT
-                        || e->val.binopexpr.op == GT
-                        || e->val.binopexpr.op == LE
-                        || e->val.binopexpr.op == GE)
-                        
-                {
-                    e->type = find_type(syms->types,"booleen")->type;
-                }
-                else
-                    e->type = get_expr_type(e->val.binopexpr.e1, syms);
-            }
-            else
-            {
-              // TODO get the right line/char
-              error(1, 1, 1, "incompatible expression types: %s and %s\n",
-                  expr_type(e->val.binopexpr.e1),
-                  expr_type(e->val.binopexpr.e2));
-            }
-            break;
-
-        case unopexprtype:
-            if (  equal_types(get_expr_type(e->val.binopexpr.e1, syms),
-                        (struct type*)int_t)
-                    || equal_types(get_expr_type(e->val.binopexpr.e1, syms),
-                        (struct type*)real_t)
-                    || equal_types(get_expr_type(e->val.binopexpr.e1, syms),
-                        (struct type*)bool_t))
-                e->type = get_expr_type(e->val.unopexpr.e, syms);
-            break;
-
-        case arrayexprtype:
-            e->type = get_expr_type(e->val.arrayexpr.e1, syms);
-            break;
-
-        case structelttype:
-            {
-              struct type *record = get_expr_type(e->val.structelt.e1, syms);
-              assert(record->type_kind == records_t);
-              fieldlist_t fields = record->type_val.records_type->fields;
-              unsigned i = 0;
-              for (; i < fields.size; ++i)
-              {
-                if (strcmp(fields.data[i]->ident, e->val.structelt.ident) == 0)
-                {
-                  e->type = fields.data[i]->type;
-                  break;
-                }
               }
-              if (i >= fields.size)
-                error(1, 1, 1, "field %s doesn't exist in this record type", e->val.structelt.ident);
               break;
             }
 
+        case unopexprtype:
+            {
+              char *t1 = check_expr(e->val.unopexpr.e, syms);
+              if(t1)
+                e->type = strdup(t1);
+              break;
+            }
+
+        case arrayexprtype:
+            {
+              // TODO
+            }
+            break;
+
+        case structelttype:
+            // TODO
+            break;
+
         case dereftype:
             {
-              e->type = malloc(sizeof(struct type));
-              e->type->type_kind = pointer_t;
-              e->type->type_val.pointer_type = malloc(sizeof(struct pointer));
-              e->type->type_val.pointer_type->type = get_expr_type(e->val.deref.e, syms);
+              char *t = check_expr(e->val.deref.e, syms);
+              if (t)
+                e->type = strdup(t);
               break;
             }
     }
     return e->type;
-}
-
-char* expr_type (struct expr* e)
-{
-    switch(e->exprtype)
-    {
-        case valtype:
-            switch(e->val.val->valtype)
-            {
-                case nulltype:
-                    return "null";
-                    break;
-
-                case chartype:
-                    return "char";
-                    break;
-
-                case stringtype:
-                    return "string";
-
-                case booltype:
-                    return "bool";
-
-                case inttype:
-                    return "int";
-
-                case realtype:
-                    return "real";
-            }
-            break;
-
-        case identtype:
-            return "ident";
-            break;
-
-        case funcalltype :
-            break;
-
-        case binopexprtype:
-            break;
-
-        case unopexprtype:
-            break;
-
-        case arrayexprtype:
-            break;
-
-        case structelttype:
-            break;
-
-        case dereftype:
-            break;
-
-        default:
-            break;
-    }
-    return "not yet";
 }

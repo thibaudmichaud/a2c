@@ -15,11 +15,11 @@ parametres locaux
 variables
   entier i, a, b
 debut
-  retourne truc()
+  retourne truc(faux, 42, 4)
 fin algorithme fonction machin
 
 variables
   booleen variable_globale
 debut
-  ecrire(fibo(10))
+  ecrire(truc(vrai, 1, 2))
 fin

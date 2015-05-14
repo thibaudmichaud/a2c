@@ -15,7 +15,7 @@ typedef struct
 typedef int *t_int_ptr;
 int variable_globale;
 int n;
-void test(int b, int *gp, int *bla, char *z)
+void test(int b, int *gp, int *bla)
 {
   t_tab_bool tab;
   int a, b;
@@ -33,5 +33,5 @@ void test(int b, int *gp, int *bla, char *z)
 }
 int main(void)
 {
-  test(variable_globale, n);
+  test(variable_globale, n, 2);
 }

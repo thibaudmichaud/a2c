@@ -21,5 +21,5 @@ int testswitch(int n)
 }
 int main(void)
 {
-  ecrire(testswitch(2));
+  printf("%d\n", testswitch(2));
 }

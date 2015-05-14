@@ -60,5 +60,6 @@ void free_type(struct type *type)
       free_enum(type->type_val.enum_type);
       break;
   }
+  free(type->name);
   free(type);
 }

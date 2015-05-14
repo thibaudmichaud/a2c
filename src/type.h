@@ -57,11 +57,13 @@ struct type {
         struct pointer*      pointer_type;
         struct enum_type*    enum_type;
     }type_val;
+    char *name;
 };
 
 void free_pointer(struct pointer* p);
 void free_records(struct records* p);
 void free_enum(struct enum_type* _enum);
 void free_type(struct type *type);
+struct type *copy_type(struct type *type);
 
 #endif

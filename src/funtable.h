@@ -18,7 +18,7 @@ struct function
 {
     char* ident;
     struct type* ret;
-    args_t* arg;
+    args_t arg;
 };
 
 typedef ht_tpl(struct function*) fun_table_t;
