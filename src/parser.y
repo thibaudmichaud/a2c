@@ -76,12 +76,12 @@ extern FILE *yyin;
 %type <entry_point> entry_point
 %type <expression> exp
 %type <exprlist> explist nonempty_explist
-%type <gp> gp_decl
+%type <var_decl> gp_decl
 %type <identlist> identlist
 %type <instruction> instruction
 %type <instructions> instructions
 %type <intlist> dims
-%type <lp> lp_decl
+%type <var_decl> lp_decl
 %type <param_decl> param_decl
 %type <prog> prog
 %type <single_var_decl> single_var_decl
@@ -263,17 +263,17 @@ dims:
 param_decl:
  lp_decl gp_decl { $$ = make_param_decl(true, $1, $2); }
 | gp_decl lp_decl { $$ = make_param_decl(false, $2, $1); }
-| lp_decl { $$ = make_param_decl(true, $1, NULL); }
-| gp_decl { $$ = make_param_decl(true, NULL, $1); }
-| { $$ = make_param_decl(true, NULL, NULL); }
+| lp_decl { $$ = make_param_decl(true, $1, empty_vardecllist()); }
+| gp_decl { $$ = make_param_decl(true, empty_vardecllist(), $1); }
+| { $$ = make_param_decl(true, empty_vardecllist(), empty_vardecllist()); }
 
 lp_decl:
  "parametres" "locaux" _EOL
- var_decl2 { $$ = make_lp_decl($4); }
+ var_decl2 { $$ = $4; }
 
 gp_decl:
  "parametres" "globaux" _EOL
- var_decl2 { $$ = make_gp_decl($4); }
+ var_decl2 { $$ = $4; }
 
 var_decl:
  "variables" _EOL

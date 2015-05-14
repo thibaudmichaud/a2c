@@ -1,4 +1,4 @@
 int main(void)
 {
-  ecrire("hello world");
+  printf("%s\n", "hello world");
 }

@@ -7,7 +7,6 @@
 struct { \
   size_t capacity; \
   size_t size; \
-  size_t elem_size; \
   t *data; \
 }
 
@@ -15,14 +14,15 @@ struct { \
 struct name { \
   size_t capacity; \
   size_t size; \
-  size_t elem_size; \
   t *data; \
 }
 
 #define list_init(l) \
-(l).capacity = BASE_CAPACITY; \
-(l).size = 0; \
-(l).data = malloc(sizeof(*(l).data) * (l).capacity)
+do { \
+  (l).capacity = BASE_CAPACITY; \
+  (l).size = 0; \
+  (l).data = malloc(sizeof(*(l).data) * (l).capacity); \
+} while(0)
 
 #define list_push_back(l, elt) \
 do { \

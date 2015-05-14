@@ -3,7 +3,6 @@ parametres locaux
   booleen b
 parametres globaux
   entier gp, bla
-  caractere z
 types
   t_enum = (a1, a2, a3, a4)
   t_vect_entiers = 5 entier
@@ -31,5 +30,5 @@ variables
   booleen variable_globale
   entier n
 debut
-  test(variable_globale, n)
+  test(variable_globale, n, 2)
 fin

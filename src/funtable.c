@@ -13,14 +13,9 @@ static size_t hash(struct function* f)
 
 void free_fun(struct function* f)
 {
-    /*for(unsigned int i = 0; i < f->arg.size; ++i)
-    {
-
-        free(list_nth(f->arg,i)->type);
-        free(list_nth(f->arg,i));
-    }*/
-    //free(f->ret);
-    free(f->ret);
+    for (unsigned i = 0; i < f->arg.size; ++i)
+      free(f->arg.data[i]);
+    list_free(f->arg);
     free(f);
 }
 

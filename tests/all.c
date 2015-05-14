@@ -37,5 +37,5 @@ int coucou(int a, int b)
 }
 int main(void)
 {
-  coucou(1, 1.5);
+  coucou(1, 1);
 }

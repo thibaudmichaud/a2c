@@ -8,9 +8,9 @@ int truc(int b, int n, int m)
 int machin(int n)
 {
   int i, a, b;
-  return truc();
+  return truc(0, 42, 4);
 }
 int main(void)
 {
-  ecrire(fibo(10));
+  printf("%d\n", truc(1, 1, 2));
 }

@@ -23,9 +23,8 @@ struct symtable
 char *algo_to_c_type(char *ident);
 bool check_algo(struct algo* al, struct symtable *syms);
 bool check_prog(struct prog* prog);
-bool check_inst(struct instruction *e, struct function* f,  struct symtable *syms);
-bool check_expr(struct expr *e, struct symtable *syms);
+bool check_inst(struct instruction *e, struct type *ret,  struct symtable *syms);
+char *check_expr(struct expr *e, struct symtable *syms);
 char* expr_type(struct expr *e);
-struct type* get_expr_type(struct expr *e, struct symtable *syms);
 
 #endif

@@ -149,6 +149,7 @@ struct expr *infix(struct expr *left, char *expect)
       }
       eat(RPAREN);
       ident = strdup(left->val.ident);
+      left->type = NULL; // To prevent segfaults when freeing the expr
       free_expression(left);
       return funcallexpr(ident, args);
     case LSQBRACKET:
@@ -534,27 +535,24 @@ typedecllist_t parse_typedecls(void)
  | ALGORITHMS |
  *------------*/
 
-struct local_param *parse_lp(void)
+vardecllist_t parse_lp(void)
 {
   eat(LOCAL); eat(EOL);
-  struct local_param *local_param = malloc(sizeof(struct local_param));
-  local_param->param = parse_vardecls();
-  return local_param;
+  return parse_vardecls();
 }
 
-struct global_param *parse_gp(void)
+vardecllist_t parse_gp(void)
 {
   eat(GLOBAL); eat(EOL);
-  struct global_param *global = malloc(sizeof(struct local_param));
-  global->param = parse_vardecls();
-  return global;
+  vardecllist_t gp = parse_vardecls();
+  return gp;
 }
 
 struct declarations *parse_decls(void)
 {
   struct declarations *declarations = calloc(1, sizeof(struct declarations));
-  struct local_param *lp = NULL;
-  struct global_param *gp = NULL;
+  vardecllist_t lp;
+  vardecllist_t gp;
   int local_first = 1;
   if (lookahead[0]->type == PARAM)
   {
@@ -567,6 +565,8 @@ struct declarations *parse_decls(void)
         eat(PARAM);
         gp = parse_gp();
       }
+      else
+        list_init(gp);
     }
     else if (lookahead[0]->type == GLOBAL)
     {
@@ -577,7 +577,14 @@ struct declarations *parse_decls(void)
         eat(PARAM);
         lp = parse_lp();
       }
+      else list_init(lp);
     }
+    else error("Expected \"local\" or \"global\"");
+  }
+  else
+  {
+    list_init(lp);
+    list_init(gp);
   }
   if (lookahead[0]->type == VARIABLES)
   {

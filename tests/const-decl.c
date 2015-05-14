@@ -15,5 +15,5 @@ int fibo(int n)
 }
 int main(void)
 {
-  ecrire(fibo(10));
+  printf("%d\n", fibo(10));
 }

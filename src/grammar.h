@@ -94,7 +94,6 @@ struct val
 
 struct expr
 {
-  // TODO use struct val here
   enum
   {
     valtype,
@@ -118,7 +117,7 @@ struct expr
     struct deref deref;
   } val;
   unsigned lineno;
-  struct type *type; // filled in during the type checking phase
+  char *type; // filled in during the type checking phase
 };
 
 /*--------------*/
@@ -262,8 +261,8 @@ struct local_param
 struct param_decl
 {
   bool local_first;
-  struct local_param *local_param;
-  struct global_param *global_param;
+  vardecllist_t local_param;
+  vardecllist_t global_param;
 };
 
 struct const_decl
@@ -583,25 +582,8 @@ struct instruction *return_stmt(struct expr *e)
 }
 
 static inline
-struct local_param *make_lp_decl(vardecllist_t params)
-{
-  struct local_param *l = malloc(sizeof(struct local_param));
-  l->param = params;
-  return l;
-}
-
-static inline
-struct global_param *make_gp_decl(vardecllist_t params)
-{
-  struct global_param *g = malloc(sizeof(struct global_param));
-  g->param = params;
-  return g;
-}
-
-static inline
 struct param_decl *make_param_decl(bool local_first,
-    struct local_param *lp,
-    struct global_param *gp)
+    vardecllist_t lp, vardecllist_t gp)
 {
   struct param_decl *p = malloc(sizeof(struct param_decl));
   p->local_first = local_first;
