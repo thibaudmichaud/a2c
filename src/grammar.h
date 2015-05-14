@@ -118,6 +118,7 @@ struct expr
     struct deref deref;
   } val;
   unsigned lineno;
+  struct type *type; // filled in during the type checking phase
 };
 
 /*--------------*/

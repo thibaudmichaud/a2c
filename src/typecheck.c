@@ -3,6 +3,8 @@
 #include "get_line.h"
 #include "parser.h"
 #include "a2c.h"
+#include <string.h>
+#include <assert.h>
 
 struct type* t_bool, t_int, t_str, t_reel, t_char;
 
@@ -454,7 +456,7 @@ bool check_inst(struct instruction *i, struct function* fun, struct symtable *sy
                 }
                 else
                 {
-                    printf("implicit declaration of function %s",f->ident);
+                    printf("implicit declaration of function %s\n",f->ident);
                     free(f);
                     return false;
                 }
@@ -728,38 +730,43 @@ bool check_expr(struct expr *e, struct symtable *syms)
 
 struct type* get_expr_type(struct expr *e, struct symtable *syms)
 {
-
+    e->type = NULL;
     switch(e->exprtype)
     {
         case valtype:
             switch(e->val.val->valtype)
             {
                 case nulltype:
-                    return find_type(syms->types,"nul")->type;
+                    e->type = find_type(syms->types,"nul")->type;
+                    break;
                 case chartype:
-                    return find_type(syms->types,"caractere")->type;
+                    e->type = find_type(syms->types,"caractere")->type;
+                    break;
                 case stringtype:
-                    return find_type(syms->types,"chaine")->type;
+                    e->type = find_type(syms->types,"chaine")->type;
+                    break;
                 case booltype:
-                    return find_type(syms->types,"booleen")->type;
+                    e->type = find_type(syms->types,"booleen")->type;
+                    break;
                 case inttype:
-                    return find_type(syms->types,"entier")->type;
+                    e->type = find_type(syms->types,"entier")->type;
+                    break;
                 case realtype:
-                    return find_type(syms->types,"reel")->type;
+                    e->type = find_type(syms->types,"reel")->type;
+                    break;
             }
-        case identtype:
-            return find_var(syms->variables, e->val.ident)->type;
             break;
-
+        case identtype:
+            e->type = find_var(syms->variables, e->val.ident)->type;
+            break;
         case funcalltype :
             {
                 struct function* f;
                 if(( f = get_function(syms->functions, e->val.funcall.fun_ident)) != NULL
                         && check_args(f, e->val.funcall, syms))
-                    return f->ret;
+                    e->type = f->ret;
             }
             break;
-
         case binopexprtype:
             /*if (  equal_types(get_expr_type(e->val.binopexpr.e1, functions, variables, types),
               (struct type*)int_t)
@@ -778,18 +785,18 @@ struct type* get_expr_type(struct expr *e, struct symtable *syms)
                         || e->val.binopexpr.op == GE)
                         
                 {
-                    return find_type(syms->types,"booleen")->type;
+                    e->type = find_type(syms->types,"booleen")->type;
                 }
-                return get_expr_type(e->val.binopexpr.e1, syms);
+                else
+                    e->type = get_expr_type(e->val.binopexpr.e1, syms);
             }
             else
             {
-                printf("expression left was of type : ");
-                printf("%s ", expr_type(e->val.binopexpr.e1));
-                printf("and expression right was of type : ");
-                printf("%s\n", expr_type(e->val.binopexpr.e2));
+              // TODO get the right line/char
+              error(1, 1, 1, "incompatible expression types: %s and %s\n",
+                  expr_type(e->val.binopexpr.e1),
+                  expr_type(e->val.binopexpr.e2));
             }
-            //}
             break;
 
         case unopexprtype:
@@ -799,22 +806,42 @@ struct type* get_expr_type(struct expr *e, struct symtable *syms)
                         (struct type*)real_t)
                     || equal_types(get_expr_type(e->val.binopexpr.e1, syms),
                         (struct type*)bool_t))
-                return get_expr_type(e->val.unopexpr.e, syms);
-
+                e->type = get_expr_type(e->val.unopexpr.e, syms);
             break;
 
         case arrayexprtype:
-            return get_expr_type(e->val.arrayexpr.e1, syms);
-            //something strange is happening here
+            e->type = get_expr_type(e->val.arrayexpr.e1, syms);
             break;
 
         case structelttype:
-            break;
+            {
+              struct type *record = get_expr_type(e->val.structelt.e1, syms);
+              assert(record->type_kind == records_t);
+              fieldlist_t fields = record->type_val.records_type->fields;
+              unsigned i = 0;
+              for (; i < fields.size; ++i)
+              {
+                if (strcmp(fields.data[i]->ident, e->val.structelt.ident) == 0)
+                {
+                  e->type = fields.data[i]->type;
+                  break;
+                }
+              }
+              if (i >= fields.size)
+                error(1, 1, 1, "field %s doesn't exist in this record type", e->val.structelt.ident);
+              break;
+            }
 
         case dereftype:
-            break;
+            {
+              e->type = malloc(sizeof(struct type));
+              e->type->type_kind = pointer_t;
+              e->type->type_val.pointer_type = malloc(sizeof(struct pointer));
+              e->type->type_val.pointer_type->type = get_expr_type(e->val.deref.e, syms);
+              break;
+            }
     }
-    return NULL;
+    return e->type;
 }
 
 char* expr_type (struct expr* e)
