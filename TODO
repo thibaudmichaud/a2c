@@ -1,34 +1,15 @@
-parseur & génération de code
-=======
-[X] parser booléens, string
-[X] parser pointeurs
-[X] parser identifiants
-[X] parser tableaux
-[X] parser fonctions
-[X] parser une liste d'algos
-[X] parser variables globales et main
-- parser l'en-tête des algos
- [X] var
- [X] PL
- [X] PG
- [x] const
- [X] type
-[X] parser structures de controles
-[X] parser structures conditionnelles
-[ ] ajouter numéros de lignes dans l'ast
-
-analyse sémantique
-==================
-[ ] table des symboles
-[ ] lier au parseur
-[ ] reporter les erreurs
-[ ] contextes (portées)
-[ ] lvalue rvalue
-[ ] fonctions prédéfinies
-
-misc
-====
-[X] site web
-[X] templates hashtables
-[X] rajouter tests parseur
-[X] rajouter tests hashtable
+[ ] Utiliser les bons numéros de ligne/colonne dans les erreurs
+--  Fonctions prédéfinies:
+  [X] ecrire
+  [ ] lire
+  [ ] allouer
+  [ ] liberer
+  ... ?
+[ ] Trouver une façon plus propre de gérer les erreurs de syntaxe
+[ ] ajouter les headers manquant quand certaine fonctions prédéfinies sont
+utilisées (ecrire -> stdio.h, allouer -> stdlib.h, etc.)
+   idée d'implem: créer une liste globale dans typechecking.c, et la remplir au
+fur et à mesure que l'AST est parcouru, puis la passer en parametre à
+print_prog()
+[ ] Code de retour du programme (!= 0 quand il y a une erreur)
+[ ] bibliothèque standard
