@@ -11,7 +11,8 @@ a2c_SOURCES = src/lexer.c \
 	      src/var_table.c \
 	      src/typecheck.c \
 	      src/codegen.c \
-	      src/a2c.c
+	      src/a2c.c \
+	      src/error.c
 
 check_PROGRAMS = tests/hashtable tests/list
 

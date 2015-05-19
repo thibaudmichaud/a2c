@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include "data_struct/list/list.h"
 #include <stdio.h>
+#include "lexer.h"
 
 /*-------------*/
 /* expressions */
@@ -68,7 +69,7 @@ struct funcall
 {
   char *fun_ident;
   exprlist_t args;
-  int lineno;
+  struct pos pos;
 };
 
 struct val
@@ -116,7 +117,7 @@ struct expr
     struct structelt structelt;
     struct deref deref;
   } val;
-  unsigned lineno;
+  struct pos pos;
   char *type; // filled in during the type checking phase
 };
 
@@ -136,6 +137,7 @@ struct assignment
   // e1 <- e2
   struct expr *e1;
   struct expr *e2;
+  struct pos pos;
 };
 
 struct caseblock
@@ -200,6 +202,7 @@ struct instruction
     struct forloop *forloop;
     struct returnstmt *returnstmt;
   } instr;
+  struct pos pos;
   int lineno;
 };
 
@@ -240,12 +243,14 @@ struct type_def
     struct record_def *record_def;
     struct pointer_def *pointer_def;
   } def;
+  struct pos pos;
 };
 
 struct single_var_decl
 {
   char *type_ident;
   identlist_t var_idents;
+  struct pos pos;
 };
 
 struct global_param
@@ -360,11 +365,12 @@ struct expr *arrayexpr(struct expr *e1, exprlist_t indices)
 }
 
 static inline
-struct assignment *assign(struct expr *e1, struct expr *e2)
+struct assignment *assign(struct expr *e1, struct expr *e2, struct pos pos)
 {
   struct assignment *a = malloc(sizeof(struct assignment));
   a->e1 = e1;
   a->e2 = e2;
+  a->pos = pos;
   return a;
 }
 
@@ -459,11 +465,12 @@ vardecllist_t empty_vardecllist(void)
 }
 
 static inline
-struct single_var_decl *single_var_decl(char *typeid, identlist_t idents)
+struct single_var_decl *single_var_decl(char *typeid, identlist_t idents, struct pos pos)
 {
   struct single_var_decl *s = malloc(sizeof(struct single_var_decl));
   s->type_ident = typeid;
   s->var_idents = idents;
+  s->pos = pos;
   return s;
 }
 
@@ -517,13 +524,15 @@ struct prog *make_prog(algolist_t algos, struct entry_point *entry_point)
 }
 
 static inline
-struct instruction *funcallinstr(char *ident, exprlist_t args)
+struct instruction *funcallinstr(char *ident, exprlist_t args, struct pos pos)
 {
   struct instruction *i = malloc(sizeof(struct instruction));
   i->kind = funcall;
   i->instr.funcall = malloc(sizeof(struct funcall));
   i->instr.funcall->fun_ident = ident;
   i->instr.funcall->args = args;
+  i->instr.funcall->pos = pos;
+  i->pos = pos;
   return i;
 }
 
@@ -621,7 +630,7 @@ intlist_t empty_intlist(void)
 }
 
 static inline
-struct type_def *make_array_def(intlist_t dims, char *ident)
+struct type_def *make_array_def(intlist_t dims, char *ident, struct pos pos)
 {
   struct array_def *a = malloc(sizeof(struct array_def));
   a->dims = dims;
@@ -629,6 +638,7 @@ struct type_def *make_array_def(intlist_t dims, char *ident)
   struct type_def *t = malloc(sizeof(struct type_def));
   t->type_type = array_type;
   t->def.array_def = a;
+  t->pos = pos;
   return t;
 }
 
