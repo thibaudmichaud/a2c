@@ -71,7 +71,7 @@ struct pos
 {
   unsigned line;
   unsigned charstart;
-  unsigned charend;
+  unsigned len;
 };
 
 struct token {

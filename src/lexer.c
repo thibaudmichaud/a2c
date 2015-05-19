@@ -211,6 +211,7 @@ void getop(struct token *tok)
 void getstring(struct token *tok)
 {
   tok->type = STRING;
+  ++curchar;
   char c = getc(fin);
   assert(c == '"');
   unsigned i = -1;
@@ -261,7 +262,7 @@ struct token *gettok()
   }
   else
     getop(tok);
-  tok->pos->charend = curchar;
+  tok->pos->len = curchar - tok->pos->charstart;
   return tok;
 }
 

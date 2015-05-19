@@ -7,11 +7,11 @@
 #include <stdarg.h>
 #include <string.h>
 #include <assert.h>
+#include "error.h"
 
 static struct token *tok;
 static struct token *lookahead[2] = { NULL };
 extern char *srcfilename;
-static int syntaxerror = 0;
 
 struct expr *prefix(char *expect);
 struct expr *infix(struct expr *left, char *expect);
@@ -44,19 +44,11 @@ int lbp(int type)
   }
 }
 
-static void error(char *msg, ...)
+static void syntaxerror(char *msg, ...)
 {
   va_list args;
   va_start(args, msg);
-  syntaxerror = 1;
-  fprintf(stderr, "%s:%d:%d: error: ",
-      srcfilename, tok->pos->line, tok->pos->charstart);
-  vfprintf(stderr, msg, args);
-  fprintf(stderr, "\n");
-  fprintf(stderr, "%s", get_line(fin, tok->pos->line));
-  for (unsigned i = 0; i < tok->pos->charstart; ++i)
-    fprintf(stderr, " ");
-  printf("^\n");
+  error(*tok->pos, msg, args);
   exit(1);
 }
 
@@ -64,7 +56,7 @@ void eat(enum tokentype expect)
 {
   next();
   if (tok->type != expect)
-    error("expected %s, not %s", describe(expect), tok->val);
+    syntaxerror("expected %s, not %s", describe(expect), tok->val);
 }
 
 /*
@@ -86,12 +78,16 @@ struct expr *expression(int rbp)
 {
   next();
   struct expr *left = prefix("expression");
-  left->lineno = tok->pos->line;
-  while (!syntaxerror && rbp < lbp(lookahead[0]->type))
+  struct pos pos;
+  left->pos = *tok->pos;
+  while (rbp < lbp(lookahead[0]->type))
   {
     next();
+    pos = left->pos;
     left = infix(left, "expression");
-    left->lineno = tok->pos->line;
+    left->pos.line = pos.line;
+    left->pos.charstart = pos.charstart;
+    left->pos.len = tok->pos->charstart + tok->pos->len - pos.charstart;
   }
   return left;
 }
@@ -121,7 +117,7 @@ struct expr *prefix(char *expect)
     case FALSE:
       return expr_from_val(boolval(0));
     default:
-      error("expected %s, not %s", expect, tok->val);
+      syntaxerror("expected %s, not %s", expect, tok->val);
       return NULL;
   }
 }
@@ -138,7 +134,7 @@ struct expr *infix(struct expr *left, char *expect)
       return binopexpr(left, toktype, expression(lbp(toktype)));
     case LPAREN:
       if (left->exprtype != identtype)
-        error("calling non-callable expression");
+        syntaxerror("calling non-callable expression");
       args = empty_exprlist();
       if (lookahead[0]->type != COMMA && lookahead[0]->type != RPAREN)
         list_push_back(args, expression(0));
@@ -163,7 +159,7 @@ struct expr *infix(struct expr *left, char *expect)
       eat(RSQBRACKET);
       return arrayexpr(left, args);
     default:
-      error("expected %s, not %s", expect, tok->val);
+      syntaxerror("expected %s, not %s", expect, tok->val);
       next();
       switch (tok->type)
       {
@@ -241,9 +237,10 @@ struct instruction *parse_do(void)
 
 struct assignment *parse_assignment(struct expr *lhs)
 {
+  struct pos pos = *tok->pos;
   eat(ASSIGN);
   struct expr *rhs = parse_expression();
-  return assign(lhs, rhs);
+  return assign(lhs, rhs, pos);
 }
 
 struct instruction *parse_assignment_instr(struct expr *lhs)
@@ -345,18 +342,18 @@ struct instruction *parse_instruction(void)
            {
              if (expr->exprtype == binopexprtype
                  && expr->val.binopexpr.op == EQ)
-               error("unexpected =, did you mean <- ?");
+               error(expr->pos, "unexpected =, did you mean <- ?");
              else
-               error("expected instruction, not expression");
+               syntaxerror("expected instruction, not expression");
            }
            eat(EOL);
            res = funcallinstr(expr->val.funcall.fun_ident,
-               expr->val.funcall.args);
+               expr->val.funcall.args, expr->pos);
            free(expr);
            return res;
          default:
            next();
-           error("unexpected %s", tok->val);
+           syntaxerror("unexpected %s", tok->val);
            return parse_instruction();
        }
     case RETURN:
@@ -377,7 +374,7 @@ struct instruction *parse_instruction(void)
     case ENDOFFILE: return NULL;
     default:
        next();
-       error("expected instruction, not %s", tok->val);
+       syntaxerror("expected instruction, not %s", tok->val);
        return parse_instruction();
   }
 }
@@ -388,6 +385,7 @@ struct instruction *parse_instruction(void)
 
 struct single_var_decl *parse_vardecl(void)
 {
+  struct pos pos = *tok->pos;
   identlist_t identlist = empty_identlist();
   eat(IDENTIFIER);
   char *type = strdup(tok->val);
@@ -399,7 +397,7 @@ struct single_var_decl *parse_vardecl(void)
   }
   list_push_back(identlist, strdup(tok->val));
   eat(EOL);
-  return single_var_decl(type, identlist);
+  return single_var_decl(type, identlist, pos);
 }
 
 vardecllist_t parse_vardecls()
@@ -424,7 +422,7 @@ struct val *parse_val(void)
     case FALSE: return boolval(false);
     case CHAR: return charval(tok->val[0]);
     default:
-      error("expected a value, not %s", tok->val);
+      syntaxerror("expected a value, not %s", tok->val);
       return intval(0);
   }
 }
@@ -479,6 +477,7 @@ struct type_def *parse_record_def(void)
 
 struct type_def *parse_array_def(void)
 {
+  struct pos pos = *tok->pos;
   intlist_t dims = empty_intlist();
   eat(INT);
   list_push_back(dims, atoi(tok->val));
@@ -491,7 +490,7 @@ struct type_def *parse_array_def(void)
   eat(IDENTIFIER);
   char *type = strdup(tok->val);
   eat(EOL);
-  return make_array_def(dims, type);
+  return make_array_def(dims, type, pos);
 }
 
 struct type_def *parse_pointer_def(void)
@@ -515,7 +514,7 @@ struct type_decl *parse_typedecl(void)
     case RECORD: type_def = parse_record_def(); break;
     case INT:    type_def = parse_array_def(); break;
     case DEREF:  type_def = parse_pointer_def(); break;
-    default: error("expected type definition, not %s", tok->val);
+    default: syntaxerror("expected type definition, not %s", tok->val);
   }
   return make_type_decl(ident, type_def);
 }
@@ -579,7 +578,7 @@ struct declarations *parse_decls(void)
       }
       else list_init(lp);
     }
-    else error("Expected \"local\" or \"global\"");
+    else syntaxerror("Expected \"local\" or \"global\"");
   }
   else
   {
@@ -723,7 +722,5 @@ struct prog *parse(void)
   lookahead[0] = gettok(); lookahead[1] = gettok();
   struct prog *prog = parse_prog();
   freetok(tok); freetok(lookahead[0]); freetok(lookahead[1]);
-  if (!syntaxerror)
-    return prog;
-  else return NULL;
+  return prog;
 }

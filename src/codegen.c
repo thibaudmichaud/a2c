@@ -50,6 +50,8 @@ char *getopstr(enum tokentype op)
       return "<>";
     case NOT:
       return "!";
+    case XOR:
+      return "!=";
     default:
       return NULL;
   }
@@ -683,8 +685,6 @@ void print_expression(struct expr *e)
     case binopexprtype:
       printf("(");
       print_expression(e->val.binopexpr.e1);
-      // TODO handle the XOR case here, because there is no corresponding
-      // operator in C.
       printf(" %s ", getopstr(e->val.binopexpr.op));
       print_expression(e->val.binopexpr.e2);
       printf(")");

@@ -1,4 +1,4 @@
-[ ] Utiliser les bons numéros de ligne/colonne dans les erreurs
+[X] Utiliser les bons numéros de ligne/colonne dans les erreurs
 --  Fonctions prédéfinies:
   [X] ecrire
   [ ] lire

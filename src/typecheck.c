@@ -6,26 +6,9 @@
 #include "a2c.h"
 #include <string.h>
 #include <assert.h>
+#include "error.h"
 
 struct type *t_bool, *t_int, *t_str, *t_reel, *t_char;
-
-void error(unsigned line, unsigned charstart, unsigned len, char *msg, ...)
-{
-  va_list args;
-  va_start(args, msg);
-  fprintf(stderr, "%s:%d:%d: error: ",
-      srcfilename, line, charstart);
-  vfprintf(stderr, msg, args);
-  fprintf(stderr, "\n");
-  char *linestr = get_line(fin, line);
-  fprintf(stderr, "%s", linestr);
-  free(linestr);
-  for (unsigned i = 0; i < charstart; ++i)
-    fprintf(stderr, " ");
-  for (unsigned i = 0; i < len; ++i)
-    fprintf(stderr, "^");
-  fprintf(stderr, "\n");
-}
 
 bool equal_dims(intlist_t dim1, intlist_t dim2)
 {
@@ -175,8 +158,7 @@ bool add_variables(struct symtable *syms, vardecllist_t var_decls)
         }
         else
         {
-          // TODO get the right line/char
-          error(1, 1, 1, "unknown type %s", var_decls.data[i]->type_ident);
+          error(var_decls.data[i]->pos, "unknown type %s", var_decls.data[i]->type_ident);
           free(sym);
           noerr = false;
         }
@@ -264,8 +246,7 @@ bool check_algo(struct algo* al, struct symtable *syms)
                         if((array->type = find_type(syms->types, type_def->def.array_def->elt_type))
                                 == NULL)
                         {
-                          // TODO get the right line/char
-                          error(1, 1, 1, "Unkown type");
+                          error(type_def->pos, "Unknown type");
                         }
                         array->dims = type_def->def.array_def->dims;
                         type->type_val.array_type = array;
@@ -360,7 +341,7 @@ bool check_assignment(struct assignment *assignment, struct symtable *syms)
       return false;
     if (strcmp(t1, t2) != 0)
     {
-      error(assignment->e1->lineno, 1, 1, "incompatible types in assignment");
+      error(assignment->pos, "incompatible types in assignment");
       return false;
     }
     return true;
@@ -383,14 +364,12 @@ struct type *check_funcall(struct funcall *f, struct symtable *syms)
   struct function *proto = get_function(syms->functions, f->fun_ident);
   if (!proto)
   {
-    // TODO get the right line/char
-    error(1, 1, 1, "implicit declaration of function %s", f->fun_ident);
+    error(f->pos, "implicit declaration of function %s", f->fun_ident);
     return NULL;
   }
   else if (proto->arg.size != f->args.size)
   {
-    // TODO get the right line/char
-    error(1, 1, 1, "function %s expects %d arguments but %d were given",
+    error(f->pos, "function %s expects %d arguments but %d were given",
         f->fun_ident, proto->arg.size, f->args.size);
     return NULL;
   }
@@ -404,7 +383,7 @@ struct type *check_funcall(struct funcall *f, struct symtable *syms)
         return NULL;
       if (strcmp(proto->arg.data[i]->type->name, argtype) != 0)
       {
-        error(f->lineno, 1, 1,
+        error(f->pos,
             "wrong type for argument %d in function %s", i + 1, f->fun_ident);
         ok = false;
       }
@@ -455,7 +434,7 @@ bool check_inst(struct instruction *i, struct type *ret, struct symtable *syms)
                     return true;
                 }
 
-                printf("error in condition statement");
+                error(e->cond->pos, "condition should be a boolean");
                 return false;
             }
             break;
@@ -476,7 +455,7 @@ bool check_inst(struct instruction *i, struct type *ret, struct symtable *syms)
                     return false;
                   if (strcmp(t1, t2) != 0)
                   {
-                    error(i->instr.switchcase->cond->lineno, 1, 1,
+                    error(i->instr.switchcase->cond->pos,
                         "different types between switch and case\n");
                     return false;
                   }
@@ -485,20 +464,14 @@ bool check_inst(struct instruction *i, struct type *ret, struct symtable *syms)
                     k < i->instr.switchcase->caseblocklist.data[l]->instructions.size; ++k)
                 {
                   if(!check_inst(i->instr.switchcase->caseblocklist.data[l]->instructions.data[k], ret, syms))
-                  {
-                    printf("error while checking case instruction\n");
                     return false;
-                  }
                 }
 
               }
               for(unsigned int l = 0; l < i->instr.switchcase->otherwiseblock.size; ++l)
               {
                 if(!check_inst(i->instr.switchcase->otherwiseblock.data[l], ret, syms))
-                {
-                  printf("error while checking case instruction\n");
                   return false;
-                }
 
               }
               return true;
@@ -514,14 +487,11 @@ bool check_inst(struct instruction *i, struct type *ret, struct symtable *syms)
                     for(unsigned int i = 0; i < e->instructions.size; ++i)
                     {
                         if(!check_inst(list_nth(e->instructions,i), ret, syms))
-                        {
-                            printf("error in do while loop\n");
                             return false;
-                        }
                     }
                     return true;
                 }
-                printf("error in condition of do while loop\n");
+                error(e->cond->pos, "condition should be a boolean");
                 return false;
             }
             break;
@@ -533,16 +503,11 @@ bool check_inst(struct instruction *i, struct type *ret, struct symtable *syms)
                       find_type(syms->types,"booleen")->name) == 0)
                 {
                     for(unsigned int i = 0; i < e->instructions.size; ++i)
-                    {
                         if(!check_inst(list_nth(e->instructions,i), ret, syms))
-                        {
-                            printf("error in while loop");
                             return false;
-                        }
-                    }
                     return true;
                 }
-                printf("error in condition of while loop");
+                error(e->cond->pos, "condition should be a boolean");
                 return false;
             }
             break;
@@ -550,16 +515,32 @@ bool check_inst(struct instruction *i, struct type *ret, struct symtable *syms)
         case forloop:
             {
                 struct forloop* e = i->instr.forloop;
-                if(check_assignment(e->assignment, syms))
-                    if(strcmp(check_expr(e->upto, syms),
-                          find_type(syms->types,"entier")->name) == 0)
+                char *upto_type = check_expr(e->upto, syms);
+                if(upto_type && check_assignment(e->assignment, syms))
+                {
+                    if (strcmp(upto_type, "entier") != 0)
+                    {
+                      error(e->upto->pos, "expected int expression");
+                      return false;
+                    }
+                    else if (strcmp(e->assignment->e1->type, "entier") != 0)
+                    {
+                      error(e->assignment->e1->pos, "expected int expression");
+                      return false;
+                    }
+                    else if (strcmp(e->assignment->e2->type, "entier") != 0)
+                    {
+                      error(e->assignment->e2->pos, "expected int expression");
+                      return false;
+                    }
+                    else
+                    {
                         for(unsigned int i = 0; i < e->instructions.size; ++i)
                             if(!check_inst(list_nth(e->instructions, i), ret, syms))
                                 return false;
                         return true;
-                    printf("error in up to");
-                    return false;
-                printf("error in assignment");
+                    }
+                }
                 return false;
             }
             break;
@@ -571,9 +552,8 @@ bool check_inst(struct instruction *i, struct type *ret, struct symtable *syms)
                 return false;
               if(strcmp(t, ret->name) == 0)
                 return true;
-              printf("error in return statement\n");
+              error(i->instr.returnstmt->expr->pos, "expected type %s, not %s", ret->name, t);
               return false;
-              break;
             }
     }
     return false;
@@ -614,8 +594,7 @@ char *check_expr(struct expr *e, struct symtable *syms)
             if (var)
               e->type = strdup(var->type->name);
             else
-              // TODO get the right line/char
-              error(e->lineno, 1, 1, "Use of undeclared variable %s", e->val.ident);
+              error(e->pos, "Use of undeclared variable %s", e->val.ident);
           }
           break;
         case funcalltype:
@@ -647,17 +626,7 @@ char *check_expr(struct expr *e, struct symtable *syms)
                 }
               }
               else
-              {
-                printf("%s:%d: ", srcfilename, e->lineno);
-                printf("incompatible types: ");
-                printf("%s ", t1);
-                printf("and ");
-                printf("%s.\n", t2);
-                char *error_line = get_line(fin, e->lineno);
-                printf("%s", error_line);
-                free(error_line);
-                return false;
-              }
+                error(e->pos, "incompatible types: %s and %s.", t1, t2);
               break;
             }
 
