@@ -6,7 +6,7 @@
 struct field
 {
     char* ident;
-    struct type* type;
+    char *type;
 };
 
 typedef list_tpl(struct field *) fieldlist_t;

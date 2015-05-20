@@ -31,7 +31,7 @@ int lbp(int type)
   {
     case LPAREN: case LSQBRACKET:
       return 50;
-    case NOT: case UMINUS: case DEREF:
+    case NOT: case UMINUS: case DEREF: case DOT:
       return 40;
     case STAR: case SLASH:
       return 30;
@@ -158,6 +158,10 @@ struct expr *infix(struct expr *left, char *expect)
       }
       eat(RSQBRACKET);
       return arrayexpr(left, args);
+    case DOT:
+      eat(IDENTIFIER);
+      char *ident = strdup(tok->val);
+      return record_access(left, ident);
     default:
       syntaxerror("expected %s, not %s", expect, tok->val);
       next();

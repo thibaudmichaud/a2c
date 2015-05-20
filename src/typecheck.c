@@ -270,9 +270,8 @@ bool check_algo(struct algo* al, struct symtable *syms)
                             for(unsigned int j = 0; j < var->var_idents.size; ++j)
                             {
                                 struct field* field = malloc(sizeof(struct field));
-                                field->ident = list_nth(var->var_idents,i);
-                                field->type = find_type(syms->types, var->type_ident);
-
+                                field->ident = strdup(list_nth(var->var_idents,j));
+                                field->type = strdup(var->type_ident);
                                 list_push_back(fields, field);
                             }
                         }
@@ -645,8 +644,28 @@ char *check_expr(struct expr *e, struct symtable *syms)
             break;
 
         case structelttype:
-            // TODO
-            break;
+            {
+              char *record = check_expr(e->val.structelt.record, syms);
+              if (record)
+              {
+                struct type *t = find_type(syms->types, record);
+                fieldlist_t fields = t->type_val.records_type->fields;
+                unsigned i = 0;
+                for (; i < fields.size; ++i)
+                {
+                  if (strcmp(fields.data[i]->ident, e->val.structelt.field) == 0)
+                  {
+                    e->type = strdup(fields.data[i]->type);
+                    break;
+                  }
+                }
+                if (i >= fields.size)
+                  error(e->val.structelt.record->pos,
+                      "field %s doesn't exist in this record type",
+                      e->val.structelt.field);
+              }
+              break;
+            }
 
         case dereftype:
             {

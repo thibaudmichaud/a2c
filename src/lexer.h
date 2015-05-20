@@ -16,6 +16,7 @@ enum tokentype {
   DEREF,
   DIV,
   DO,
+  DOT,
   ELSE,
   END,
   ENDOFFILE,

@@ -50,8 +50,8 @@ struct arrayexpr
 struct structelt
 {
   // e1.ident
-  struct expr *e1;
-  char *ident;
+  struct expr *record;
+  char *field;
 };
 
 struct deref
@@ -738,4 +738,15 @@ struct instruction *switchblock(struct expr *cond, caseblocklist_t caseblocklist
   i->instr.switchcase->otherwiseblock = otherwiseblock;
   return i;
 }
+
+static inline
+struct expr *record_access(struct expr *record, char *field)
+{
+  struct expr *e = malloc(sizeof(struct expr));
+  e->exprtype = structelttype;
+  e->val.structelt.record = record;
+  e->val.structelt.field = field;
+  return e;
+}
+
 #endif
