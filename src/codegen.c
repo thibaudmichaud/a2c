@@ -716,6 +716,11 @@ void print_expression(struct expr *e)
       print_exprlist(e->val.funcall.args);
       printf(")");
       break;
+    case structelttype:
+      printf("(");
+      print_expression(e->val.structelt.record);
+      printf(").%s", e->val.structelt.field);
+      break;
     default:
       printf("expr not handled yet in print_expression\n");
   }
@@ -756,6 +761,9 @@ void free_expression(struct expr *e)
       free_expressions(e->val.funcall.args);
       free(e->val.funcall.fun_ident);
       break;
+    case structelttype:
+      free_expression(e->val.structelt.record);
+      free(e->val.structelt.field);
     default:
       break;
   }

@@ -171,6 +171,7 @@ void getop(struct token *tok)
     case '[': tok->type = LSQBRACKET; break;
     case ']': tok->type = RSQBRACKET; break;
     case ':': tok->type = COLON; break;
+    case '.': tok->type = DOT; break;
     case '<':
       ++curchar;
       lookahead = getc(fin);
@@ -238,7 +239,7 @@ struct token *gettok()
   tok->pos->charstart = curchar;
   if (c != '\n')
     ungetc(c, fin);
-  if (isdigit(c) || c == '.')
+  if (isdigit(c))
     getnum(tok);
   else if (isalnum(c))
     getalnum(tok);
