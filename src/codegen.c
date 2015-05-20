@@ -73,6 +73,11 @@ void print_type_format(char *t)
   else
     printf("\nUndefined behaviour: printing non-primitive data type\n");
 }
+void print_alloc_fun(struct funcall *f)
+{
+  assert(strcmp(f->fun_ident, "allouer") == 0);
+  printf("malloc(sizeof(%s));\n",f->args.data[0]->e->type);
+}
 
 void print_write_fun(struct funcall *f)
 {
@@ -520,11 +525,19 @@ void print_funcall(struct funcall *f, int indent)
   print_indent(indent);
   if (strcmp(f->fun_ident, "ecrire") == 0)
     print_write_fun(f);
-  else
+  else 
   {
-    printf("%s(", f->fun_ident);
-    print_arglist(f->args);
-    printf(");\n");
+    if (strcmp(f->fun_ident, "allouer") == 0)
+    {
+      printf("------------------bite---------------");
+      print_alloc_fun(f);
+    }
+    else
+    {
+      printf("%s(", f->fun_ident);
+      print_arglist(f->args);
+      printf(");\n");
+    }
   }
 }
 
