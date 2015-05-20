@@ -639,7 +639,24 @@ char *check_expr(struct expr *e, struct symtable *syms)
 
         case arrayexprtype:
             {
-              // TODO
+              char *tname = check_expr(e->val.arrayexpr.e1, syms);
+              struct type *t = find_type(syms->types, tname);
+              if (e->val.arrayexpr.indices.size != t->type_val.array_type->dims.size)
+              {
+                error(e->pos, "array has %d dimensions, not %d",
+                    t->type_val.array_type->dims.size,
+                    e->val.arrayexpr.indices.size);
+              }
+              else
+              {
+                for (unsigned i = 0; i < e->val.arrayexpr.indices.size; ++i)
+                {
+                  char *tidx = check_expr(e->val.arrayexpr.indices.data[i], syms);
+                  if (strcmp(tidx, "entier") != 0)
+                    error(e->val.arrayexpr.indices.data[i]->pos, "index should be an integer");
+                }
+                e->type = strdup(t->type_val.array_type->type->name);
+              }
             }
             break;
 
