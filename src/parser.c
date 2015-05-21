@@ -121,6 +121,8 @@ struct expr *prefix(char *expect)
       return expr_from_val(realval(atof(tok->val)));
     case INT:
       return expr_from_val(intval(atoi(tok->val)));
+    case CHAR:
+      return expr_from_val(charval(tok->val[1]));
     case STRING:
       return expr_from_val(strval(strdup(tok->val)));
     case TRUE:
@@ -435,7 +437,7 @@ struct val *parse_val(void)
     case STRING: return strval(tok->val);
     case TRUE: return boolval(true);
     case FALSE: return boolval(false);
-    case CHAR: return charval(tok->val[0]);
+    case CHAR: return charval(tok->val[1]);
     default:
       syntaxerror("expected a value, not %s", tok->val);
       return intval(0);
