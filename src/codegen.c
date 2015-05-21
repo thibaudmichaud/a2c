@@ -520,24 +520,33 @@ void print_caselist(caseblocklist_t caselist, int indent)
     print_case(list_nth(caselist, i), indent);
 }
 
+int get_funcall_name(struct funcall *f)
+{
+  if (strcmp(f->fun_ident, "ecrire") == 0)
+    return 1;
+  if (strcmp(f->fun_ident, "allouer") == 0)
+    return 2;
+  return 0;
+}
+
 void print_funcall(struct funcall *f, int indent)
 {
   print_indent(indent);
-  if (strcmp(f->fun_ident, "ecrire") == 0)
-    print_write_fun(f);
-  else 
+  int fun_id = get_funcall_name(f);
+  switch (fun_id)
   {
-    if (strcmp(f->fun_ident, "allouer") == 0)
-    {
-      printf("------------------bite---------------");
+    case 1: /* 1 is ecrire */
+      print_write_fun(f);
+      break;
+    case 2: /* 2 is allouer */
       print_alloc_fun(f);
-    }
-    else
-    {
+      break;
+
+    default:
       printf("%s(", f->fun_ident);
       print_arglist(f->args);
       printf(");\n");
-    }
+
   }
 }
 
