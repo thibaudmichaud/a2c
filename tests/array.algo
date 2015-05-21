@@ -1,0 +1,17 @@
+algorithme procedure test
+types
+  t_tab_bool = 5 x 6 entier
+variables
+  entier i, j
+  t_tab_bool tab
+debut
+  pour i <- 1 jusqu'a 5 faire
+    pour j <- 1 jusqu'a 6 faire
+      tab[i,j] <- i * j
+    fin pour
+  fin pour
+fin algorithme procedure test
+
+debut
+  test()
+fin

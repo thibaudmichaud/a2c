@@ -33,4 +33,5 @@ TESTS = tests/parser.test \
 	tests/switchnodef.test \
 	tests/multiply.test \
 	tests/array.test \
-	tests/struct.test
+	tests/struct.test \
+	tests/product.test

@@ -55,7 +55,7 @@ static void syntaxerror(char *msg, ...)
   char *linestr = get_line(fin, tok->pos->line);
   fprintf(stderr, "%s", linestr);
   free(linestr);
-  for (unsigned i = 0; i < tok->pos->charstart; ++i)
+  for (unsigned i = 1; i < tok->pos->charstart; ++i)
     fprintf(stderr, " ");
   for (unsigned i = 0; i < tok->pos->len; ++i)
     fprintf(stderr, "^");

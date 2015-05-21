@@ -9,7 +9,7 @@
 #include "error.h"
 
 static int curline = 1;
-static int curchar = 0;
+static int curchar = 1;
 
 char nextnonblank()
 {
@@ -22,7 +22,7 @@ char nextnonblank()
       case '\t':
         break;
       case '\n':
-        curchar = 0;
+        curchar = 1;
         do ++curline; while ((c = getc(fin)) == '\n');
         ungetc(c, fin);
         return '\n';
@@ -188,7 +188,7 @@ void getop(struct token *tok)
             lookahead = getc(fin);
             if (lookahead == '\n')
             {
-              curchar = 0;
+              curchar = 1;
               ++curline;
             }
             ++curchar;
