@@ -6,6 +6,7 @@
 #include "lexer.h"
 #include "a2c.h"
 #include <assert.h>
+#include "error.h"
 
 static int curline = 1;
 static int curchar = 0;
@@ -279,9 +280,18 @@ struct token *gettok()
     getalnum(tok);
   else if (c == '\'')
   {
+    getc(fin);
+    c = getc(fin);
     tok->type = CHAR;
-    tok->val = malloc(1);
-    *tok->val = c;
+    tok->val = malloc(3);
+    tok->val[0] = tok->val[2] = '\'';
+    tok->val[1] = c;
+    c = getc(fin);
+    if (c != '\'')
+    {
+      tok->pos->len = 2;
+      error(*tok->pos, "missing ' to end character");
+    }
   }
   else if (c == '\"')
     getstring(tok);

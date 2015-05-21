@@ -106,7 +106,7 @@ void print_val(struct val *val)
       printf("%d", val->val.boolval == true);
       break;
     case chartype:
-      printf("%c", val->val.charval);
+      printf("'%c'", val->val.charval);
       break;
     case nulltype:
       printf("NULL");
