@@ -196,6 +196,7 @@ void print_type_decls(typedecllist_t type_decls)
 
 void print_prog(struct prog *prog)
 {
+  printf("#include <stdio.h>\n#include <stdlib.h>\n");
   for (unsigned i = 0; i < prog->algos.size; ++i)
     print_type_decls(prog->algos.data[i]->declarations->type_decls);
   print_var_decl(prog->entry_point->var_decl, 0);
