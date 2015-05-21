@@ -269,10 +269,17 @@ bool check_algo(struct algo* al, struct symtable *syms)
 
                             for(unsigned int j = 0; j < var->var_idents.size; ++j)
                             {
-                                struct field* field = malloc(sizeof(struct field));
-                                field->ident = strdup(list_nth(var->var_idents,j));
-                                field->type = strdup(var->type_ident);
-                                list_push_back(fields, field);
+                                if (!find_type(syms->types, var->type_ident))
+                                {
+                                  error(var->pos, "type %s doesn't exist", var->type_ident);
+                                }
+                                else
+                                {
+                                  struct field* field = malloc(sizeof(struct field));
+                                  field->ident = strdup(list_nth(var->var_idents,j));
+                                  field->type = strdup(var->type_ident);
+                                  list_push_back(fields, field);
+                                }
                             }
                         }
                         record->fields = fields;
@@ -340,7 +347,7 @@ bool check_assignment(struct assignment *assignment, struct symtable *syms)
       return false;
     if (strcmp(t1, t2) != 0)
     {
-      error(assignment->pos, "incompatible types in assignment");
+      error(assignment->pos, "incompatible types: %s and %s.", t1, t2);
       return false;
     }
     return true;
