@@ -1,0 +1,6 @@
+#!/bin/sh
+set -e
+
+valgrind --error-exitcode=1 --leak-check=full --show-leak-kinds=all ./a2c tests/multiply.algo > tests/out
+diff tests/multiply.c tests/out
+set +e

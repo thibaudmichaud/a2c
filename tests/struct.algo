@@ -1,0 +1,17 @@
+algorithme procedure test
+types
+  t_enregistrement = enregistrement
+    entier i, j, k
+    booleen b
+    caractere c
+  fin enregistrement t_enregistrement
+  t_ptr = ^t_enregistrement
+variables
+  t_ptr p
+debut
+  p^.i <- 1
+fin algorithme procedure test
+
+debut
+  test()
+fin

@@ -17,7 +17,7 @@ void error(struct pos pos, char *msg, ...)
   char *linestr = get_line(fin, pos.line);
   fprintf(stderr, "%s", linestr);
   free(linestr);
-  for (unsigned i = 0; i < pos.charstart; ++i)
+  for (unsigned i = 1; i < pos.charstart; ++i)
     fprintf(stderr, " ");
   for (unsigned i = 0; i < pos.len; ++i)
     fprintf(stderr, "^");

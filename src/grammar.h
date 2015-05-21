@@ -342,6 +342,7 @@ struct expr *funcallexpr(char *ident, exprlist_t e1)
   e->exprtype = funcalltype;
   e->val.funcall.fun_ident = ident;
   e->val.funcall.args = e1;
+  e->val.funcall.pos = e->pos;
   return e;
 }
 
