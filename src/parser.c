@@ -48,7 +48,18 @@ static void syntaxerror(char *msg, ...)
 {
   va_list args;
   va_start(args, msg);
-  error(*tok->pos, msg, args);
+  fprintf(stderr, "%s:%d:%d: error: ",
+      srcfilename, tok->pos->line, tok->pos->charstart);
+  vfprintf(stderr, msg, args);
+  fprintf(stderr, "\n");
+  char *linestr = get_line(fin, tok->pos->line);
+  fprintf(stderr, "%s", linestr);
+  free(linestr);
+  for (unsigned i = 0; i < tok->pos->charstart; ++i)
+    fprintf(stderr, " ");
+  for (unsigned i = 0; i < tok->pos->len; ++i)
+    fprintf(stderr, "^");
+  fprintf(stderr, "\n");
   exit(1);
 }
 
