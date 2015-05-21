@@ -749,4 +749,13 @@ struct expr *record_access(struct expr *record, char *field)
   return e;
 }
 
+static inline
+struct expr *make_deref(struct expr *expr)
+{
+  struct expr *e = malloc(sizeof(struct expr));
+  e->exprtype = dereftype;
+  e->val.deref.e = expr;
+  return e;
+}
+
 #endif
