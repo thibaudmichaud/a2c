@@ -172,6 +172,40 @@ void getop(struct token *tok)
     case ']': tok->type = RSQBRACKET; break;
     case ':': tok->type = COLON; break;
     case '.': tok->type = DOT; break;
+    case '/':
+      ++curchar;
+      lookahead = getc(fin);
+      tok->val[1] = lookahead;
+      if (lookahead == '*')
+      {
+        lookahead = getc(fin);
+        ++curchar;
+        do
+        {
+          while (lookahead != '*')
+          {
+            lookahead = getc(fin);
+            if (lookahead == '\n')
+            {
+              curchar = 0;
+              ++curline;
+            }
+            ++curchar;
+          }
+          lookahead = getc(fin);
+          ++curchar;
+        } while (lookahead != '/');
+        *tok = *gettok();
+        break;
+      }
+      else
+      {
+        tok->val[1] = '\0';
+        tok->type = SLASH;
+        ungetc(lookahead, fin);
+        --curchar;
+        break;
+      }
     case '<':
       ++curchar;
       lookahead = getc(fin);
