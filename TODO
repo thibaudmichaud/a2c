@@ -6,7 +6,7 @@
   [ ] liberer
   ... ?
 [ ] Trouver une façon plus propre de gérer les erreurs de syntaxe
-[ ] ajouter les headers manquant quand certaine fonctions prédéfinies sont
+[X] ajouter les headers manquant quand certaine fonctions prédéfinies sont
 utilisées (ecrire -> stdio.h, allouer -> stdlib.h, etc.)
    idée d'implem: créer une liste globale dans typechecking.c, et la remplir au
 fur et à mesure que l'AST est parcouru, puis la passer en parametre à
