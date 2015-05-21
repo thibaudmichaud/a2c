@@ -27,14 +27,19 @@ int main(int argc, char **argv)
   if (fin == NULL)
     err(1, "Couldn't open file %s", argv[1]);
 
+  bool error = false;
   prog = parse();
   if (prog)
   {
     if (check_prog(prog))
       print_prog(prog);
+    else
+      error = true;
     free_prog(prog);
   }
+  else
+    error = true;
 
   fclose(fin);
-  return 0;
+  return error;
 }
