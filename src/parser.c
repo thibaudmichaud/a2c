@@ -115,7 +115,7 @@ struct expr *prefix(char *expect)
       res = expression(0);
       eat(RPAREN);
       return res;
-    case PLUS: case MINUS: case NOT: case DEREF:
+    case PLUS: case MINUS: case NOT:
       return unopexpr(toktype, expression(lbp(toktype) - 1));
     case REAL:
       return expr_from_val(realval(atof(tok->val)));
@@ -175,6 +175,8 @@ struct expr *infix(struct expr *left, char *expect)
       eat(IDENTIFIER);
       char *ident = strdup(tok->val);
       return record_access(left, ident);
+    case DEREF:
+      return make_deref(left);
     default:
       syntaxerror("expected %s, not %s", expect, tok->val);
       next();

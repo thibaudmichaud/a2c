@@ -701,7 +701,7 @@ void print_expression(struct expr *e)
       {
         printf("[");
         print_expression(list_nth(e->val.arrayexpr.indices, i));
-        printf("]");
+        printf(" - 1]");
       }
       break;
     case identtype:

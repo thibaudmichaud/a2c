@@ -686,9 +686,15 @@ char *check_expr(struct expr *e, struct symtable *syms)
 
         case dereftype:
             {
-              char *t = check_expr(e->val.deref.e, syms);
-              if (t)
-                e->type = strdup(t);
+              char *tname = check_expr(e->val.deref.e, syms);
+              if (tname)
+              {
+                struct type *t = find_type(syms->types, tname);
+                if (t->type_kind != pointer_t)
+                  error(e->pos, "expression is not a pointer, cannot be dereferenced");
+                else
+                  e->type = strdup(t->type_val.pointer_type->type->name);
+              }
               break;
             }
     }
