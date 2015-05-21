@@ -13,3 +13,5 @@ fur et à mesure que l'AST est parcouru, puis la passer en parametre à
 print_prog()
 [ ] Code de retour du programme (!= 0 quand il y a une erreur)
 [ ] bibliothèque standard
+[ ] types récursifs
+[ ] parametres globaux
