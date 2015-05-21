@@ -154,7 +154,7 @@ void print_array(char *ident, struct array_def *array_def)
 
 void print_record(char *ident, struct record_def *record_def)
 {
-  printf("typedef struct\n{\n");
+  printf("typedef struct %s\n{\n", ident);
   print_var_decl(record_def->var_decl, INDENT_WIDTH);
   printf("} %s;\n", ident);
 }
@@ -188,6 +188,16 @@ void print_type_decl(struct type_decl *type_decl)
 
 void print_type_decls(typedecllist_t type_decls)
 {
+  for (unsigned i = 0; i < type_decls.size; ++i)
+  {
+    if (type_decls.data[i]->type_def->type_type == struct_type)
+    {
+      printf("struct %s;\n", type_decls.data[i]->ident);
+      printf("typedef struct %s %s;\n",
+          type_decls.data[i]->ident,
+          type_decls.data[i]->ident);
+    }
+  }
   for (unsigned i = 0; i < type_decls.size; ++i)
   {
     print_type_decl(type_decls.data[i]);

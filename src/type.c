@@ -2,6 +2,7 @@
 
 void free_pointer(struct pointer* p)
 {
+    free(p->type);
     free(p);
 }
 

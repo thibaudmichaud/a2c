@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-typedef struct
+struct t_enregistrement;
+typedef struct t_enregistrement t_enregistrement;
+typedef struct t_enregistrement
 {
   int i, j, k;
   int b;

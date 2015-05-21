@@ -26,7 +26,7 @@ typedef enum {
 
 struct pointer
 {
-    struct type* type;
+    char *type;
 };
 
 struct array
