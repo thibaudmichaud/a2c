@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <stdlib.h>
 typedef int t_tab_bool[5][6];
 void test(void)
 {

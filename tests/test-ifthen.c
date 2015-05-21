@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <stdlib.h>
 int variable_globale;
 void test(void)
 {
