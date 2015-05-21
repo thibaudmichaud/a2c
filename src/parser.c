@@ -524,6 +524,7 @@ struct type_def *parse_pointer_def(void)
 struct type_decl *parse_typedecl(void)
 {
   eat(IDENTIFIER);
+  struct pos pos = *tok->pos;
   char *ident = strdup(tok->val);
   struct type_def *type_def = NULL;
   eat(EQ);
@@ -535,7 +536,7 @@ struct type_decl *parse_typedecl(void)
     case DEREF:  type_def = parse_pointer_def(); break;
     default: syntaxerror("expected type definition, not %s", tok->val);
   }
-  return make_type_decl(ident, type_def);
+  return make_type_decl(ident, type_def, pos);
 }
 
 typedecllist_t parse_typedecls(void)

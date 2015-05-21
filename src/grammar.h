@@ -281,6 +281,7 @@ struct type_decl
 {
   char *ident;
   struct type_def *type_def;
+  struct pos pos;
 };
 
 struct declarations
@@ -603,11 +604,12 @@ struct param_decl *make_param_decl(bool local_first,
 }
 
 static inline
-struct type_decl *make_type_decl(char *ident, struct type_def *type_def)
+struct type_decl *make_type_decl(char *ident, struct type_def *type_def, struct pos pos)
 {
   struct type_decl *t = malloc(sizeof(struct type_decl));
   t->ident = ident;
   t->type_def = type_def;
+  t->pos = pos;
   return t;
 }
 

@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+struct t_enregistrement;
+typedef struct t_enregistrement t_enregistrement;
 typedef enum
 {
   a1,
@@ -9,7 +11,7 @@ typedef enum
 } t_enum;
 typedef int t_vect_entiers[5];
 typedef int t_tab_bool[5][6];
-typedef struct
+typedef struct t_enregistrement
 {
   int a, b;
   int c;

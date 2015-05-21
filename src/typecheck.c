@@ -291,9 +291,30 @@ bool check_algo(struct algo* al, struct symtable *syms)
                     {
                       type->type_kind = pointer_type;
                       type->type_val.pointer_type = malloc(sizeof(struct pointer));
-                      type->type_val.pointer_type->type = find_type(syms->types,
-                        type_decl->type_def->def.pointer_def->pointed_type_ident);
-                      add_type(syms->types, type);
+                      char *pointed_type = 
+                        type_decl->type_def->def.pointer_def->pointed_type_ident;;
+                      bool pointed_type_exists = false;
+                      if (strcmp(pointed_type, "entier") == 0
+                          || strcmp(pointed_type, "booleen") == 0
+                          || strcmp(pointed_type, "chaine") == 0
+                          || strcmp(pointed_type, "reel") == 0
+                          || strcmp(pointed_type, "caractere") == 0)
+                        pointed_type_exists = true;
+                      for(unsigned i = 0; i < typelist.size && !pointed_type_exists; ++i)
+                      {
+                        if (strcmp(typelist.data[i]->ident, pointed_type) == 0)
+                        {
+                          pointed_type_exists = true;
+                          break;
+                        }
+                      }
+                      if (pointed_type_exists)
+                      {
+                        type->type_val.pointer_type->type = strdup(pointed_type);
+                        add_type(syms->types, type);
+                      }
+                      else
+                        error(type_decl->pos, "pointed type does not exist");
                     }
                     break;
 
@@ -700,7 +721,7 @@ char *check_expr(struct expr *e, struct symtable *syms)
                 if (t->type_kind != pointer_t)
                   error(e->pos, "expression is not a pointer, cannot be dereferenced");
                 else
-                  e->type = strdup(t->type_val.pointer_type->type->name);
+                  e->type = strdup(t->type_val.pointer_type->type);
               }
               break;
             }
