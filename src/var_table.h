@@ -9,6 +9,7 @@ struct var_sym
 {
   char *ident;
   struct type* type;
+  bool global;
 };
 
 typedef ht_tpl(struct var_sym *) var_table_t;
@@ -16,5 +17,6 @@ var_table_t* empty_var_table(void);
 void add_var(var_table_t* var_table, struct var_sym *sym);
 void del_var(var_table_t* var_table, char *ident);
 struct var_sym *find_var(var_table_t* var_table, char *ident);
+void var_table_del(var_table_t *var_table, char *ident);
 void free_var_table(var_table_t* var_table);
 #endif

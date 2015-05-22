@@ -51,12 +51,14 @@ do {                                                                          \
       if (prev)                                                               \
       {                                                                       \
         prev->next = b->next;                                                 \
+        (_ht).free_elt(b->elt);                                               \
         free(b);                                                              \
         b = prev;                                                             \
       }                                                                       \
       else                                                                    \
       {                                                                       \
         (_ht).buckets[i] = b->next;                                           \
+        (_ht).free_elt(b->elt);                                               \
         free(b);                                                              \
         b = (_ht).buckets[i];                                                 \
       }                                                                       \
