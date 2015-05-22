@@ -1,0 +1,23 @@
+algorithme procedure test
+parametres locaux
+  t_ptr_ptr p
+debut
+  p <- NUL
+  p^^ <- 1
+fin algorithme procedure test
+
+algorithme fonction foo : t_ptr_ptr
+debut
+  retourne NUL
+fin algorithme fonction t_ptr_ptr
+
+variables
+  booleen variable_globale
+  entier n
+  t_ptr_ptr p
+types
+  t_ptr = ^entier
+  t_ptr_ptr = ^t_ptr
+debut
+  test(p)
+fin

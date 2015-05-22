@@ -35,4 +35,5 @@ TESTS = tests/parser.test \
 	tests/array.test \
 	tests/struct.test \
 	tests/product.test \
-	tests/typerec.test
+	tests/typerec.test \
+	tests/ptr.test
