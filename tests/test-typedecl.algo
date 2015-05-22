@@ -1,12 +1,13 @@
 algorithme procedure test
 parametres locaux
-  booleen b
+  booleen d
 parametres globaux
   entier gp, bla
 types
   t_enum = (a1, a2, a3, a4)
   t_vect_entiers = 5 entier
   t_tab_bool = 5 * 6 booleen
+  t_ptr = ^t_enregistrement
   t_enregistrement = enregistrement
     entier a, b
     booleen c
