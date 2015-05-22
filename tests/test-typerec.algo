@@ -1,0 +1,19 @@
+algorithme procedure test
+types
+  t_liste = ^t_liste_struct
+  t_liste_struct = enregistrement
+    entier a
+    t_liste next
+  fin enregistrement t_liste_struct
+variables
+  t_liste l
+debut
+  l <- l^.next
+fin algorithme procedure test
+
+variables
+  booleen variable_globale
+  entier n
+debut
+  test()
+fin
