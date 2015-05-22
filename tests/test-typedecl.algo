@@ -6,7 +6,7 @@ parametres globaux
 types
   t_enum = (a1, a2, a3, a4)
   t_vect_entiers = 5 entier
-  t_tab_bool = 5 x 6 booleen
+  t_tab_bool = 5 * 6 booleen
   t_enregistrement = enregistrement
     entier a, b
     booleen c

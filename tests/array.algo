@@ -1,6 +1,6 @@
 algorithme procedure test
 types
-  t_tab_bool = 5 x 6 entier
+  t_tab_bool = 5 * 6 entier
 variables
   entier i, j
   t_tab_bool tab
