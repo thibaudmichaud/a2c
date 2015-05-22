@@ -133,30 +133,34 @@ args_t get_args(struct param_decl *params, struct symtable *syms)
   return args;
 }
 
-bool add_variables(struct symtable *syms, vardecllist_t var_decls)
+bool add_variables(struct symtable *syms, vardecllist_t var_decls, bool global)
 {
     bool correct = true;
     for (unsigned i = 0; i < var_decls.size; ++i)
     {
       for(unsigned j = 0; j < var_decls.data[i]->var_idents.size; ++j)
       {
-        struct var_sym* sym = malloc(sizeof(struct var_sym));
-        sym->ident = list_nth(var_decls.data[i]->var_idents, j);
         struct type *s = find_type(syms->types, var_decls.data[i]->type_ident);
-        if (find_var(syms->variables, sym->ident))
+        struct var_sym *var_sym = find_var(syms->variables,
+            var_decls.data[i]->var_idents.data[j]);
+        if (var_sym && !var_sym->global)
         {
-          error(var_decls.data[i]->pos, "conflicting name: %s", sym->ident);
+          error(var_decls.data[i]->pos, "conflicting name: %s",
+              var_decls.data[i]->var_idents.data[j]);
+          correct = false;
         }
-        else if (s)
+        else if (!s)
         {
-          sym->type = s;
-          add_var(syms->variables, sym);
+          error(var_decls.data[i]->pos, "unknown type %s", var_decls.data[i]->type_ident);
+          correct = false;
         }
         else
         {
-          error(var_decls.data[i]->pos, "unknown type %s", var_decls.data[i]->type_ident);
-          free(sym);
-          correct = false;
+          struct var_sym* sym = malloc(sizeof(struct var_sym));
+          sym->ident = var_decls.data[i]->var_idents.data[j];
+          sym->type = s;
+          sym->global = global;
+          add_var(syms->variables, sym);
         }
       }
     }
@@ -278,7 +282,7 @@ bool check_prog(struct prog* prog)
     struct symtable *syms = empty_symtable();
     fill_std_syms(syms);
     correct = correct && add_types(syms, prog->entry_point->type_decls);
-    correct = correct && add_variables(syms, prog->entry_point->var_decl);
+    correct = correct && add_variables(syms, prog->entry_point->var_decl, true);
     for(unsigned i = 0; i < prog->algos.size; ++i)
     {
         struct algo* al = list_nth(prog->algos, i);
@@ -303,6 +307,22 @@ bool check_prog(struct prog* prog)
     return correct;
 }
 
+void remove_decls(struct symtable *syms, struct declarations *decls)
+{
+  for (unsigned i = 0; i < decls->param_decl->local_param.size; ++i)
+  {
+    struct single_var_decl *var_decl = decls->param_decl->local_param.data[i];
+    for (unsigned j = 0; j < var_decl->var_idents.size; ++j)
+      var_table_del(syms->variables, var_decl->var_idents.data[j]);
+  }
+  for (unsigned i = 0; i < decls->var_decl.size; ++i)
+  {
+    struct single_var_decl *var_decl = decls->var_decl.data[i];
+    for (unsigned j = 0; j < var_decl->var_idents.size; ++j)
+      var_table_del(syms->variables, var_decl->var_idents.data[j]);
+  }
+}
+
 bool check_algo(struct algo* al, struct symtable *syms)
 {
     bool correct = true;
@@ -319,16 +339,14 @@ bool check_algo(struct algo* al, struct symtable *syms)
         typedecllist_t typelist = decl->type_decls;
         constdecllist_t consts = decl->const_decls;
         if(loc.size > 0)
-        {
-          correct = correct && add_variables(syms, loc);
-        }
+          correct = correct && add_variables(syms, loc, false);
         if(glo.size > 0)
         {
             for(unsigned int i = 0; i < glo.size; i++)
-                correct = correct && add_variables(syms, glo);
+                correct = correct && add_variables(syms, glo, false);
         }
         correct = correct && add_types(syms, typelist);
-        correct = correct && add_variables(syms, vars);
+        correct = correct && add_variables(syms, vars, false);
         for(unsigned i =0; i < consts.size; ++i)
         {
             struct const_decl* cons = list_nth(consts, i);
@@ -366,6 +384,7 @@ bool check_algo(struct algo* al, struct symtable *syms)
       if(!check_inst(list_nth(al->instructions, i), f->ret, syms))
         correct = false;
 
+    remove_decls(syms, decl);
     free(f);
     return correct;
 }

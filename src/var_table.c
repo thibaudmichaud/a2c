@@ -49,6 +49,13 @@ struct var_sym *find_var(var_table_t* var_table, char *ident)
   return res;
 }
 
+void var_table_del(var_table_t *var_table, char *ident)
+{
+  struct var_sym sym;
+  sym.ident = ident;
+  ht_del(*var_table, &sym);
+}
+
 void free_var_table(var_table_t* var_table)
 {
     ht_free(*var_table);
