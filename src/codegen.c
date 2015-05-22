@@ -786,6 +786,7 @@ void free_expression(struct expr *e)
 void free_prog(struct prog *prog)
 {
   free_var_decl(prog->entry_point->var_decl);
+  free_type_decls(prog->entry_point->type_decls);
   free_instructions(prog->entry_point->instructions);
   free(prog->entry_point);
   for (unsigned i = 0; i < prog->algos.size; ++i)
