@@ -30,6 +30,7 @@ struct prog
 struct entry_point
 {
   vardecllist_t var_decl;
+  typedecllist_t type_decls;
   instructionlist_t instructions;
 };
 
@@ -508,10 +509,12 @@ struct instruction *assigninstr(struct assignment *a)
 }
 
 static inline
-struct entry_point *make_entry_point(vardecllist_t var_decl, instructionlist_t instructions)
+struct entry_point *make_entry_point(vardecllist_t var_decl, instructionlist_t instructions,
+    typedecllist_t type_decls)
 {
   struct entry_point *e = malloc(sizeof(struct entry_point));
   e->var_decl = var_decl;
+  e->type_decls = type_decls;
   e->instructions = instructions;
   return e;
 }
@@ -758,6 +761,16 @@ struct expr *make_deref(struct expr *expr)
   struct expr *e = malloc(sizeof(struct expr));
   e->exprtype = dereftype;
   e->val.deref.e = expr;
+  return e;
+}
+
+static inline
+struct expr *nullexpr(void)
+{
+  struct expr *e = malloc(sizeof(struct expr));
+  e->exprtype = valtype;
+  e->val.val = malloc(sizeof(struct val));
+  e->val.val->valtype = nulltype;
   return e;
 }
 

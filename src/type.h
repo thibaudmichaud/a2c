@@ -20,12 +20,12 @@ typedef enum {
     char_t,
     str_t,
     real_t,
-    bool_t,
-    nul_t,
+    bool_t
 }primary_type;
 
 struct pointer
 {
+    bool nul;
     char *type;
 };
 

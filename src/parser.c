@@ -129,6 +129,8 @@ struct expr *prefix(char *expect)
       return expr_from_val(boolval(1));
     case FALSE:
       return expr_from_val(boolval(0));
+    case NULLKW:
+      return nullexpr();
     default:
       syntaxerror("expected %s, not %s", expect, tok->val);
       return NULL;
@@ -351,7 +353,7 @@ struct instruction *parse_instruction(void)
   {
     case WHILE: return parse_while();
     case DO: return parse_do();
-    case IDENTIFIER:
+    case IDENTIFIER: case LPAREN:
        expr = parse_expression();
        switch(lookahead[0]->type)
        {
@@ -719,6 +721,7 @@ struct prog *parse_prog(void)
 {
   algolist_t algolist = parse_algolist();
   vardecllist_t globvar;
+  typedecllist_t type_decls;
   if (lookahead[0]->type == VARIABLES)
   {
     eat(VARIABLES); eat(EOL);
@@ -726,10 +729,14 @@ struct prog *parse_prog(void)
   }
   else
     globvar = empty_vardecllist();
+  if (lookahead[0]->type == TYPES)
+    type_decls = parse_typedecls();
+  else
+    type_decls = empty_typedecllist();
   eat(BEGIN); eat(EOL);
   instructionlist_t instrs = parse_block();
   eat(END); eat(EOL);
-  struct entry_point *entrypoint = make_entry_point(globvar, instrs);
+  struct entry_point *entrypoint = make_entry_point(globvar, instrs, type_decls);
   return make_prog(algolist, entrypoint);
 }
 

@@ -7,8 +7,18 @@
 #include <string.h>
 #include <assert.h>
 #include "error.h"
+#include <stdbool.h>
 
 struct type *t_bool, *t_int, *t_str, *t_reel, *t_char;
+
+bool equal_types(char *tname1, char *tname2, struct symtable *syms)
+{
+  struct type *t1 = find_type(syms->types, tname1);
+  struct type *t2 = find_type(syms->types, tname2);
+  return ((t1 && t1->type_kind == pointer_t && strcmp(tname2, "nul") == 0)
+      || (t2 && t2->type_kind == pointer_t && strcmp(tname1, "nul") == 0)
+      || strcmp(tname1, tname2) == 0);
+}
 
 bool equal_dims(intlist_t dim1, intlist_t dim2)
 {
@@ -27,24 +37,6 @@ bool equal_identlist(identlist_t idents1, identlist_t idents2)
     if (strcmp(idents1.data[i], idents2.data[i]) != 0)
       return false;
   return true;
-}
-
-bool check_args(struct function* f, struct funcall call,
-    struct symtable *syms)
-{
-    if(f->arg.size != 0)
-    {
-        if(f->arg.size != call.args.size)
-            return false;
-        for(unsigned i = 0; i < call.args.size; ++i)
-        {
-            if(strcmp(
-                  check_expr((struct expr *)list_nth(call.args,i), syms),
-                  list_nth(f->arg,i)->type->name) != 0)
-                return false;
-        }
-    }
-    return true;
 }
 
 char *algo_to_c_type(char *ident)
@@ -143,7 +135,7 @@ args_t get_args(struct param_decl *params, struct symtable *syms)
 
 bool add_variables(struct symtable *syms, vardecllist_t var_decls)
 {
-    bool noerr = true;
+    bool correct = true;
     for (unsigned i = 0; i < var_decls.size; ++i)
     {
       for(unsigned j = 0; j < var_decls.data[i]->var_idents.size; ++j)
@@ -160,11 +152,120 @@ bool add_variables(struct symtable *syms, vardecllist_t var_decls)
         {
           error(var_decls.data[i]->pos, "unknown type %s", var_decls.data[i]->type_ident);
           free(sym);
-          noerr = false;
+          correct = false;
         }
       }
     }
-    return noerr;
+    return correct;
+}
+
+bool add_types(struct symtable *syms, typedecllist_t typelist)
+{
+  bool correct = true;
+  for(unsigned i = 0; i < typelist.size; ++i)
+  {
+    struct type_decl* type_decl = list_nth(typelist, i);
+    struct type_def*  type_def  = type_decl->type_def;
+    struct type* type = malloc(sizeof(struct type));
+    type->name = strdup(type_decl->ident);
+    switch(type_def->type_type)
+    {
+      case enum_type:
+        {
+          type->type_kind = enum_t;
+          struct enum_type* _enum = malloc(sizeof(struct enum_type));
+          _enum->idents = type_def->def.enum_def->identlist;
+          type->type_val.enum_type = _enum;
+          add_type(syms->types, type);
+        }
+        break;
+      case array_type:
+        {
+          type->type_kind = array_t;
+
+          struct array* array = malloc(sizeof(struct array));
+          if((array->type = find_type(syms->types, type_def->def.array_def->elt_type))
+              == NULL)
+          {
+            error(type_def->pos, "Unknown type");
+            correct = false;
+          }
+          array->dims = type_def->def.array_def->dims;
+          type->type_val.array_type = array;
+          add_type(syms->types, type);
+        }
+        break;
+      case struct_type:
+        {
+          type->type_kind = records_t;
+
+          struct records* record = malloc(sizeof(struct records));
+          fieldlist_t fields;
+          list_init(fields);
+
+          vardecllist_t varlist = type_def->def.record_def->var_decl;
+
+          for(unsigned int i = 0 ; i < varlist.size; ++i)
+          {
+            struct single_var_decl* var = list_nth(varlist, i);
+
+            for(unsigned int j = 0; j < var->var_idents.size; ++j)
+            {
+              if (!find_type(syms->types, var->type_ident))
+              {
+                error(var->pos, "type %s doesn't exist", var->type_ident);
+                correct = false;
+              }
+              else
+              {
+                struct field* field = malloc(sizeof(struct field));
+                field->ident = strdup(list_nth(var->var_idents,j));
+                field->type = strdup(var->type_ident);
+                list_push_back(fields, field);
+              }
+            }
+          }
+          record->fields = fields;
+          type->type_val.records_type = record;
+          add_type(syms->types, type);
+        }
+        break;
+      case pointer_type:
+        {
+          type->type_kind = pointer_type;
+          type->type_val.pointer_type = malloc(sizeof(struct pointer));
+          char *pointed_type = 
+            type_decl->type_def->def.pointer_def->pointed_type_ident;;
+          bool pointed_type_exists = false;
+          if (strcmp(pointed_type, "entier") == 0
+              || strcmp(pointed_type, "booleen") == 0
+              || strcmp(pointed_type, "chaine") == 0
+              || strcmp(pointed_type, "reel") == 0
+              || strcmp(pointed_type, "caractere") == 0)
+            pointed_type_exists = true;
+          for(unsigned i = 0; i < typelist.size && !pointed_type_exists; ++i)
+          {
+            if (strcmp(typelist.data[i]->ident, pointed_type) == 0)
+            {
+              pointed_type_exists = true;
+              break;
+            }
+          }
+          if (pointed_type_exists)
+          {
+            type->type_val.pointer_type->type = strdup(pointed_type);
+            add_type(syms->types, type);
+          }
+          else
+          {
+            error(type_decl->pos, "pointed type does not exist");
+            correct = false;
+          }
+        }
+        break;
+    }
+  }
+  return correct;
 }
 
 bool check_prog(struct prog* prog)
@@ -172,6 +273,8 @@ bool check_prog(struct prog* prog)
     bool correct = true;
     struct symtable *syms = empty_symtable();
     fill_std_syms(syms);
+    correct = correct && add_types(syms, prog->entry_point->type_decls);
+    correct = correct && add_variables(syms, prog->entry_point->var_decl);
     for(unsigned i = 0; i < prog->algos.size; ++i)
     {
         struct algo* al = list_nth(prog->algos, i);
@@ -181,7 +284,6 @@ bool check_prog(struct prog* prog)
         f->arg = get_args(al->declarations->param_decl, syms);
         add_function(syms->functions, f);
     }
-    add_variables(syms, prog->entry_point->var_decl);
     for (unsigned i = 0; i < prog->entry_point->instructions.size; ++i)
       if (!check_inst(
             prog->entry_point->instructions.data[i],
@@ -199,7 +301,7 @@ bool check_prog(struct prog* prog)
 
 bool check_algo(struct algo* al, struct symtable *syms)
 {
-    bool noerr = true;
+    bool correct = true;
     struct function* f = malloc(sizeof(struct function));
     f->ret = find_type(syms->types, al->return_type);
     struct declarations* decl = al->declarations;
@@ -214,113 +316,15 @@ bool check_algo(struct algo* al, struct symtable *syms)
         constdecllist_t consts = decl->const_decls;
         if(loc.size > 0)
         {
-          noerr = noerr && add_variables(syms, loc);
+          correct = correct && add_variables(syms, loc);
         }
         if(glo.size > 0)
         {
             for(unsigned int i = 0; i < glo.size; i++)
-                noerr = noerr && add_variables(syms, glo);
+                correct = correct && add_variables(syms, glo);
         }
-        for(unsigned i = 0; i < typelist.size; ++i)
-        {
-            struct type_decl* type_decl = list_nth(typelist, i);
-            struct type_def*  type_def  = type_decl->type_def;
-            struct type* type = malloc(sizeof(struct type));
-            type->name = strdup(type_decl->ident);
-            switch(type_def->type_type)
-            {
-                case enum_type:
-                    {
-                        type->type_kind = enum_t;
-                        struct enum_type* _enum = malloc(sizeof(struct enum_type));
-                        _enum->idents = type_def->def.enum_def->identlist;
-                        type->type_val.enum_type = _enum;
-                        add_type(syms->types, type);
-                    }
-                    break;
-                case array_type:
-                    {
-                        type->type_kind = array_t;
-
-                        struct array* array = malloc(sizeof(struct array));
-                        if((array->type = find_type(syms->types, type_def->def.array_def->elt_type))
-                                == NULL)
-                        {
-                          error(type_def->pos, "Unknown type");
-                        }
-                        array->dims = type_def->def.array_def->dims;
-                        type->type_val.array_type = array;
-                        add_type(syms->types, type);
-                    }
-                    break;
-                case struct_type:
-                    {
-                        type->type_kind = records_t;
-
-                        struct records* record = malloc(sizeof(struct records));
-                        fieldlist_t fields;
-                        list_init(fields);
-
-                        vardecllist_t varlist = type_def->def.record_def->var_decl;
-
-                        for(unsigned int i = 0 ; i < varlist.size; ++i)
-                        {
-                            struct single_var_decl* var = list_nth(varlist, i);
-
-                            for(unsigned int j = 0; j < var->var_idents.size; ++j)
-                            {
-                                if (!find_type(syms->types, var->type_ident))
-                                {
-                                  error(var->pos, "type %s doesn't exist", var->type_ident);
-                                }
-                                else
-                                {
-                                  struct field* field = malloc(sizeof(struct field));
-                                  field->ident = strdup(list_nth(var->var_idents,j));
-                                  field->type = strdup(var->type_ident);
-                                  list_push_back(fields, field);
-                                }
-                            }
-                        }
-                        record->fields = fields;
-                        type->type_val.records_type = record;
-                        add_type(syms->types, type);
-                    }
-                    break;
-                case pointer_type:
-                    {
-                      type->type_kind = pointer_type;
-                      type->type_val.pointer_type = malloc(sizeof(struct pointer));
-                      char *pointed_type = 
-                        type_decl->type_def->def.pointer_def->pointed_type_ident;;
-                      bool pointed_type_exists = false;
-                      if (strcmp(pointed_type, "entier") == 0
-                          || strcmp(pointed_type, "booleen") == 0
-                          || strcmp(pointed_type, "chaine") == 0
-                          || strcmp(pointed_type, "reel") == 0
-                          || strcmp(pointed_type, "caractere") == 0)
-                        pointed_type_exists = true;
-                      for(unsigned i = 0; i < typelist.size && !pointed_type_exists; ++i)
-                      {
-                        if (strcmp(typelist.data[i]->ident, pointed_type) == 0)
-                        {
-                          pointed_type_exists = true;
-                          break;
-                        }
-                      }
-                      if (pointed_type_exists)
-                      {
-                        type->type_val.pointer_type->type = strdup(pointed_type);
-                        add_type(syms->types, type);
-                      }
-                      else
-                        error(type_decl->pos, "pointed type does not exist");
-                    }
-                    break;
-
-            }
-        }
-        noerr = noerr && add_variables(syms, vars);
+        correct = correct && add_types(syms, typelist);
+        correct = correct && add_variables(syms, vars);
         for(unsigned i =0; i < consts.size; ++i)
         {
             struct const_decl* cons = list_nth(consts, i);
@@ -328,7 +332,9 @@ bool check_algo(struct algo* al, struct symtable *syms)
             switch(cons->val->valtype)
             {
                 case nulltype:
-                    sym->type = find_type(syms->types, "nul");
+                    sym->type = malloc(sizeof(struct pointer));
+                    sym->type->type_kind = pointer_t;
+                    sym->type->type_val.pointer_type->nul = true;
                     break;
                 case chartype:
                     sym->type = find_type(syms->types, "caractere");
@@ -354,10 +360,10 @@ bool check_algo(struct algo* al, struct symtable *syms)
     }
     for(unsigned i = 0; i < al->instructions.size; i++)
       if(!check_inst(list_nth(al->instructions, i), f->ret, syms))
-        noerr = false;
+        correct = false;
 
     free(f);
-    return noerr;
+    return correct;
 }
 
 bool check_assignment(struct assignment *assignment, struct symtable *syms)
@@ -366,7 +372,7 @@ bool check_assignment(struct assignment *assignment, struct symtable *syms)
     char *t2 = check_expr(assignment->e2, syms);
     if (!t1 || !t2)
       return false;
-    if (strcmp(t1, t2) != 0)
+    if (!equal_types(t1, t2, syms))
     {
       error(assignment->pos, "incompatible types: %s and %s.", t1, t2);
       return false;
@@ -408,7 +414,7 @@ struct type *check_funcall(struct funcall *f, struct symtable *syms)
       char *argtype = check_expr(f->args.data[i], syms);
       if (!argtype)
         return NULL;
-      if (strcmp(proto->arg.data[i]->type->name, argtype) != 0)
+      if (!equal_types(proto->arg.data[i]->type->name, argtype, syms))
       {
         error(f->pos,
             "wrong type for argument %d in function %s", i + 1, f->fun_ident);
@@ -480,7 +486,7 @@ bool check_inst(struct instruction *i, struct type *ret, struct symtable *syms)
                         syms);
                   if(!t2)
                     return false;
-                  if (strcmp(t1, t2) != 0)
+                  if (!equal_types(t1, t2, syms))
                   {
                     error(i->instr.switchcase->cond->pos,
                         "different types between switch and case\n");
@@ -526,8 +532,7 @@ bool check_inst(struct instruction *i, struct type *ret, struct symtable *syms)
         case whiledo:
             {
                 struct whiledo* e = i->instr.whiledo;
-                if(strcmp(check_expr(e->cond, syms),
-                      find_type(syms->types,"booleen")->name) == 0)
+                if(strcmp(check_expr(e->cond, syms), "booleen") == 0)
                 {
                     for(unsigned int i = 0; i < e->instructions.size; ++i)
                         if(!check_inst(list_nth(e->instructions,i), ret, syms))
@@ -577,7 +582,7 @@ bool check_inst(struct instruction *i, struct type *ret, struct symtable *syms)
               char *t = check_expr(i->instr.returnstmt->expr, syms);
               if (!t)
                 return false;
-              if(strcmp(t, ret->name) == 0)
+              if(equal_types(t, ret->name, syms))
                 return true;
               error(i->instr.returnstmt->expr->pos, "expected type %s, not %s", ret->name, t);
               return false;
@@ -637,7 +642,7 @@ char *check_expr(struct expr *e, struct symtable *syms)
               char *t2 = check_expr(e->val.binopexpr.e2, syms);
               if (!t1 || !t2)
                 break;
-              if (strcmp(t1, t2) == 0)
+              if (equal_types(t1, t2, syms))
               {
                 if(e->val.binopexpr.op == EQ 
                     || e->val.binopexpr.op == LT
@@ -698,7 +703,7 @@ char *check_expr(struct expr *e, struct symtable *syms)
                 unsigned i = 0;
                 for (; i < fields.size; ++i)
                 {
-                  if (strcmp(fields.data[i]->ident, e->val.structelt.field) == 0)
+                  if (equal_types(fields.data[i]->ident, e->val.structelt.field, syms))
                   {
                     e->type = strdup(fields.data[i]->type);
                     break;
