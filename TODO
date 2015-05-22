@@ -15,3 +15,5 @@ print_prog()
 [ ] bibliothèque standard
 [ ] types récursifs
 [ ] parametres globaux
+[ ] constantes (e.g. pouvoir utiliser une constante pour la taille d'un tableau)
+    => ajouter un champ const à var_sym, comme pour le champ global
