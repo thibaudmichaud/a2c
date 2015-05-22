@@ -18,7 +18,7 @@ variables
   entier a, b
   reel c
 debut
-  a <- 0
+  gp <- 0
   c <- 4.5
   si (a = b) alors
     b <- a + b
@@ -29,7 +29,7 @@ fin algorithme procedure test
 
 variables
   booleen variable_globale
-  entier n
+  entier m, n
 debut
-  test(variable_globale, n, 2)
+  test(variable_globale, m, n)
 fin

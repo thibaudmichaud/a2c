@@ -115,7 +115,7 @@ args_t get_args(struct param_decl *params, struct symtable *syms)
     for (unsigned j = 0; j < params->local_param.data[i]->var_idents.size; ++j)
     {
       struct argument *arg = malloc(sizeof(struct argument));
-      arg->global = 0;
+      arg->global = false;
       arg->type = find_type(syms->types, params->local_param.data[i]->type_ident);
       list_push_back(args, arg);
     }
@@ -125,7 +125,7 @@ args_t get_args(struct param_decl *params, struct symtable *syms)
     for (unsigned j = 0; j < params->global_param.data[i]->var_idents.size; ++j)
     {
       struct argument *arg = malloc(sizeof(struct argument));
-      arg->global = 0;
+      arg->global = true;
       arg->type = find_type(syms->types, params->global_param.data[i]->type_ident);
       list_push_back(args, arg);
     }
@@ -133,7 +133,8 @@ args_t get_args(struct param_decl *params, struct symtable *syms)
   return args;
 }
 
-bool add_variables(struct symtable *syms, vardecllist_t var_decls, bool global)
+bool add_variables(struct symtable *syms, vardecllist_t var_decls,
+    bool global, bool argref)
 {
     bool correct = true;
     for (unsigned i = 0; i < var_decls.size; ++i)
@@ -160,6 +161,7 @@ bool add_variables(struct symtable *syms, vardecllist_t var_decls, bool global)
           sym->ident = var_decls.data[i]->var_idents.data[j];
           sym->type = s;
           sym->global = global;
+          sym->argref = argref;
           add_var(syms->variables, sym);
         }
       }
@@ -282,7 +284,7 @@ bool check_prog(struct prog* prog)
     struct symtable *syms = empty_symtable();
     fill_std_syms(syms);
     correct = correct && add_types(syms, prog->entry_point->type_decls);
-    correct = correct && add_variables(syms, prog->entry_point->var_decl, true);
+    correct = correct && add_variables(syms, prog->entry_point->var_decl, true, false);
     for(unsigned i = 0; i < prog->algos.size; ++i)
     {
         struct algo* al = list_nth(prog->algos, i);
@@ -339,14 +341,11 @@ bool check_algo(struct algo* al, struct symtable *syms)
         typedecllist_t typelist = decl->type_decls;
         constdecllist_t consts = decl->const_decls;
         if(loc.size > 0)
-          correct = correct && add_variables(syms, loc, false);
+          correct = correct && add_variables(syms, loc, false, false);
         if(glo.size > 0)
-        {
-            for(unsigned int i = 0; i < glo.size; i++)
-                correct = correct && add_variables(syms, glo, false);
-        }
+          correct = correct && add_variables(syms, glo, false, true);
         correct = correct && add_types(syms, typelist);
-        correct = correct && add_variables(syms, vars, false);
+        correct = correct && add_variables(syms, vars, false, false);
         for(unsigned i =0; i < consts.size; ++i)
         {
             struct const_decl* cons = list_nth(consts, i);
@@ -377,6 +376,7 @@ bool check_algo(struct algo* al, struct symtable *syms)
 
             }
             sym->ident = cons->ident;
+            sym->argref = false;
             add_var(syms->variables, sym);
         }
     }
@@ -409,7 +409,7 @@ struct type *check_funcall(struct funcall *f, struct symtable *syms)
   {
     for (unsigned i = 0; i < f->args.size; ++i)
     {
-      if (!check_expr(f->args.data[i], syms))
+      if (!check_expr(f->args.data[i]->e, syms))
         return NULL;
     }
     // Return a non-zero value to indicate success.
@@ -434,14 +434,26 @@ struct type *check_funcall(struct funcall *f, struct symtable *syms)
     bool ok = true;
     for (unsigned i = 0; i < proto->arg.size; ++i)
     {
-      char *argtype = check_expr(f->args.data[i], syms);
-      if (!argtype)
-        return NULL;
-      if (!equal_types(proto->arg.data[i]->type->name, argtype, syms))
+      char *argtype = check_expr(f->args.data[i]->e, syms);
+      if (argtype)
       {
-        error(f->pos,
-            "wrong type for argument %d in function %s", i + 1, f->fun_ident);
-        ok = false;
+        if (!equal_types(proto->arg.data[i]->type->name, argtype, syms))
+        {
+          error(f->pos,
+              "wrong type for argument %d in function %s", i + 1, f->fun_ident);
+          ok = false;
+        }
+        else if (proto->arg.data[i]->global)
+        {
+          if (f->args.data[i]->e->exprtype == valtype)
+          {
+            error(f->args.data[i]->e->pos,
+                "cannot pass a value as a global parameter");
+            ok = false;
+          }
+          else
+            f->args.data[i]->global = true;
+        }
       }
     }
     if (ok)
@@ -602,6 +614,12 @@ bool check_inst(struct instruction *i, struct type *ret, struct symtable *syms)
 
         case returnstmt:
             {
+              if (!ret)
+              {
+                error(i->instr.returnstmt->expr->pos,
+                    "algorithm is a procedure, no return statement expected");
+                return false;
+              }
               char *t = check_expr(i->instr.returnstmt->expr, syms);
               if (!t)
                 return false;
@@ -647,7 +665,10 @@ char *check_expr(struct expr *e, struct symtable *syms)
           {
             struct var_sym *var = find_var(syms->variables, e->val.ident);
             if (var)
+            {
               e->type = strdup(var->type->name);
+              e->argref = var->argref;
+            }
             else
               error(e->pos, "Use of undeclared variable %s", e->val.ident);
           }

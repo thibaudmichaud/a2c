@@ -10,6 +10,7 @@ struct var_sym
   char *ident;
   struct type* type;
   bool global;
+  bool argref; // true if the symbol represents a global parameter
 };
 
 typedef ht_tpl(struct var_sym *) var_table_t;

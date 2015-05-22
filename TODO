@@ -13,7 +13,7 @@ fur et à mesure que l'AST est parcouru, puis la passer en parametre à
 print_prog()
 [X] Code de retour du programme (!= 0 quand il y a une erreur)
 [ ] bibliothèque standard
-[ ] types récursifs
-[ ] parametres globaux
+[X] types récursifs
+[X] parametres globaux
 [ ] constantes (e.g. pouvoir utiliser une constante pour la taille d'un tableau)
     => ajouter un champ const à var_sym, comme pour le champ global

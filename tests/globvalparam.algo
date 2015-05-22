@@ -1,0 +1,16 @@
+algorithme procedure test
+parametres locaux
+  entier a
+parametres globaux
+  entier b
+variables
+  entier c, d
+debut
+  a <- b + c
+  d <- b - c
+  ecrire(d)
+fin algorithme procedure test
+
+debut
+  test(1, 2)
+fin
