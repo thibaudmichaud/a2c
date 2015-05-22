@@ -80,12 +80,12 @@ void print_write_fun(struct funcall *f)
   printf("printf(\"");
   for (unsigned i = 0; i < f->args.size - 1; ++i)
   {
-    print_type_format(f->args.data[i]->type);
+    print_type_format(f->args.data[i]->e->type);
     printf(" ");
   }
-  print_type_format(f->args.data[f->args.size - 1]->type);
+  print_type_format(f->args.data[f->args.size - 1]->e->type);
   printf("\\n\", ");
-  print_exprlist(f->args);
+  print_arglist(f->args);
   printf(");\n");
 }
 
@@ -449,12 +449,36 @@ void print_instructions(instructionlist_t instructions, int indent)
     print_instruction(list_nth(instructions, i), indent);
 }
 
+void print_arg(struct arg *arg)
+{
+    if (arg->global)
+    {
+      printf("&(");
+      print_expression(arg->e);
+      printf(")");
+    }
+    else
+      print_expression(arg->e);
+}
+
+void print_arglist(arglist_t l)
+{
+  unsigned i = 0;
+  for (; i + 1 < l.size; ++i)
+  {
+    print_arg(l.data[i]);
+    printf(", ");
+  }
+  if (l.size > 0)
+    print_arg(l.data[i]);
+}
+
 void print_exprlist(exprlist_t l)
 {
   unsigned i = 0;
   for (; i + 1 < l.size; ++i)
   {
-    print_expression(list_nth(l, i));
+    print_expression(l.data[i]);
     printf(", ");
   }
   if (l.size > 0)
@@ -499,7 +523,7 @@ void print_funcall(struct funcall *f, int indent)
   else
   {
     printf("%s(", f->fun_ident);
-    print_exprlist(f->args);
+    print_arglist(f->args);
     printf(");\n");
   }
 }
@@ -635,6 +659,16 @@ void free_caseblocklist(caseblocklist_t caseblocklist)
   list_free(caseblocklist);
 }
 
+void free_args(arglist_t args)
+{
+  for (unsigned i = 0; i < args.size; ++i)
+  {
+    free_expression(args.data[i]->e);
+    free(args.data[i]);
+  }
+  list_free(args);
+}
+
 void free_instruction(struct instruction *i)
 {
   switch (i->kind)
@@ -669,7 +703,7 @@ void free_instruction(struct instruction *i)
       free(i->instr.forloop);
       break;
     case funcall:
-      free_expressions(i->instr.funcall->args);
+      free_args(i->instr.funcall->args);
       free(i->instr.funcall->fun_ident);
       free(i->instr.funcall);
       break;
@@ -717,7 +751,10 @@ void print_expression(struct expr *e)
       }
       break;
     case identtype:
-      printf("%s", e->val.ident);
+      if (e->argref)
+        printf("*(%s)", e->val.ident);
+      else
+        printf("%s", e->val.ident);
       break;
     case dereftype:
       printf("*");
@@ -725,7 +762,7 @@ void print_expression(struct expr *e)
       break;
     case funcalltype:
       printf("%s(", e->val.funcall.fun_ident);
-      print_exprlist(e->val.funcall.args);
+      print_arglist(e->val.funcall.args);
       printf(")");
       break;
     case structelttype:
@@ -770,7 +807,7 @@ void free_expression(struct expr *e)
       free_expression(e->val.deref.e);
       break;
     case funcalltype:
-      free_expressions(e->val.funcall.args);
+      free_args(e->val.funcall.args);
       free(e->val.funcall.fun_ident);
       break;
     case structelttype:

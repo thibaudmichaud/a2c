@@ -5,6 +5,7 @@
 
 void print_prog(struct prog *prog);
 void print_algo(struct algo *algo);
+void print_arglist(arglist_t l);
 void free_algo(struct algo *algo);
 void print_instructions(instructionlist_t instructions, int indent);
 void print_instruction(struct instruction *i, int indent);

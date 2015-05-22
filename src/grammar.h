@@ -20,6 +20,7 @@ typedef list_tpl(struct type_decl *) typedecllist_t;
 typedef list_tpl(int) intlist_t;
 typedef list_tpl(struct algo *) algolist_t;
 typedef list_tpl(struct const_decl *) constdecllist_t;
+typedef list_tpl(struct arg *) arglist_t;
 
 struct prog
 {
@@ -66,10 +67,16 @@ struct unopexpr
   struct expr *e;
 };
 
+struct arg
+{
+  struct expr *e;
+  bool global;
+};
+
 struct funcall
 {
   char *fun_ident;
-  exprlist_t args;
+  arglist_t args;
   struct pos pos;
 };
 
@@ -120,6 +127,7 @@ struct expr
   } val;
   struct pos pos;
   char *type; // filled in during the type checking phase
+  bool argref; // true if the expr represents a global parameter
 };
 
 /*--------------*/
@@ -343,7 +351,18 @@ struct expr *funcallexpr(char *ident, exprlist_t e1)
   struct expr *e = malloc(sizeof(struct expr));
   e->exprtype = funcalltype;
   e->val.funcall.fun_ident = ident;
-  e->val.funcall.args = e1;
+  arglist_t arglist;
+  list_init(arglist);
+  struct arg *arg;
+  for (unsigned i = 0; i < e1.size; ++i)
+  {
+    arg = malloc(sizeof(struct arg));
+    arg->e = e1.data[i];
+    arg->global = false;
+    list_push_back(arglist, arg);
+  }
+  list_free(e1);
+  e->val.funcall.args = arglist;
   e->val.funcall.pos = e->pos;
   return e;
 }
@@ -529,7 +548,7 @@ struct prog *make_prog(algolist_t algos, struct entry_point *entry_point)
 }
 
 static inline
-struct instruction *funcallinstr(char *ident, exprlist_t args, struct pos pos)
+struct instruction *funcallinstr(char *ident, arglist_t args, struct pos pos)
 {
   struct instruction *i = malloc(sizeof(struct instruction));
   i->kind = funcall;

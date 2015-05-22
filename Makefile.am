@@ -36,4 +36,5 @@ TESTS = tests/parser.test \
 	tests/struct.test \
 	tests/product.test \
 	tests/typerec.test \
-	tests/ptr.test
+	tests/ptr.test \
+	tests/globvalparam.test

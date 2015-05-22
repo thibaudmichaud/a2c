@@ -19,13 +19,13 @@ typedef struct t_enregistrement
 } t_enregistrement;
 typedef int *t_int_ptr;
 int variable_globale;
-int n;
+int m, n;
 void test(int d, int *gp, int *bla)
 {
   t_tab_bool tab;
   int a, b;
   double c;
-  a = 0;
+  *(gp) = 0;
   c = 4.5;
   if ((a == b))
   {
@@ -38,5 +38,5 @@ void test(int d, int *gp, int *bla)
 }
 int main(void)
 {
-  test(variable_globale, n, 2);
+  test(variable_globale, &(m), &(n));
 }
