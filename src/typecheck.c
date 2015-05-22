@@ -232,7 +232,7 @@ bool add_types(struct symtable *syms, typedecllist_t typelist)
         break;
       case pointer_type:
         {
-          type->type_kind = pointer_type;
+          type->type_kind = pointer_t;
           type->type_val.pointer_type = malloc(sizeof(struct pointer));
           char *pointed_type = 
             type_decl->type_def->def.pointer_def->pointed_type_ident;;

@@ -502,9 +502,9 @@ struct type_def *parse_array_def(void)
   intlist_t dims = empty_intlist();
   eat(INT);
   list_push_back(dims, atoi(tok->val));
-  while (lookahead[0]->type == X)
+  while (lookahead[0]->type == STAR)
   {
-    eat(X);
+    eat(STAR);
     eat(INT);
     list_push_back(dims, atoi(tok->val));
   }

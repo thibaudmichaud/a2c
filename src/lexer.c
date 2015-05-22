@@ -124,8 +124,6 @@ void getalnum(struct token *tok)
     tok->type = GLOBAL;
   else if (strcmp(tok->val, "enregistrement") == 0)
     tok->type = RECORD;
-  else if (strcmp(tok->val, "x") == 0)
-    tok->type = X;
   else if (strcmp(tok->val, "NUL") == 0)
     tok->type = NULLKW;
   else
