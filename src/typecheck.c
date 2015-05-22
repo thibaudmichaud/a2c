@@ -143,7 +143,11 @@ bool add_variables(struct symtable *syms, vardecllist_t var_decls)
         struct var_sym* sym = malloc(sizeof(struct var_sym));
         sym->ident = list_nth(var_decls.data[i]->var_idents, j);
         struct type *s = find_type(syms->types, var_decls.data[i]->type_ident);
-        if (s)
+        if (find_var(syms->variables, sym->ident))
+        {
+          error(var_decls.data[i]->pos, "conflicting name: %s", sym->ident);
+        }
+        else if (s)
         {
           sym->type = s;
           add_var(syms->variables, sym);
