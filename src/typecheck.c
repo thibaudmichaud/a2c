@@ -349,6 +349,13 @@ bool check_algo(struct algo* al, struct symtable *syms)
         for(unsigned i =0; i < consts.size; ++i)
         {
             struct const_decl* cons = list_nth(consts, i);
+            struct var_sym *var_sym = find_var(syms->variables,
+                cons->ident);
+            if (var_sym && !var_sym->global)
+            {
+              error(cons->pos, "conflicting name: %s", cons->ident);
+              correct = false;
+            }
             struct var_sym* sym = malloc(sizeof(struct var_sym));
             switch(cons->val->valtype)
             {

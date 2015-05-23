@@ -3,8 +3,8 @@
 int variable_globale;
 int fibo(int n)
 {
-  const int a = 0;
-  const double r = 4.2;
+  const int c = 0;
+  const double d = 4.2;
   int i, a, b;
   a = 0;
   b = 1;
