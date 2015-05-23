@@ -452,11 +452,13 @@ struct const_decl *parse_constdecl(void)
 {
   struct const_decl *constdecl = malloc(sizeof(struct const_decl));
   eat(IDENTIFIER);
+  constdecl->pos = *tok->pos;
   constdecl->type = strdup(tok->val);
   eat(IDENTIFIER);
   constdecl->ident = strdup(tok->val);
   eat(EQ);
   constdecl->val = parse_val();
+  constdecl->pos.len = tok->pos->charstart + tok->pos->len - constdecl->pos.charstart;
   eat(EOL);
   return constdecl;
 }

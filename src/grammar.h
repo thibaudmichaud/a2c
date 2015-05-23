@@ -284,6 +284,7 @@ struct const_decl
   char *type;
   char *ident;
   struct val *val;
+  struct pos pos;
 };
 
 struct type_decl

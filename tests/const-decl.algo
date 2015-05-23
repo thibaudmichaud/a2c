@@ -4,8 +4,8 @@ parametres locaux
 variables
   entier i, a, b
 constantes
-  entier a = 0
-  reel r = 4.2
+  entier c = 0
+  reel d = 4.2
 debut
   a <- 0
   b <- 1
