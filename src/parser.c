@@ -82,7 +82,7 @@ void eat(enum tokentype expect)
  */
 
 /*-------------*
- | EXPRESSIONS | 
+  | EXPRESSIONS | 
  *-------------*/
 
 struct expr *expression(int rbp)
@@ -201,7 +201,7 @@ struct expr *parse_expression(void)
  */
 
 /*--------------*
- | INSTRUCTIONS |
+  | INSTRUCTIONS |
  * -------------*/
 
 struct instruction *parse_instruction(void);
@@ -354,54 +354,54 @@ struct instruction *parse_instruction(void)
     case WHILE: return parse_while();
     case DO: return parse_do();
     case IDENTIFIER: case LPAREN:
-       expr = parse_expression();
-       switch(lookahead[0]->type)
-       {
-         case ASSIGN: return parse_assignment_instr(expr);
-         case EOL:
-           if (expr->exprtype != funcalltype)
-           {
-             if (expr->exprtype == binopexprtype
-                 && expr->val.binopexpr.op == EQ)
-               error(expr->pos, "unexpected =, did you mean <- ?");
-             else
-               syntaxerror("expected instruction, not expression");
-           }
-           eat(EOL);
-           res = funcallinstr(expr->val.funcall.fun_ident,
-               expr->val.funcall.args, expr->pos);
-           free(expr);
-           return res;
-         default:
-           next();
-           syntaxerror("unexpected %s", tok->val);
-           return parse_instruction();
-       }
+             expr = parse_expression();
+             switch(lookahead[0]->type)
+             {
+               case ASSIGN: return parse_assignment_instr(expr);
+               case EOL:
+                            if (expr->exprtype != funcalltype)
+                            {
+                              if (expr->exprtype == binopexprtype
+                                  && expr->val.binopexpr.op == EQ)
+                                error(expr->pos, "unexpected =, did you mean <- ?");
+                              else
+                                syntaxerror("expected instruction, not expression");
+                            }
+                            eat(EOL);
+                            res = funcallinstr(expr->val.funcall.fun_ident,
+                                expr->val.funcall.args, expr->pos);
+                            free(expr);
+                            return res;
+               default:
+                            next();
+                            syntaxerror("unexpected %s", tok->val);
+                            return parse_instruction();
+             }
     case RETURN:
-       eat(RETURN);
-       if (lookahead[0]->type == EOL)
-       {
-         eat(EOL);
-         return return_stmt(NULL);
-       }
-       else
-       {
-         expr = parse_expression(); eat(EOL);
-         return return_stmt(expr);
-       }
+             eat(RETURN);
+             if (lookahead[0]->type == EOL)
+             {
+               eat(EOL);
+               return return_stmt(NULL);
+             }
+             else
+             {
+               expr = parse_expression(); eat(EOL);
+               return return_stmt(expr);
+             }
     case FOR: return parse_for();
     case IF: return parse_if();
     case SWITCH: return parse_switch();
     case ENDOFFILE: return NULL;
     default:
-       next();
-       syntaxerror("expected instruction, not %s", tok->val);
-       return parse_instruction();
+                    next();
+                    syntaxerror("expected instruction, not %s", tok->val);
+                    return parse_instruction();
   }
 }
 
 /*--------------*
- | DECLARATIONS |
+  | DECLARATIONS |
  *--------------*/
 
 struct single_var_decl *parse_vardecl(void)
@@ -443,8 +443,8 @@ struct val *parse_val(void)
     case FALSE: return boolval(false);
     case CHAR: return charval(tok->val[1]);
     default:
-      syntaxerror("expected a value, not %s", tok->val);
-      return intval(0);
+               syntaxerror("expected a value, not %s", tok->val);
+               return intval(0);
   }
 }
 
@@ -498,17 +498,41 @@ struct type_def *parse_record_def(void)
   return make_record(vardecl);
 }
 
+struct expr* build_dim(struct token* tok)
+{
+  switch(tok->type)
+  {
+    case INT:
+      return expr_from_val(intval(atoi(tok->val)));
+    case IDENTIFIER:
+      {
+        struct expr *e = malloc(sizeof(struct expr));
+        e->exprtype = identtype;
+        e->val.ident = strdup(tok->val);
+        e->type = NULL;
+        return e;
+      }
+    default:
+      syntaxerror("expected integer or identifier not %s", tok->val);
+  }
+  return NULL;
+}
+
 struct type_def *parse_array_def(void)
 {
   struct pos pos = *tok->pos;
   intlist_t dims = empty_intlist();
-  eat(INT);
-  list_push_back(dims, atoi(tok->val));
+  //eat(INT);
+  next();
+  struct expr* e = build_dim(tok);
+  list_push_back(dims, e);
   while (lookahead[0]->type == STAR)
   {
     eat(STAR);
-    eat(INT);
-    list_push_back(dims, atoi(tok->val));
+    next();
+    struct expr* e1 = build_dim(tok);
+    list_push_back(dims, e1);
+    //list_push_back(dims, strdup(tok->val));
   }
   eat(IDENTIFIER);
   char *type = strdup(tok->val);
@@ -536,7 +560,7 @@ struct type_decl *parse_typedecl(void)
   {
     case LPAREN: type_def = parse_enum_def(); break;
     case RECORD: type_def = parse_record_def(); break;
-    case INT:    type_def = parse_array_def(); break;
+    case INT: case IDENTIFIER:    type_def = parse_array_def(); break;
     case DEREF:  type_def = parse_pointer_def(); break;
     default: syntaxerror("expected type definition, not %s", tok->val);
   }
@@ -555,7 +579,7 @@ typedecllist_t parse_typedecls(void)
 }
 
 /*------------*
- | ALGORITHMS |
+  | ALGORITHMS |
  *------------*/
 
 vardecllist_t parse_lp(void)
@@ -745,7 +769,7 @@ struct prog *parse_prog(void)
 }
 
 /*--------------------*
- | PARSER ENTRY POINT |
+  | PARSER ENTRY POINT |
  * -------------------*/
 
 struct prog *parse(void)

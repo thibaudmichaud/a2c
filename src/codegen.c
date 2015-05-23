@@ -60,16 +60,16 @@ char *getopstr(enum tokentype op)
 void print_type_format(char *t)
 {
   if (strcmp(t, "caractere") == 0)
-      printf("%%c");
+    printf("%%c");
   else if (strcmp(t, "booleen") == 0
       || strcmp(t, "entier") == 0)
-      printf("%%d");
+    printf("%%d");
   else if (strcmp(t, "chaine") == 0)
-      printf("%%s");
+    printf("%%s");
   else if (strcmp(t, "reel") == 0)
-      printf("%%g");
+    printf("%%g");
   else if (strcmp(t, "nul") == 0)
-      printf("%%p");
+    printf("%%p");
   else
     printf("\nUndefined behaviour: printing non-primitive data type\n");
 }
@@ -153,7 +153,17 @@ void print_array(char *ident, struct array_def *array_def)
   printf("%s %s", algo_to_c_type(array_def->elt_type), ident);
   for (unsigned i = 0; i < array_def->dims.size; ++i)
   {
-    printf("[%d]", array_def->dims.data[i]);
+    switch(array_def->dims.data[i]->exprtype)
+    {
+      case valtype:
+        printf("[%d]", array_def->dims.data[i]->val.val->val.intval);
+        break;
+      case identtype:
+        printf("[%s]", array_def->dims.data[i]->val.ident);
+        break;
+      default:break;
+    }
+    //printf("[%d]", array_def->dims.data[i]);
   }
   printf(";\n");
 }
@@ -340,6 +350,18 @@ void free_val(struct val *val)
   free(val);
 }
 
+void free_intlist(intlist_t dims)
+{
+
+  for (unsigned i = 0; i < dims.size; ++i)
+  {
+    if(dims.data[i] != NULL)
+      free_expression(dims.data[i]);
+  }
+  list_free(dims);
+
+}
+
 void free_identlist(identlist_t idents)
 {
   for (unsigned i = 0; i < idents.size; ++i)
@@ -378,7 +400,6 @@ void free_type_def(struct type_def *type_def)
   {
     case array_type:
       free(type_def->def.array_def->elt_type);
-      list_free(type_def->def.array_def->dims);
       free(type_def->def.array_def);
       break;
     case enum_type:
@@ -457,14 +478,14 @@ void print_instructions(instructionlist_t instructions, int indent)
 
 void print_arg(struct arg *arg)
 {
-    if (arg->global)
-    {
-      printf("&(");
-      print_expression(arg->e);
-      printf(")");
-    }
-    else
-      print_expression(arg->e);
+  if (arg->global)
+  {
+    printf("&(");
+    print_expression(arg->e);
+    printf(")");
+  }
+  else
+    print_expression(arg->e);
 }
 
 void print_arglist(arglist_t l)

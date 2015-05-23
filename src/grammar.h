@@ -17,7 +17,7 @@ typedef list_tpl(struct caseblock*) caseblocklist_t;
 typedef list_tpl(struct instruction *) instructionlist_t;
 typedef list_tpl(struct single_var_decl *) vardecllist_t;
 typedef list_tpl(struct type_decl *) typedecllist_t;
-typedef list_tpl(int) intlist_t;
+typedef list_tpl(struct expr *) intlist_t;
 typedef list_tpl(struct algo *) algolist_t;
 typedef list_tpl(struct const_decl *) constdecllist_t;
 typedef list_tpl(struct arg *) arglist_t;
@@ -741,6 +741,7 @@ struct expr *expr_from_val(struct val *v)
   struct expr *e = malloc(sizeof(struct expr));
   e->exprtype = valtype;
   e->val.val = v;
+  e->type = NULL;
   return e;
 }
 

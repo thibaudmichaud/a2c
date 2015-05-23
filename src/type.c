@@ -1,4 +1,5 @@
 #include "type.h"
+#include "codegen.h"
 
 void free_pointer(struct pointer* p)
 {
@@ -24,6 +25,8 @@ void free_enum(struct enum_type* _enum)
 
 void free_array(struct array *a)
 {
+  for (unsigned i = 0; i < a->dims.size; ++i)
+    free_expression(a->dims.data[i]);
   list_free(a->dims);
   free(a);
 }

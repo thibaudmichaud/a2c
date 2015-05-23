@@ -67,7 +67,7 @@ void fill_std_types(struct symtable *syms)
   t->type_val.array_type = malloc(sizeof(struct array));
   t->type_val.array_type->type = find_type(syms->types, "entier");
   list_init(t->type_val.array_type->dims);
-  list_push_back(t->type_val.array_type->dims, 1000);
+  list_push_back(t->type_val.array_type->dims, expr_from_val(intval(1000)));
   add_type(syms->types, t);
 
   t = malloc(sizeof(struct type));
@@ -76,7 +76,7 @@ void fill_std_types(struct symtable *syms)
   t->type_val.array_type = malloc(sizeof(struct array));
   t->type_val.array_type->type = find_type(syms->types, "entier");
   list_init(t->type_val.array_type->dims);
-  list_push_back(t->type_val.array_type->dims, 1000);
+  list_push_back(t->type_val.array_type->dims, expr_from_val(intval(1000)));
   add_type(syms->types, t);
 
   t = malloc(sizeof(struct type));
