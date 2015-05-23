@@ -31,10 +31,12 @@ int main(int argc, char **argv)
   prog = parse();
   if (prog)
   {
-    if (check_prog(prog))
+    struct symtable *syms = empty_symtable();
+    if (check_prog(prog, syms))
       print_prog(prog);
     else
       error = true;
+    free_symtable(syms);
     free_prog(prog);
   }
   else
