@@ -227,6 +227,7 @@ void print_prog(struct prog *prog)
     print_type_decls(prog->algos.data[i]->declarations->type_decls);
   print_type_decls(prog->entry_point->type_decls);
   print_var_decl(prog->entry_point->var_decl, 0);
+  print_const_decl(prog->entry_point->const_decls, 0);
   for (unsigned i = 0; i < prog->algos.size; ++i)
     print_algo(prog->algos.data[i]);
   printf("int main(void)\n{\n");
@@ -868,6 +869,7 @@ void free_expression(struct expr *e)
 void free_prog(struct prog *prog)
 {
   free_var_decl(prog->entry_point->var_decl);
+  free_const_decl(prog->entry_point->const_decls);
   free_type_decls(prog->entry_point->type_decls);
   free_instructions(prog->entry_point->instructions);
   free(prog->entry_point);

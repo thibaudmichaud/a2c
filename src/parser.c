@@ -748,6 +748,13 @@ struct prog *parse_prog(void)
   algolist_t algolist = parse_algolist();
   vardecllist_t globvar;
   typedecllist_t type_decls;
+  constdecllist_t const_decls;
+  if( lookahead[0]->type == CONST)
+  {
+    const_decls = parse_constdecls();
+  }
+  else
+    const_decls = empty_constdecllist();
   if (lookahead[0]->type == VARIABLES)
   {
     eat(VARIABLES); eat(EOL);
@@ -764,7 +771,7 @@ struct prog *parse_prog(void)
   eat(END);
   if (lookahead[0]->type == EOL) eat(EOL);
   eat(ENDOFFILE);
-  struct entry_point *entrypoint = make_entry_point(globvar, instrs, type_decls);
+  struct entry_point *entrypoint = make_entry_point(globvar, instrs, type_decls, const_decls);
   return make_prog(algolist, entrypoint);
 }
 

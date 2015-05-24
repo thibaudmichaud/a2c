@@ -286,11 +286,85 @@ bool add_types(struct symtable *syms, typedecllist_t typelist)
   return correct;
 }
 
+bool check_const(struct const_decl* cons, struct symtable* syms, bool global)
+{
+  struct var_sym *var_sym = find_var(syms->variables, cons->ident);
+  if (var_sym && !var_sym->global)
+  {
+    error(cons->pos, "conflicting name: %s", cons->ident);
+    return false;
+  }
+  struct var_sym* sym = malloc(sizeof(struct var_sym));
+  switch(cons->val->valtype)
+  {
+    case nulltype:
+      sym->type = malloc(sizeof(struct pointer));
+      sym->type->type_kind = pointer_t;
+      sym->type->name = strdup("nul");
+      break;
+    case chartype:
+      if(equal_types(cons->type,"caractere",syms))
+        sym->type = find_type(syms->types, "caractere");
+      else
+      {
+        error(cons->pos,"incompatible type : %s and caractere", cons->type);
+        return false;
+      }
+      break;
+    case stringtype:
+      if(equal_types(cons->type,"chaine",syms))
+        sym->type = find_type(syms->types, "chaine");
+      else
+      {
+        error(cons->pos,"incompatible type : %s and chaine", cons->type);
+        return false;
+      }
+      break;
+    case inttype:
+      if(equal_types(cons->type,"entier",syms))
+        sym->type = find_type(syms->types, "entier");
+      else
+      {
+        error(cons->pos,"incompatible type : %s and entier", cons->type);
+        return false;
+      }
+      break;
+    case realtype:
+      if(equal_types(cons->type,"reel",syms))
+        sym->type = find_type(syms->types, "reel");
+      else
+      {
+        error(cons->pos,"incompatible type : %s and reel", cons->type);
+        return false;
+      }
+      break;
+    case booltype:
+      if(equal_types(cons->type,"booleen",syms))
+        sym->type = find_type(syms->types, "booleen");
+      else
+      {
+        error(cons->pos,"incompatible type : %s and booleen", cons->type);
+        return false;
+      }
+      break;
+  }
+  sym->ident = cons->ident;
+  sym->argref = false;
+  sym->global = global;
+  sym->constante = true;
+  add_var(syms->variables, sym);
+  return true;
+}
+
 bool check_prog(struct prog* prog, struct symtable *syms)
 {
   bool correct = true;
   fill_std_types(syms);
   fill_std_fun(syms);
+  constdecllist_t consts = prog->entry_point->const_decls;
+
+  for(unsigned i =0; i < consts.size; ++i)
+    correct = correct && check_const(list_nth(consts,i), syms, true);
   correct = correct && add_types(syms, prog->entry_point->type_decls);
   correct = correct && add_variables(syms, prog->entry_point->var_decl, true, false, false);
   for(unsigned i = 0; i < prog->algos.size; ++i)
@@ -348,45 +422,7 @@ bool check_algo(struct algo* al, struct symtable *syms)
     typedecllist_t typelist = decl->type_decls;
     constdecllist_t consts = decl->const_decls;
     for(unsigned i =0; i < consts.size; ++i)
-    {
-      struct const_decl* cons = list_nth(consts, i);
-      struct var_sym *var_sym = find_var(syms->variables,
-          cons->ident);
-      if (var_sym && !var_sym->global)
-      {
-        error(cons->pos, "conflicting name: %s", cons->ident);
-        correct = false;
-      }
-      struct var_sym* sym = malloc(sizeof(struct var_sym));
-      switch(cons->val->valtype)
-      {
-        case nulltype:
-          sym->type = malloc(sizeof(struct pointer));
-          sym->type->type_kind = pointer_t;
-          free(sym->type->name);
-          sym->type->name = strdup("nul");
-          break;
-        case chartype:
-          sym->type = find_type(syms->types, "caractere");
-          break;
-        case stringtype:
-          sym->type = find_type(syms->types, "chaine");
-          break;
-        case inttype:
-          sym->type = find_type(syms->types, "entier");
-          break;
-        case realtype:
-          sym->type = find_type(syms->types, "reel");
-          break;
-        case booltype:
-          sym->type = find_type(syms->types, "booleen");
-          break;
-      }
-      sym->ident = cons->ident;
-      sym->argref = false;
-      sym->constante = true;
-      add_var(syms->variables, sym);
-    }
+      correct = correct && check_const(list_nth(consts,i), syms, true);
     if(loc.size > 0)
       correct = correct && add_variables(syms, loc, false, false, false);
     if(glo.size > 0)
@@ -405,6 +441,14 @@ bool check_algo(struct algo* al, struct symtable *syms)
 
 bool check_assignment(struct assignment *assignment, struct symtable *syms)
 {
+  if(assignment->e1->exprtype == identtype)
+  {
+    if(find_var(syms->variables,assignment->e1->val.ident)->constante)
+    {
+      error(assignment->pos, "assignment of read-only variable %s", assignment->e1->val.ident);
+      return false;
+    }
+  }
   char *t1 = check_expr(assignment->e1, syms);
   char *t2 = check_expr(assignment->e2, syms);
   if (!t1 || !t2)

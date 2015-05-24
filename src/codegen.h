@@ -13,6 +13,7 @@ void free_instructions(instructionlist_t instructions);
 void free_instruction(struct instruction *i);
 void print_expression(struct expr *e);
 void print_exprlist(exprlist_t l);
+void print_const_decl(constdecllist_t const_decls, int indent);
 void free_expression(struct expr *e);
 void free_expressions(exprlist_t l);
 void free_prog(struct prog *prog);
