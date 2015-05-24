@@ -1,0 +1,18 @@
+algorithme procedure blabla
+types
+  t_tab_int = max * min entier
+variables 
+  entier i, j
+  t_tab_int mat
+debut
+  i <- 1
+  j <- 2
+  mat[i, j] <- 4
+fin algorithme procedure blabla
+
+constantes
+  entier max = 5
+  entier min = 3
+debut
+  blabla()
+fin
