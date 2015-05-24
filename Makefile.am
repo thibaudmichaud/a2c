@@ -47,4 +47,6 @@ TESTS = tests/parser.test \
 	tests/file.test \
 	tests/arbrebin.test \
 	tests/abn_taille.test \
-	tests/abn_complet.test
+	tests/abn_complet.test \
+	tests/constarray.test \
+	tests/arrayfail.test

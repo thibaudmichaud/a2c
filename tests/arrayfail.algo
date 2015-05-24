@@ -1,0 +1,21 @@
+algorithme procedure fail
+types
+  t_tab_bool = a * b * 5 booleen
+variables
+  entier i, j, k
+  t_tab_bool tab
+debut
+  i <- 1
+  j <- 2
+  k <- 3
+  tab[i, j, k] <- faux
+fin algorithme procedure fail
+
+constantes
+  caractere a = 'a'
+  entier b = 4
+debut 
+  fail()
+fin
+
+

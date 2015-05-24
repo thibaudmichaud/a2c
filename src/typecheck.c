@@ -182,14 +182,18 @@ bool add_types(struct symtable *syms, typedecllist_t typelist)
                 }
                 break;
               case identtype:
-                printf(" %s \n", dim->val.ident);
-                if(find_var(syms->variables, dim->val.ident) == NULL)
+                if(!equal_types(find_var(syms->variables, dim->val.ident)->type->name, "entier", syms))
+                {
+                  error(type_def->pos, "identifier \"%s\" is not an integer", dim->val.ident);
+                  correct = false;
+                  break;
+                }
+                if(find_var(syms->variables, dim->val.ident)->type == NULL)
                 {
                   error(type_def->pos, "identifier is undeclared");
                   correct = false;
                   break;
                 }
-
                 if(!find_var(syms->variables, dim->val.ident)->constante)
                 {
                   error(type_def->pos, "identifier is not a constante");
