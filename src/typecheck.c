@@ -8,8 +8,7 @@
 #include <assert.h>
 #include "error.h"
 #include <stdbool.h>
-
-struct type *t_bool, *t_int, *t_str, *t_reel, *t_char;
+#include "stdlibalgo.h"
 
 bool equal_types(char *tname1, char *tname2, struct symtable *syms)
 {
@@ -71,39 +70,6 @@ void free_symtable(struct symtable *syms)
     free_var_table(syms->variables);
     free_type_table(syms->types);
     free(syms);
-}
-
-void fill_std_syms(struct symtable *syms)
-{
-    t_bool = malloc(sizeof(struct type));
-    t_bool->type_kind = primary_t;
-    t_bool->name = strdup("booleen");
-    t_bool->type_val.primary = bool_t;
-    add_type(syms->types, t_bool);
-
-    t_int = malloc(sizeof(struct type));
-    t_int->type_kind = primary_t;
-    t_int->name = strdup("entier");
-    t_int->type_val.primary = int_t;
-    add_type(syms->types, t_int);
-
-    t_str = malloc(sizeof(struct type));
-    t_str->type_kind = primary_t;
-    t_str->name = strdup("chaine");
-    t_str->type_val.primary = str_t;
-    add_type(syms->types, t_str);
-
-    t_reel = malloc(sizeof(struct type));
-    t_reel->type_kind = primary_t;
-    t_reel->name = strdup("reel");
-    t_reel->type_val.primary = real_t;
-    add_type(syms->types,t_reel);
-
-    t_char = malloc(sizeof(struct type));
-    t_char->type_kind = primary_t;
-    t_char->name = strdup("caractere");
-    t_char->type_val.primary = char_t;
-    add_type(syms->types, t_char);
 }
 
 args_t get_args(struct param_decl *params, struct symtable *syms)
@@ -282,7 +248,8 @@ bool check_prog(struct prog* prog)
 {
     bool correct = true;
     struct symtable *syms = empty_symtable();
-    fill_std_syms(syms);
+    fill_std_types(syms);
+    fill_std_fun(syms);
     correct = correct && add_types(syms, prog->entry_point->type_decls);
     correct = correct && add_variables(syms, prog->entry_point->var_decl, true, false);
     for(unsigned i = 0; i < prog->algos.size; ++i)
@@ -722,7 +689,7 @@ char *check_expr(struct expr *e, struct symtable *syms)
                     || e->val.binopexpr.op == LE
                     || e->val.binopexpr.op == GE)
                 {
-                  e->type = strdup(t_bool->name);
+                  e->type = strdup("booleen");
                 }
                 else
                 {
