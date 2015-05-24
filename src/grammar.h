@@ -32,6 +32,7 @@ struct entry_point
 {
   vardecllist_t var_decl;
   typedecllist_t type_decls;
+  constdecllist_t const_decls;
   instructionlist_t instructions;
 };
 
@@ -530,11 +531,12 @@ struct instruction *assigninstr(struct assignment *a)
 
 static inline
 struct entry_point *make_entry_point(vardecllist_t var_decl, instructionlist_t instructions,
-    typedecllist_t type_decls)
+    typedecllist_t type_decls, constdecllist_t const_decls)
 {
   struct entry_point *e = malloc(sizeof(struct entry_point));
   e->var_decl = var_decl;
   e->type_decls = type_decls;
+  e->const_decls = const_decls;
   e->instructions = instructions;
   return e;
 }
