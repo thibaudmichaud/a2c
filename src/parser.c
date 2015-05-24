@@ -522,7 +522,6 @@ struct type_def *parse_array_def(void)
 {
   struct pos pos = *tok->pos;
   intlist_t dims = empty_intlist();
-  //eat(INT);
   next();
   struct expr* e = build_dim(tok);
   list_push_back(dims, e);
@@ -532,7 +531,6 @@ struct type_def *parse_array_def(void)
     next();
     struct expr* e1 = build_dim(tok);
     list_push_back(dims, e1);
-    //list_push_back(dims, strdup(tok->val));
   }
   eat(IDENTIFIER);
   char *type = strdup(tok->val);
@@ -663,7 +661,7 @@ struct declarations *parse_decls(void)
     else if (lookahead[0]->type == TYPES)
     {
       declarations->type_decls = parse_typedecls();
-      if (lookahead[0]->type == TYPES)
+      if (lookahead[0]->type == VARIABLES)
       {
         eat(VARIABLES); eat(EOL);
         declarations->var_decl = parse_vardecls();

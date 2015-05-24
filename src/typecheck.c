@@ -182,6 +182,7 @@ bool add_types(struct symtable *syms, typedecllist_t typelist)
                 }
                 break;
               case identtype:
+                printf(" %s \n", dim->val.ident);
                 if(find_var(syms->variables, dim->val.ident) == NULL)
                 {
                   error(type_def->pos, "identifier is undeclared");
@@ -424,11 +425,11 @@ bool check_algo(struct algo* al, struct symtable *syms)
     for(unsigned i =0; i < consts.size; ++i)
       correct = correct && check_const(list_nth(consts,i), syms, true);
     if(loc.size > 0)
-      correct = correct && add_variables(syms, loc, false, false, false);
+      correct = add_variables(syms, loc, false, false, false) && correct;
     if(glo.size > 0)
-      correct = correct && add_variables(syms, glo, false, true, false);
-    correct = correct && add_types(syms, typelist);
-    correct = correct && add_variables(syms, vars, false, false, false);
+      correct = add_variables(syms, glo, false, true, false) && correct;
+    correct = add_types(syms, typelist) && correct;
+    correct = add_variables(syms, vars, false, false, false) && correct;
   }
   for(unsigned i = 0; i < al->instructions.size; i++)
     if(!check_inst(list_nth(al->instructions, i), f->ret, syms))
@@ -443,7 +444,8 @@ bool check_assignment(struct assignment *assignment, struct symtable *syms)
 {
   if(assignment->e1->exprtype == identtype)
   {
-    if(find_var(syms->variables,assignment->e1->val.ident)->constante)
+    if(find_var(syms->variables,assignment->e1->val.ident) != NULL && 
+        find_var(syms->variables,assignment->e1->val.ident)->constante)
     {
       error(assignment->pos, "assignment of read-only variable %s", assignment->e1->val.ident);
       return false;
