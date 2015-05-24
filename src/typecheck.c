@@ -496,6 +496,16 @@ bool check_funcall(struct funcall *f, struct symtable *syms, struct type **res)
     *res = NULL;
     return true;
   }
+  if(strcmp(f->fun_ident, "lire") == 0)
+  {
+      if(f->args.size != 1 
+          && f->args.data[0]->e->exprtype != identtype 
+          && !find_var(syms->variables, f->args.data[0]->e->val.ident))
+       return NULL;
+      f->args.data[0]->e->type = strdup(find_var(
+            syms->variables, f->args.data[0]->e->val.ident)->type->name);
+    return (void *)1;
+  }
   struct function *proto = get_function(syms->functions, f->fun_ident);
   if (!proto)
   {

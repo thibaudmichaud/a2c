@@ -95,6 +95,16 @@ void print_write_fun(struct funcall *f)
   printf(");\n");
 }
 
+void print_read_function(struct funcall *f)
+{
+
+  printf("scanf(\"");
+  print_type_format(f->args.data[0]->e->type);
+  printf("\\n\", ");
+  print_arglist(f->args);
+  printf(");\n");
+}
+
 void print_val(struct val *val)
 {
   switch (val->valtype)
@@ -549,6 +559,8 @@ int get_funcall_name(struct funcall *f)
     return 1;
   if (strcmp(f->fun_ident, "allouer") == 0)
     return 2;
+  if (strcmp(f->fun_ident, "lire") == 0)
+    return 3;
   return 0;
 }
 
@@ -563,6 +575,9 @@ void print_funcall(struct funcall *f, int indent)
       break;
     case 2: /* 2 is allouer */
       print_alloc_fun(f);
+      break;
+    case 3:
+      print_read_function(f);
       break;
 
     default:
