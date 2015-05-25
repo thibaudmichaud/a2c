@@ -239,15 +239,16 @@ void vide_pile(t_pile *pile)
 /*   return r; */
 /* } */
 
-/* /\* ARBRES BINAIRES *\/ */
-/* typedef *t_noeud_bin t_arbre_bin; */
+/* ARBRES BINAIRES */
+typedef struct t_noeud_bin t_noeud_bin;
+typedef t_noeud_bin *t_arbre_bin;
 
-/* typedef struct t_noeud_bin */
-/* { */
-/*   int cle; */
-/*   struct t_noeud_bin *fg; */
-/*   struct t_noeud_bin *fd; */
-/* } t_noeud_bin; */
+struct t_noeud_bin
+{
+  int cle;
+  t_arbre_bin fg;
+  t_arbre_bin fd;
+};
 
 /* /\* ARBRES GENERAUX DYN *\/ */
 /* typedef *t_noeud_ag t_arbre_dyn; */

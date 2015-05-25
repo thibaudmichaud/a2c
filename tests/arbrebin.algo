@@ -1,0 +1,37 @@
+algorithme procedure affiche_moi_mon_arbre
+parametres locaux
+  t_arbre_bin a
+debut
+  si (a <> NUL) alors
+    ecrire(a^.cle)
+    affiche_moi_mon_arbre(a^.fg)
+    affiche_moi_mon_arbre(a^.fd)
+  fin si
+fin algorithme procedure affiche_moi_mon_arbre
+
+algorithme fonction donne_moi_un_arbre : t_arbre_bin
+variables
+  t_arbre_bin a
+debut
+  allouer(a)
+  a^.cle <- 0
+  allouer(a^.fg)
+  a^.fg^.cle <- 1
+  a^.fg^.fg <- NUL
+  a^.fg^.fd <- NUL
+  allouer(a^.fd)
+  a^.fd^.cle <- 2
+  allouer(a^.fd^.fg)
+  a^.fd^.fg^.cle <- 3
+  a^.fd^.fg^.fg <- NUL
+  a^.fd^.fg^.fd <- NUL
+  a^.fd^.fd <- NUL
+  retourne a
+fin algorithme fonction donne_moi_un_arbre
+
+variables
+  t_arbre_bin a
+debut
+  a <- donne_moi_un_arbre()
+  affiche_moi_mon_arbre(a)
+fin

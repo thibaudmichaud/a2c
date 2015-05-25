@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+
+valgrind --error-exitcode=1 --leak-check=full --show-leak-kinds=all \
+  ./a2c tests/arbrebin.algo > tests/arbrebin.c
+gcc -g -std=c99 tests/arbrebin.c -o tests/arbrebin
+valgrind --error-exitcode=1 --leak-check=full --show-leak-kinds=all \
+  ./tests/arbrebin | diff tests/arbrebinexp -
+
+set +e

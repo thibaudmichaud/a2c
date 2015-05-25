@@ -47,7 +47,7 @@ char *getopstr(enum tokentype op)
     case GE:
       return ">=";
     case NEQ:
-      return "<>";
+      return "!=";
     case NOT:
       return "!";
     case XOR:

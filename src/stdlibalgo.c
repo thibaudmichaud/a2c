@@ -71,6 +71,32 @@ void fill_std_types(struct symtable *syms)
   list_init(t->type_val.array_type->dims);
   list_push_back(t->type_val.array_type->dims, 1000);
   add_type(syms->types, t);
+
+  t = malloc(sizeof(struct type));
+  t->name = strdup("t_noeud_bin");
+  t->type_kind = records_t;
+  t->type_val.records_type = malloc(sizeof(struct records));
+  list_init(t->type_val.records_type->fields);
+  f = malloc(sizeof(struct field));
+  f->type = strdup("entier");
+  f->ident = strdup("cle");
+  list_push_back(t->type_val.records_type->fields, f);
+  f = malloc(sizeof(struct field));
+  f->type = strdup("t_arbre_bin");
+  f->ident = strdup("fg");
+  list_push_back(t->type_val.records_type->fields, f);
+  f = malloc(sizeof(struct field));
+  f->type = strdup("t_arbre_bin");
+  f->ident = strdup("fd");
+  list_push_back(t->type_val.records_type->fields, f);
+  add_type(syms->types, t);
+  
+  t = malloc(sizeof(struct type));
+  t->name = strdup("t_arbre_bin");
+  t->type_kind = pointer_t;
+  t->type_val.pointer_type = malloc(sizeof(struct pointer));
+  t->type_val.pointer_type->type = strdup("t_noeud_bin");
+  add_type(syms->types, t);
 }
 
 void fill_std_fun(struct symtable *syms)
