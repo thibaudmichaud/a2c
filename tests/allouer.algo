@@ -4,10 +4,13 @@ types
     entier a
     booleen b
   fin enregistrement t_enregistrement
+  t_ptr = ^t_enregistrement
 variables
-  t_enregistrement e
+  t_ptr p
 debut
-  allouer(e)
+  allouer(p)
+  p^.a <- 1
+  p^.b <- vrai
 fin algorithme procedure test
 
 debut
