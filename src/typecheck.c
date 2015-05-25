@@ -410,31 +410,34 @@ bool check_assignment(struct assignment *assignment, struct symtable *syms)
     return true;
 }
 
-struct type *check_funcall(struct funcall *f, struct symtable *syms)
+bool check_funcall(struct funcall *f, struct symtable *syms, struct type **res)
 {
   if (strcmp(f->fun_ident, "ecrire") == 0)
   {
     for (unsigned i = 0; i < f->args.size; ++i)
     {
       if (!check_expr(f->args.data[i]->e, syms))
-        return NULL;
+      {
+        *res = NULL;
+        return false;
+      }
     }
-    // Return a non-zero value to indicate success.
-    // It is a procedure so this function should be called from check_inst,
-    // which doesn't use the return value as a type but just as a bool.
-    return (void *)1;
+    *res = NULL;
+    return true;
   }
   struct function *proto = get_function(syms->functions, f->fun_ident);
   if (!proto)
   {
     error(f->pos, "implicit declaration of function %s", f->fun_ident);
-    return NULL;
+    *res = NULL;
+    return false;
   }
   else if (proto->arg.size != f->args.size)
   {
     error(f->pos, "function %s expects %d arguments but %d were given",
         f->fun_ident, proto->arg.size, f->args.size);
-    return NULL;
+    *res = NULL;
+    return false;
   }
   else
   {
@@ -464,13 +467,9 @@ struct type *check_funcall(struct funcall *f, struct symtable *syms)
       }
     }
     if (ok)
-      // If it is a procedure the return type is 0 which would be interpreted as
-      // an error, instead 1 is returned. Since it is a procedure it means it is
-      // called by check_inst (rather than check_expr) and the return value will
-      // only be used as a boolean.
-      return proto->ret ? proto->ret : (void *)1;
+      *res = proto->ret;
   }
-  return NULL;
+  return true;
 }
 
 bool check_inst(struct instruction *i, struct type *ret, struct symtable *syms)
@@ -478,7 +477,10 @@ bool check_inst(struct instruction *i, struct type *ret, struct symtable *syms)
     switch(i->kind)
     {
         case funcall:
-            return check_funcall(i->instr.funcall, syms);
+          {
+            struct type *res;
+            return check_funcall(i->instr.funcall, syms, &res);
+          }
 
         case assignment:
             return check_assignment(i->instr.assignment, syms);
@@ -682,9 +684,14 @@ char *check_expr(struct expr *e, struct symtable *syms)
           break;
         case funcalltype:
           {
-            struct type *rettype = check_funcall(&e->val.funcall, syms);
-            if (rettype)
-              e->type = strdup(rettype->name);
+            struct type *rettype;
+            if (check_funcall(&e->val.funcall, syms, &rettype))
+            {
+              if (rettype)
+                e->type = strdup(rettype->name);
+              else
+                error(e->pos, "cannot use a procedure as an expression");
+            }
             break;
           }
         case binopexprtype:
