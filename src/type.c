@@ -24,6 +24,7 @@ void free_enum(struct enum_type* _enum)
 
 void free_array(struct array *a)
 {
+  list_free(a->dims);
   free(a);
 }
 

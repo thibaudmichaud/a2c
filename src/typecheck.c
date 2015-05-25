@@ -166,7 +166,12 @@ bool add_types(struct symtable *syms, typedecllist_t typelist)
             error(type_def->pos, "Unknown type");
             correct = false;
           }
-          array->dims = type_def->def.array_def->dims;
+          list_init(array->dims);
+          for (unsigned i = 0; i < type_def->def.array_def->dims.size; ++i)
+          {
+            list_push_back(array->dims,
+                type_def->def.array_def->dims.data[i]);
+          }
           type->type_val.array_type = array;
           add_type(syms->types, type);
         }

@@ -1,0 +1,8 @@
+#!/bin/sh
+set -e
+
+valgrind --error-exitcode=1 --leak-check=full --show-leak-kinds=all \
+  ./a2c tests/intvect.algo > tests/intvect.c
+gcc -std=c99 tests/intvect.c -o tests/intvect
+./tests/intvect | diff tests/intvectexp -
+set +e

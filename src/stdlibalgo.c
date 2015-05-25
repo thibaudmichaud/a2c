@@ -32,20 +32,29 @@ void fill_std_types(struct symtable *syms)
   t_char->type_val.primary = char_t;
   add_type(syms->types, t_char);
 
-  struct type *t_pile = malloc(sizeof(struct type));
-  t_pile->name = strdup("t_pile");
-  t_pile->type_kind = records_t;
-  t_pile->type_val.records_type = malloc(sizeof(struct records));
-  list_init(t_pile->type_val.records_type->fields);
+  struct type *t = malloc(sizeof(struct type));
+  t->name = strdup("t_pile");
+  t->type_kind = records_t;
+  t->type_val.records_type = malloc(sizeof(struct records));
+  list_init(t->type_val.records_type->fields);
   struct field *f = malloc(sizeof(struct field));
   f->type = strdup("entier");
   f->ident = strdup("data");
-  list_push_back(t_pile->type_val.records_type->fields, f);
+  list_push_back(t->type_val.records_type->fields, f);
   f = malloc(sizeof(struct field));
   f->type = strdup("t_pile");
   f->ident = strdup("prev");
-  list_push_back(t_pile->type_val.records_type->fields, f);
-  add_type(syms->types, t_pile);
+  list_push_back(t->type_val.records_type->fields, f);
+  add_type(syms->types, t);
+
+  t = malloc(sizeof(struct type));
+  t->name = strdup("t_vecteurEntiers");
+  t->type_kind = array_t;
+  t->type_val.array_type = malloc(sizeof(struct array));
+  t->type_val.array_type->type = find_type(syms->types, "entier");
+  list_init(t->type_val.array_type->dims);
+  list_push_back(t->type_val.array_type->dims, 1000);
+  add_type(syms->types, t);
 }
 
 void fill_std_fun(struct symtable *syms)
@@ -79,6 +88,7 @@ void fill_std_fun(struct symtable *syms)
   arg->global = true;
   list_push_back(f->arg, arg);
   add_function(syms->functions, f);
+
 
   f = malloc(sizeof(struct function));
   f->ident = "vider";

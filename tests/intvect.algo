@@ -1,0 +1,16 @@
+algorithme procedure foo
+variables
+  entier i
+  t_vecteurEntiers v
+debut
+  pour i <- 1 jusqu'a 10 faire
+    v[i] <- i
+  fin pour
+  pour i <- 1 jusqu'a 10 faire
+    ecrire(v[i])
+  fin pour
+fin algorithme procedure foo
+
+debut
+  foo()
+fin
