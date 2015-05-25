@@ -25,7 +25,6 @@ typedef enum {
 
 struct pointer
 {
-    bool nul;
     char *type;
 };
 

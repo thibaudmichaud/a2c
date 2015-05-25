@@ -144,55 +144,54 @@ t_pList rechercher(t_pList L, int x)
 /* PILES DYNAMIQUES */
 typedef struct t_node_pile t_node_pile;
 typedef t_node_pile *t_pile;
-typedef t_node_pile
+struct t_node_pile
 {
   int sommet;
-  t_pile_dyn suiv;
-} t_node_pile;
+  t_pile suiv;
+};
 
 static inline
-t_pile_dyn pile_vide()
+t_pile pile_vide()
 {
   return NULL;
 }
 
 static inline
-booleen est_vide(t_pile_dyn p)
+int est_vide(t_pile p)
 {
-  return (p = NULL);
+  return (p == NULL);
 }
 
 static inline
-void empiler(t_pile_dyn pile, int e)
+void empiler(t_pile *pile, int e)
 {
-  t_pile_dyn new = malloc(sizeof new);
+  t_pile new = malloc(sizeof(struct t_node));
   if(new != NULL)
   {
-    new.data = data;
-    new->prev = pile;
-    pile = new;
+    new->sommet = e;
+    new->suiv = *pile;
+    *pile = new;
   }
 }
 
 static inline
-int depiler(t_pile pile)
+int depiler(t_pile *pile)
 {
   int r = -1;
   if(pile != NULL)
   {
-    t_pile temp = pile->prev;
-    r = (pile)->data;
-    free(pile);
-    pile = NULL;
-    pile = temp;
+    t_pile temp = (*pile)->suiv;
+    r = (*pile)->sommet;
+    free(*pile);
+    *pile = temp;
   }
   return r;
 }
 
 static inline
-void vider(t_pile pile)
+void vide_pile(t_pile *pile)
 {
-  while(pile)
+  while(*pile)
   {
     depiler(pile);
   }

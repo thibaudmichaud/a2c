@@ -334,7 +334,6 @@ bool check_algo(struct algo* al, struct symtable *syms)
                 case nulltype:
                     sym->type = malloc(sizeof(struct pointer));
                     sym->type->type_kind = pointer_t;
-                    sym->type->type_val.pointer_type->nul = true;
                     break;
                 case chartype:
                     sym->type = find_type(syms->types, "caractere");
