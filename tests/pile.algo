@@ -1,0 +1,24 @@
+algorithme procedure foo
+variables
+  entier i
+  t_pile p
+debut
+  p <- pile_vide()
+  empiler(p, 1)
+  empiler(p, 2)
+  empiler(p, 3)
+  ecrire(p^.sommet)
+  ecrire(depiler(p))
+  empiler(p, 4)
+  ecrire(depiler(p))
+  ecrire(depiler(p))
+  ecrire(depiler(p))
+
+  empiler(p, 1)
+  vide_pile(p)
+  ecrire(est_vide(p))
+fin algorithme procedure foo
+
+debut
+  foo()
+fin
