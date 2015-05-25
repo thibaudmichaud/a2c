@@ -691,7 +691,8 @@ char *check_expr(struct expr *e, struct symtable *syms)
                     || e->val.binopexpr.op == LT
                     || e->val.binopexpr.op == GT
                     || e->val.binopexpr.op == LE
-                    || e->val.binopexpr.op == GE)
+                    || e->val.binopexpr.op == GE
+                    || e->val.binopexpr.op == NEQ)
                 {
                   e->type = strdup("booleen");
                 }
