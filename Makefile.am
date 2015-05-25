@@ -41,4 +41,5 @@ TESTS = tests/parser.test \
 	tests/typerec.test \
 	tests/ptr.test \
 	tests/globvalparam.test \
-	tests/allouer.test
+	tests/allouer.test \
+	tests/intvect.test
