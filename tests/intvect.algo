@@ -1,7 +1,7 @@
 algorithme procedure foo
 variables
   entier i
-  t_vecteurEntiers v
+  t_vect_entiers v
 debut
   pour i <- 1 jusqu'a 10 faire
     v[i] <- i
