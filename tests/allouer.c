@@ -7,10 +7,13 @@ typedef struct t_enregistrement
   int a;
   int b;
 } t_enregistrement;
+typedef t_enregistrement *t_ptr;
 void test(void)
 {
-  t_enregistrement e;
-  malloc(sizeof(t_enregistrement));
+  t_ptr p;
+  p = malloc(sizeof(t_ptr));
+  (*p).a = 1;
+  (*p).b = 1;
 }
 int main(void)
 {
