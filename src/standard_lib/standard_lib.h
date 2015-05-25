@@ -2,12 +2,12 @@
 /* ****************** */
 /* VECTEURS D'ENTIERS */
 /* ****************** */
-typedef int t_vecteurEntiers[1000];
+typedef int t_vect_entiers[1000];
 
 /* ******************** */
 /* VECTEURS DE BOOLEENS */
 /* ******************** */
-typedef int t_vecteurBooleens[1000];
+typedef int t_vect_booleens[1000];
 
 /* **************** */
 /* LISTES STATIQUES */
