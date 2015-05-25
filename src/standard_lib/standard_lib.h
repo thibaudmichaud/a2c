@@ -9,14 +9,9 @@ typedef int t_vect_entiers[1000];
 /* ******************** */
 typedef int t_vect_booleens[1000];
 
-/* **************** */
-/* LISTES STATIQUES */
-/* **************** */
-typedef int t_vectLmaxElts[1000];
-
 typedef struct t_list
 {
-  t_vectLmaxElts elts;
+  t_vect_entiers elts;
   int longueur;
 } t_list;
 
