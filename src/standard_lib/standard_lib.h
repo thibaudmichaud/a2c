@@ -1,26 +1,18 @@
-/* ******** */
-/* BOOLEEN */
-/* ******* */
-typedef enum
-{
-  vrai = (1==1),
-  faux = (1==0),
-} booleen;
-
+#include <stdlib.h>
 /* ****************** */
 /* VECTEURS D'ENTIERS */
 /* ****************** */
-typedef int[1000] t_vecteurEntiers;
+typedef int t_vecteurEntiers[1000];
 
 /* ******************** */
 /* VECTEURS DE BOOLEENS */
 /* ******************** */
-typedef booleen[1000] t_vecteurBooleens;
+typedef int t_vecteurBooleens[1000];
 
 /* **************** */
 /* LISTES STATIQUES */
 /* **************** */
-typedef int[1000] t_vectLmaxElts;
+typedef int t_vectLmaxElts[1000];
 
 typedef struct t_list
 {
@@ -28,24 +20,26 @@ typedef struct t_list
   int longueur;
 } t_list;
 
-booleen supprimer(t_list L, int k)
+static inline
+int supprimer(t_list L, int k)
 {
   if((k<1) || (k>L.longueur))
-    return faux;
+    return 0;
   else {
     for(int i=k; i< L.longueur - 1;i++)
     {
     }
     L.longueur = L.longueur -1;
-   return vrai;
+   return 1;
   }
 }
 
-booleen inserer(t_list L, int k, int e)
+static inline
+int inserer(t_list L, int k, int e)
 {
   if((L.longueur >= 1000) || (k < 1) || (k>L.longueur + 1))
   {
-    return faux;
+    return 0;
   }
   else
   {
@@ -55,11 +49,12 @@ booleen inserer(t_list L, int k, int e)
     }
     L.elts[k] = e;
     L.longueur ++;
-    return vrai;
+    return 1;
   }
 }
 
-void concatener(t_list L1, t_list L2, t_liste Lres)
+static inline
+void concatener(t_list L1, t_list L2, t_list Lres)
 {
   if((L1.longueur + L2.longueur) <= 1000)
   {
@@ -71,10 +66,11 @@ void concatener(t_list L1, t_list L2, t_liste Lres)
   }
 }
 
-booleen est_present(t_list L, int x)
+static inline
+int est_present(t_list L, int x)
 {
   int i =1;
-  while((i<= L.longueur) && (x <> L.elts[i]))
+  while((i<= L.longueur) && (x != L.elts[i]))
     i++;
   return(i<=L.longueur);
 }
@@ -82,14 +78,16 @@ booleen est_present(t_list L, int x)
 /* ****************** */
 /* LISTES DYNAMIQUES */
 /* ****************** */
-typedef struct t_node
+typedef struct t_node t_node;
+typedef t_node *t_pList;
+struct t_node
 {
   int val;
   t_pList suiv;
-} t_node;
+};
 
-typedef t_node *t_pList;
 
+static inline
 t_pList ajout_tete(t_pList L, int e)
 {
   t_pList new = malloc(sizeof new);
@@ -98,10 +96,11 @@ t_pList ajout_tete(t_pList L, int e)
   return new;
 }
 
+static inline
 int longueur(t_pList L)
 {
   int lg = 0;
-  while(L <> NULL)
+  while(L != NULL)
   {
     lg++;
     L=L->suiv;
@@ -109,9 +108,10 @@ int longueur(t_pList L)
   return lg;
 }
 
+static inline
 t_pList acces(t_pList L, int k)
 {
-  while((L <> NULL) && (k <> 1))
+  while((L != NULL) && (k != 1))
   {
     k--;
     L = L->suiv;
@@ -119,32 +119,33 @@ t_pList acces(t_pList L, int k)
   return L;
 }
 
+static inline
 t_pList rechercher(t_pList L, int x)
 {
-  while((L<>NULL) && (x <> L->val))
+  while((L != NULL) && (x != L->val))
   {
     L = L->suiv;
   }
   return L;
 }
 
-void concatener(t_pList L1, t_pList L2)
-{
-  t_pList p;
-  if(L1 == NULL)
-    L1 = L2;
-  else{
-    if(L2 <> NULL)
-    {
-      p = L1;
-      while(p->suiv <> NULL)
-      {
-       p = p->suiv;
-      }
-      p->suiv = L2;
-    }
-  }
-}
+// void concatener(t_pList L1, t_pList L2)
+// {
+//   t_pList p;
+//   if(L1 == NULL)
+//     L1 = L2;
+//   else{
+//     if(L2 != NULL)
+//     {
+//       p = L1;
+//       while(p->suiv != NULL)
+//       {
+//        p = p->suiv;
+//       }
+//       p->suiv = L2;
+//     }
+//   }
+// }
 
 /* PILES STATIQUES*/
 /* typedef struct t_pile */
@@ -159,8 +160,8 @@ void concatener(t_pList L1, t_pList L2)
 /*   if(new != NULL) */
 /*   { */
 /*     new->data = data; */
-/*     new->prev = *pile; */
-/*     *pile = new; */
+/*     new->prev = pile; */
+/*     pile = new; */
 /*   } */
 
 /* } */
@@ -171,10 +172,10 @@ void concatener(t_pList L1, t_pList L2)
 /*   if(pile != NULL) */
 /*   { */
 /*     t_pile *temp = pile->prev; */
-/*     r = (*pile)->data; */
-/*     free(*pile); */
-/*     *pile = NULL; */
-/*     *pile = temp; */
+/*     r = (pile)->data; */
+/*     free(pile); */
+/*     pile = NULL; */
+/*     pile = temp; */
 /*   } */
 /*   return r; */
 /* } */

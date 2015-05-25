@@ -12,7 +12,10 @@ a2c_SOURCES = src/lexer.c \
 	      src/typecheck.c \
 	      src/codegen.c \
 	      src/a2c.c \
-	      src/error.c
+	      src/error.c \
+	      src/stdlibalgo.c
+
+include_HEADERS = src/standard_lib/standard_lib.h
 
 check_PROGRAMS = tests/hashtable tests/list
 
