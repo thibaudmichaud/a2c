@@ -1,0 +1,15 @@
+algorithme procedure test
+types
+  t_enregistrement = enregistrement
+    entier a
+    booleen b
+  fin enregistrement t_enregistrement
+variables
+  t_enregistrement e
+debut
+  allouer(e)
+fin algorithme procedure test
+
+debut
+  test()
+fin

@@ -417,10 +417,13 @@ bool check_funcall(struct funcall *f, struct symtable *syms, struct type **res)
     if (f->args.size == 1)
     {
       if(!check_expr(f->args.data[0]->e, syms))
-        return NULL;
-      return (void *)1;
-
+      {
+        *res = NULL;
+        return false;
+      }
     }
+    *res = NULL;
+    return true;
   }
 
   if (strcmp(f->fun_ident, "ecrire") == 0)
