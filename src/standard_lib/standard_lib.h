@@ -81,7 +81,6 @@ struct t_node
   t_pList suiv;
 };
 
-
 static inline
 t_pList ajout_tete(t_pList L, int e)
 {
@@ -142,100 +141,62 @@ t_pList rechercher(t_pList L, int x)
 //   }
 // }
 
-/* PILES STATIQUES*/
-/* typedef struct t_pile */
-/* { */
-/*   int data; */
-/*   struct t_pile *prev; */
-/* } t_pile; */
-
-/* void empiler(t_pile *pile, int data) */
-/* { */
-/*   t_pile *new = malloc(sizeof *new); */
-/*   if(new != NULL) */
-/*   { */
-/*     new->data = data; */
-/*     new->prev = pile; */
-/*     pile = new; */
-/*   } */
-
-/* } */
-
-/* int depiler(t_pile *pile) */
-/* { */
-/*   int r = -1; */
-/*   if(pile != NULL) */
-/*   { */
-/*     t_pile *temp = pile->prev; */
-/*     r = (pile)->data; */
-/*     free(pile); */
-/*     pile = NULL; */
-/*     pile = temp; */
-/*   } */
-/*   return r; */
-/* } */
-
-/* void vider(t_pile *pile) */
-/* { */
-/*   while(pile) */
-/*   { */
-/*     depiler(pile); */
-/*   } */
-/* } */
-
 /* PILES DYNAMIQUES */
-/* typedef struct */
-/* { */
-/*   int sommet; */
-/*   t_pile_dyn suiv; */
-/* } t_node; */
+typedef struct t_node_pile t_node_pile;
+typedef t_node_pile *t_pile;
+typedef t_node_pile
+{
+  int sommet;
+  t_pile_dyn suiv;
+} t_node_pile;
 
-/* /\* typedef struct t_node t_node; *\/ */
-/* typedef t_node *t_pile_dyn; */
+static inline
+t_pile_dyn pile_vide()
+{
+  return NULL;
+}
 
-/* t_pile_dyn pile_vide() */
-/* { */
-/*   return NULL; */
-/* } */
+static inline
+booleen est_vide(t_pile_dyn p)
+{
+  return (p = NULL);
+}
 
-/* booleen est_vide(t_pile_dyn p) */
-/* { */
-/*   return (p = NULL); */
-/* } */
+static inline
+void empiler(t_pile_dyn pile, int e)
+{
+  t_pile_dyn new = malloc(sizeof new);
+  if(new != NULL)
+  {
+    new.data = data;
+    new->prev = pile;
+    pile = new;
+  }
+}
 
-/* void empiler(t_pile_dyn pile, int e) */
-/* { */
-/*   t_pile_dyn new = malloc(sizeof * new); */
-/*   if(new != NULL) */
-/*   { */
-/*     new.data = data; */
-/*     new->prev = *pile; */
-/*     *pile = new; */
-/*   } */
+static inline
+int depiler(t_pile pile)
+{
+  int r = -1;
+  if(pile != NULL)
+  {
+    t_pile temp = pile->prev;
+    r = (pile)->data;
+    free(pile);
+    pile = NULL;
+    pile = temp;
+  }
+  return r;
+}
 
-/* } */
-
-/* int depiler(t_pile *pile) */
-/* { */
-/*   int r = -1; */
-/*   if(pile != NULL) */
-/*   { */
-/*     t_pile *temp = pile->prev; */
-/*     r = (*pile)->data; */
-/*     free(*pile); */
-/*     *pile = NULL; */
-/*     *pile = temp; */
-/*   } */
-/*   return r; */
-/* } */
-
-/* void vider(t_pile *pile) */
-/* { */
-/*   while(pile) */
-/*   { */
-/*     depiler(pile); */
-/*   } */
-/* } */
+static inline
+void vider(t_pile pile)
+{
+  while(pile)
+  {
+    depiler(pile);
+  }
+}
 
 /* /\* FILES *\/ */
 /* typedef struct t_file */
