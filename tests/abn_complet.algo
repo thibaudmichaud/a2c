@@ -1,0 +1,68 @@
+algorithme fonction max: entier
+parametres locaux
+  entier x
+  entier y
+debut
+  si x > y alors
+    retourne x
+  sinon
+    retourne y
+  fin si
+fin algorithme fonction max
+
+algorithme fonction hauteur: entier
+parametres locaux
+  t_arbre_bin B
+debut
+  si B = NUL alors
+    retourne (-1)
+  sinon
+    retourne (1 + max(hauteur(B^.fg),hauteur(B^.fd)))
+  fin si
+fin algorithme fonction hauteur
+
+algorithme fonction complet_rec: booleen
+parametres locaux
+  t_arbre_bin B
+  entier h
+debut
+  si(B^.fg <> NUL) et (B^.fd <> NUL) alors
+    retourne (complet_rec(B^.fg, h-1) et complet_rec(B^.fd, h-1))
+  sinon
+    retourne ((B^.fg = B^.fd) et (h = 0))
+  fin si
+fin algorithme fonction complet_rec
+
+algorithme fonction test_complet: booleen
+parametres locaux
+  t_arbre_bin B
+debut
+  retourne (B=NUL) ou complet_rec(B, hauteur(B))
+fin algorithme fonction test_complet
+
+algorithme fonction cree_abn : t_arbre_bin
+variables
+  t_arbre_bin B
+debut
+  allouer(B)
+  B^.cle <- 3
+  allouer(B^.fg)
+  B^.fg^.cle <- 1
+  B^.fg^.fg <- NUL
+  B^.fg^.fd <- NUL
+  allouer(B^.fd)
+  B^.fd^.cle <- 0
+  allouer(B^.fd^.fg)
+  B^.fd^.fg^.cle <- 2
+  B^.fd^.fg^.fg <- NUL
+  B^.fd^.fg^.fd <- NUL
+  B^.fd^.fd <- NUL
+  retourne B
+fin algorithme fonction cree_abn
+
+variables
+  t_arbre_bin B
+debut
+  B <- cree_abn()
+  ecrire(test_complet(B))
+fin
