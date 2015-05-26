@@ -55,6 +55,13 @@ void fill_std_types(struct symtable *syms)
   add_type(syms->types, t);
 
   t = malloc(sizeof(struct type));
+  t->name = strdup("t_file");
+  t->type_kind = pointer_t;
+  t->type_val.pointer_type = malloc(sizeof(struct pointer));
+  t->type_val.pointer_type->type = strdup("t_node_file");
+  add_type(syms->types, t);
+
+  t = malloc(sizeof(struct type));
   t->name = strdup("t_vect_entiers");
   t->type_kind = array_t;
   t->type_val.array_type = malloc(sizeof(struct array));
@@ -131,7 +138,6 @@ void fill_std_fun(struct symtable *syms)
   list_push_back(f->arg, arg);
   add_function(syms->functions, f);
 
-
   f = malloc(sizeof(struct function));
   f->ident = "vide_pile";
   f->ret = find_type(syms->types, "entier");
@@ -151,4 +157,55 @@ void fill_std_fun(struct symtable *syms)
   arg->global = false;
   list_push_back(f->arg, arg);
   add_function(syms->functions, f);
+
+  f = malloc(sizeof(struct function));
+  f->ident = "enfiler";
+  f->ret = NULL;
+  list_init(f->arg);
+  arg = malloc(sizeof(struct argument));
+  arg->type = find_type(syms->types, "t_file");
+  arg->global = true;
+  list_push_back(f->arg, arg);
+  arg = malloc(sizeof(struct argument));
+  arg->type = find_type(syms->types, "entier");
+  arg->global = false;
+  list_push_back(f->arg, arg);
+  add_function(syms->functions, f);
+
+  f = malloc(sizeof(struct function));
+  f->ident = "file_vide";
+  f->ret = find_type(syms->types, "t_file");
+  list_init(f->arg);
+  add_function(syms->functions, f);
+
+  f = malloc(sizeof(struct function));
+  f->ident = "defiler";
+  f->ret = find_type(syms->types, "entier");
+  list_init(f->arg);
+  arg = malloc(sizeof(struct argument));
+  arg->type = find_type(syms->types, "t_file");
+  arg->global = true;
+  list_push_back(f->arg, arg);
+  add_function(syms->functions, f);
+
+  f = malloc(sizeof(struct function));
+  f->ident = "vide_file";
+  f->ret = find_type(syms->types, "entier");
+  list_init(f->arg);
+  arg = malloc(sizeof(struct argument));
+  arg->type = find_type(syms->types, "t_file");
+  arg->global = true;
+  list_push_back(f->arg, arg);
+  add_function(syms->functions, f);
+
+  f = malloc(sizeof(struct function));
+  f->ident = "est_file_vide";
+  f->ret = find_type(syms->types, "booleen");
+  list_init(f->arg);
+  arg = malloc(sizeof(struct argument));
+  arg->type = find_type(syms->types, "t_file");
+  arg->global = false;
+  list_push_back(f->arg, arg);
+  add_function(syms->functions, f);
+
 }
