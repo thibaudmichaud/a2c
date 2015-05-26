@@ -737,7 +737,9 @@ struct prog *parse_prog(void)
     type_decls = empty_typedecllist();
   eat(BEGIN); eat(EOL);
   instructionlist_t instrs = parse_block();
-  eat(END); eat(EOL);
+  eat(END);
+  if (lookahead[0]->type == EOL) eat(EOL);
+  eat(ENDOFFILE);
   struct entry_point *entrypoint = make_entry_point(globvar, instrs, type_decls);
   return make_prog(algolist, entrypoint);
 }
