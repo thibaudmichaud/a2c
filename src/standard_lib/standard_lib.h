@@ -178,7 +178,7 @@ static inline
 int depiler(t_pile *pile)
 {
   int r = -1;
-  if(pile != NULL)
+  if (*pile != NULL)
   {
     t_pile temp = (*pile)->suiv;
     r = (*pile)->sommet;
