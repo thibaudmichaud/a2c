@@ -1,0 +1,37 @@
+algorithme fonction taille: entier
+parametres locaux
+  t_arbre_bin B
+debut
+  si B = NUL alors
+    retourne 0
+  sinon
+    retourne (1 + taille(B^.fg) + taille(B^.fd))
+  fin si
+fin algorithme fonction taille
+
+algorithme fonction cree_abn : t_arbre_bin
+variables
+  t_arbre_bin B
+debut
+  allouer(B)
+  B^.cle <- 3
+  allouer(B^.fg)
+  B^.fg^.cle <- 1
+  B^.fg^.fg <- NUL
+  B^.fg^.fd <- NUL
+  allouer(B^.fd)
+  B^.fd^.cle <- 0
+  allouer(B^.fd^.fg)
+  B^.fd^.fg^.cle <- 2
+  B^.fd^.fg^.fg <- NUL
+  B^.fd^.fg^.fd <- NUL
+  B^.fd^.fd <- NUL
+  retourne B
+fin algorithme fonction cree_abn
+
+variables
+  t_arbre_bin B
+debut
+  B <- cree_abn()
+  ecrire(taille(B))
+fin
