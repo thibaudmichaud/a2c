@@ -45,4 +45,5 @@ TESTS = tests/parser.test \
 	tests/intvect.test \
 	tests/pile.test \
 	tests/file.test \
-	tests/arbrebin.test
+	tests/arbrebin.test \
+	tests/abn_taille.test
