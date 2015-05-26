@@ -223,8 +223,7 @@ void enfiler(t_file *file, int e)
 {
   t_file new = malloc(sizeof(struct t_node_file));
   new->val = e;
-  if(
-     file == NULL)
+  if(*file == NULL)
     new->suiv = new;
   else
   {
@@ -238,12 +237,21 @@ static inline
 int defiler(t_file *file)
 {
   int r = -1;
-  if(file != NULL)
+  if (!*file)
+    return -1;
+  else if ((*file)->suiv == *file)
   {
-    t_file tmp = (*file)->suiv;
     r = (*file)->val;
     free(*file);
-    *file = tmp;
+    *file = NULL;
+    return r;
+  }
+  else
+  {
+    t_file tmp = (*file)->suiv->suiv;
+    r = (*file)->suiv->val;
+    free((*file)->suiv);
+    (*file)->suiv = tmp;
   }
   return r;
 }
