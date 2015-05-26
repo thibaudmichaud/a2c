@@ -165,7 +165,7 @@ int est_vide(t_pile p)
 static inline
 void empiler(t_pile *pile, int e)
 {
-  t_pile new = malloc(sizeof(struct t_node));
+  t_pile new = malloc(sizeof(struct t_node_pile));
   if(new != NULL)
   {
     new->sommet = e;
@@ -197,47 +197,65 @@ void vide_pile(t_pile *pile)
   }
 }
 
-/* /\* FILES *\/ */
-/* typedef struct t_file */
-/* { */
-/*   int data; */
-/*   struct t_file *suiv; */
-/* } t_file; */
+/* FILES */
+typedef struct t_node_file t_node_file;
+typedef t_node_file *t_file;
+struct t_node_file
+{
+  int val;
+  t_file suiv;
+};
 
-/* void enfiler(t_file *file, int data) */
-/* { */
-/*   file *new = malloc(sizeof * new); */
-/*   if(new != NULL) */
-/*   { */
-/*     new->suiv = NULL; */
-/*     new->data = data; */
-/*     if(file == NULL) */
-/*       file = new; */
-/*     else */
-/*     { */
-/*       file *tmp = *file; */
-/*       while(tmp->suiv != NULL) */
-/*       { */
-/* 	tmp = tmp->suiv; */
-/*       } */
-/*       tmp->suiv = new; */
-/*     } */
-/*   } */
-/* } */
+static inline
+t_file file_vide()
+{
+  return NULL;
+}
 
-/* int defiler(t_file *file) */
-/* { */
-/*   int r = -1; */
-/*   if(file != NULL) */
-/*   { */
-/*     t_file *tmp = file->suiv; */
-/*     r = file->data; */
-/*     free(*file); */
-/*     *file = NULL; */
-/*     *file = tmp; */
-/*   } */
-/*   return r; */
-/* } */
+static inline
+int est_file_vide(t_file f)
+{
+  return (f == NULL);
+}
+
+static inline
+void enfiler(t_file *file, int e)
+{
+  t_file new = malloc(sizeof(struct t_node_file));
+  new->val = e;
+  if(
+     file == NULL)
+    new->suiv = new;
+  else
+  {
+    new->suiv = (*file)->suiv;
+    (*file)->suiv = new;
+  }
+  *file = new;
+}
+
+static inline
+int defiler(t_file *file)
+{
+  int r = -1;
+  if(file != NULL)
+  {
+    t_file tmp = (*file)->suiv;
+    r = (*file)->val;
+    free(*file);
+    *file = tmp;
+  }
+  return r;
+}
+
+static inline
+void vide_file(t_file *file)
+{
+  while(*file)
+  {
+    defiler(file);
+  }
+}
 
 /* ARBRES BINAIRES */
 typedef struct t_noeud_bin t_noeud_bin;
