@@ -43,6 +43,6 @@ TESTS = tests/parser.test \
 	tests/globvalparam.test \
 	tests/allouer.test \
 	tests/intvect.test \
-	tests/arbrebin.test
 	tests/pile.test \
-	tests/file.test
+	tests/file.test \
+	tests/arbrebin.test
