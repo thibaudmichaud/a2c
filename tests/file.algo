@@ -1,0 +1,23 @@
+algorithme procedure foo2
+variables
+  entier i
+  t_file f
+debut
+  f <- file_vide()
+  enfiler(f, 1)
+  enfiler(f, 2)
+  enfiler(f, 3)
+  ecrire(defiler(f))
+  enfiler(f, 4)
+  ecrire(defiler(f))
+  ecrire(defiler(f))
+  ecrire(defiler(f))
+
+  enfiler(f, 1)
+  vide_file(f)
+  ecrire(est_file_vide(f))
+fin algorithme procedure foo2
+
+debut
+  foo2()
+fin
