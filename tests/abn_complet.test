@@ -3,7 +3,7 @@ set -e
 
 valgrind --error-exitcode=1 --leak-check=full --show-leak-kinds=all \
   ./a2c tests/abn_complet.algo > tests/abn_complet.c
-gcc -g -std=c99 tests/arbrebin.c -o tests/arbrebin
+gcc -g -std=c99 tests/abn_complet.c -o tests/abn_complet
 valgrind --error-exitcode=1 --leak-check=full --show-leak-kinds=all \
   ./tests/abn_complet | diff tests/abn_completexp -
 
