@@ -80,6 +80,14 @@ void print_alloc_fun(struct funcall *f)
   printf(" = malloc(sizeof(%s));\n",f->args.data[0]->e->type);
 }
 
+void print_free_fun(struct funcall *f)
+{
+  assert(strcmp(f->fun_ident, "liberer") == 0);
+  printf("free(");
+  print_expression(f->args.data[0]->e);
+  printf(");\n");
+}
+
 void print_write_fun(struct funcall *f)
 {
   assert(strcmp(f->fun_ident, "ecrire") == 0);
@@ -561,6 +569,8 @@ int get_funcall_name(struct funcall *f)
     return 2;
   if (strcmp(f->fun_ident, "lire") == 0)
     return 3;
+  if (strcmp(f->fun_ident, "liberer") == 0)
+    return 4;
   return 0;
 }
 
@@ -578,6 +588,9 @@ void print_funcall(struct funcall *f, int indent)
       break;
     case 3:
       print_read_function(f);
+      break;
+    case 4:
+      print_free_fun(f);
       break;
 
     default:
