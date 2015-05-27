@@ -5,6 +5,7 @@ valgrind --error-exitcode=1 --leak-check=full --show-leak-kinds=all \
   ./a2c tests/pile.algo > tests/pile.c
 gcc -g -std=c99 tests/pile.c -o tests/pile
 valgrind --error-exitcode=1 --leak-check=full --show-leak-kinds=all \
-  ./tests/pile | diff tests/pileexp -
+  ./tests/pile > tests/pile.out
+diff tests/pileexp tests/pile.out
 
 set +e
