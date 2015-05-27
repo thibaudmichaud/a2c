@@ -184,7 +184,7 @@ bool add_types(struct symtable *syms, typedecllist_t typelist)
               case identtype:
                 if(!equal_types(find_var(syms->variables, dim->val.ident)->type->name, "entier", syms))
                 {
-                  error(type_def->pos, "identifier \"%s\" is not an integer", dim->val.ident);
+                  error(dim->pos, "identifier \"%s\" is not an integer", dim->val.ident);
                   correct = false;
                   break;
                 }

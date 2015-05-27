@@ -510,6 +510,7 @@ struct expr* build_dim(struct token* tok)
         e->exprtype = identtype;
         e->val.ident = strdup(tok->val);
         e->type = NULL;
+        e->pos = *tok->pos;
         return e;
       }
     default:
