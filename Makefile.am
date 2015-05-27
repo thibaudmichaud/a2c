@@ -49,4 +49,5 @@ TESTS = tests/parser.test \
 	tests/abn_taille.test \
 	tests/abn_complet.test \
 	tests/constarray.test \
-	tests/arrayfail.test
+	tests/arrayfail.test \
+	tests/liberer.test

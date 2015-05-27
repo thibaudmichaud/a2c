@@ -483,7 +483,7 @@ bool check_funcall(struct funcall *f, struct symtable *syms, struct type **res)
     return true;
   }
 
-  if (strcmp(f->fun_ident, "ecrire") == 0)
+  else if (strcmp(f->fun_ident, "ecrire") == 0)
   {
     for (unsigned i = 0; i < f->args.size; ++i)
     {
@@ -496,16 +496,40 @@ bool check_funcall(struct funcall *f, struct symtable *syms, struct type **res)
     *res = NULL;
     return true;
   }
-  if(strcmp(f->fun_ident, "lire") == 0)
+  else if (strcmp(f->fun_ident, "lire") == 0)
   {
       if(f->args.size != 1 
           && f->args.data[0]->e->exprtype != identtype 
           && !find_var(syms->variables, f->args.data[0]->e->val.ident))
-       return NULL;
+      {
+        *res = NULL;
+       return false;
+      }
       f->args.data[0]->e->type = strdup(find_var(
             syms->variables, f->args.data[0]->e->val.ident)->type->name);
-    return (void *)1;
+      *res = NULL;
+      return true;
   }
+  else if (strcmp(f->fun_ident, "liberer") == 0)
+  {
+    if (f->args.size == 1)
+    {
+      if (!check_expr(f->args.data[0]->e, syms))
+      {
+        *res = NULL;
+        return false;
+      }
+      *res = NULL;
+      return true;
+    }
+    else
+    {
+      error(f->pos, "liberer expects one argument, not %d", f->args.size);
+      *res = NULL;
+      return false;
+    }
+  }
+
   struct function *proto = get_function(syms->functions, f->fun_ident);
   if (!proto)
   {

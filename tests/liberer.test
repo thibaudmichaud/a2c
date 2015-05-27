@@ -1,0 +1,7 @@
+#!/bin/sh
+set -e
+
+valgrind --error-exitcode=1 --leak-check=full --show-leak-kinds=all ./a2c tests/liberer.algo > tests/liberer.c
+gcc -std=c99 tests/liberer.c -o tests/liberer.out
+valgrind --error-exitcode=1 --leak-check=full --show-leak-kinds=all ./tests/liberer.out
+set +e
