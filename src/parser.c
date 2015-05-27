@@ -363,7 +363,10 @@ struct instruction *parse_instruction(void)
                             {
                               if (expr->exprtype == binopexprtype
                                   && expr->val.binopexpr.op == EQ)
+                              {
                                 error(expr->pos, "unexpected =, did you mean <- ?");
+                                exit(1);
+                              }
                               else
                                 syntaxerror("expected instruction, not expression");
                             }

@@ -14,12 +14,22 @@ FILE *fin = NULL;
 char *srcfilename = NULL;
 struct prog *prog = NULL;
 
+void usage(char **argv)
+{
+  printf("usage: %s FILENAME\n", argv[0]);
+}
+
 int main(int argc, char **argv)
 {
   if (argc < 2)
   {
-    printf("usage: %s FILENAME", argv[0]);
-    _exit(1);
+    usage(argv);
+    return 1;
+  }
+  if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0)
+  {
+    usage(argv);
+    return 1;
   }
 
   srcfilename = argv[1];
