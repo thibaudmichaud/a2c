@@ -1,3 +1,13 @@
+# Installation
+
+./bootstrap
+
+./configure
+
+make
+
+sudo make install
+
 # A2C
 
 A compiler for the algorithmic language taught at EPITA.
