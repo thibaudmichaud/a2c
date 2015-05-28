@@ -10,6 +10,12 @@ to the inputed algorithm.
     $ make
     $ make install
 
+# Usage
+
+    $ a2c <path-to-input-file>
+
+*a2c* will print the C equivalent program to `stdout`.
+
 # Documentation
 
 You can generate the program's documentation with doxygen
