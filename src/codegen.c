@@ -77,7 +77,9 @@ void print_alloc_fun(struct funcall *f)
 {
   assert(strcmp(f->fun_ident, "allouer") == 0);
   print_expression(f->args.data[0]->e);
-  printf(" = malloc(sizeof(%s));\n",f->args.data[0]->e->type);
+  printf(" = malloc(sizeof(*(");
+  print_expression(f->args.data[0]->e);
+  printf(")));\n");
 }
 
 void print_free_fun(struct funcall *f)

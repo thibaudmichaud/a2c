@@ -12,7 +12,7 @@ typedef t_enregistrement *t_ptr;
 void test(void)
 {
   t_ptr p;
-  p = malloc(sizeof(t_ptr));
+  p = malloc(sizeof(*(p)));
   (*p).a = 1;
   (*p).b = 1;
 }
