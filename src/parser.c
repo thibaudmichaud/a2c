@@ -218,11 +218,18 @@ instructionlist_t parse_block(void)
 
 struct instruction *parse_while(void)
 {
-  eat(WHILE); eat(SO);
+  eat(WHILE); 
+# ifdef LANG_FR
+  eat(SO);
+# endif
   struct expr *cond = parse_expression();
   eat(DO); eat(EOL);
   instructionlist_t block = parse_block();
-  eat(END); eat(WHILE); eat(SO); eat(EOL);
+  eat(END); eat(WHILE); 
+# ifdef LANG_FR
+  eat(SO); 
+# endif
+  eat(EOL);
   return whileblock(cond, block);
 }
 
