@@ -56,15 +56,7 @@ char *getalnumstr(void)
   return str;
 }
 
-enum e_lang
-{
-  LANG_FR   =   0,
-  LANG_EN   =   1
-};
-
-# define CURRENT_LANG       LANG_FR
 # define KEYWORDS_LEN       33
-
 
 static char* keywords[2][KEYWORDS_LEN] = {
   {"algorithme","debut","types","constantes","ou","oue","et","div","mod","non",
@@ -73,8 +65,8 @@ static char* keywords[2][KEYWORDS_LEN] = {
     "enregistrement","NUL"
   },
   {"algorithm","begin","types","constants","or","xor","and","div","mod","not",
-    "while","","do","end","return","for","to","downto","if","else","then","",
-    "","procedure","variables","function","true","false","parameters","local","global",
+    "while","","do","end","return","for","to","downto","if","else","then","caseof",
+    "default","procedure","variables","function","true","false","parameters","local","global",
     "","NUL"}};
 
 void getalnum(struct token *tok)
@@ -344,15 +336,15 @@ char *describe(enum tokentype toktype)
 {
   switch (toktype)
   {
-    case ALGORITHM: return "algorithme";
-    case AND: return "et";
+    case ALGORITHM: return keywords[CURRENT_LANG][0];
+    case AND: return keywords[CURRENT_LANG][6];
     case ASSIGN: return "<-";
-    case BEGIN: return "debut";
+    case BEGIN: return keywords[CURRENT_LANG][2];
     case CHAR: return "char";
     case COLON: return ":";
     case COMMA: return ",";
-    case CONST: return "constantes";
-    case DECREASING: return "decroissant";
+    case CONST: return keywords[CURRENT_LANG][4];
+    case DECREASING: return keywords[CURRENT_LANG][18];
     case DEREF: return "";
     case DIV: return "div";
     case DO: return "faire";
