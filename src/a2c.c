@@ -16,7 +16,7 @@ struct prog *prog = NULL;
 
 void usage(char **argv)
 {
-  printf("usage: %s FILENAME\n", argv[0]);
+  printf("usage: %s [--en] FILENAME\n", argv[0]);
 }
 
 int main(int argc, char **argv)
