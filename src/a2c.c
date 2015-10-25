@@ -32,7 +32,21 @@ int main(int argc, char **argv)
     return 1;
   }
 
-  srcfilename = argv[1];
+  current_lang = LANG_FR;
+
+  if (strcmp(argv[1], "--en") == 0)
+  {
+    if (argc < 3)
+    {
+      usage(argv);
+      return 1;
+    }
+    current_lang = LANG_EN;
+    srcfilename = argv[2];
+  }
+  else
+    srcfilename = argv[1];
+
   fin = fopen(srcfilename, "r");
   if (fin == NULL)
     err(1, "Couldn't open file %s", argv[1]);

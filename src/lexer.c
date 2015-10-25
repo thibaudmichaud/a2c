@@ -73,71 +73,71 @@ void getalnum(struct token *tok)
 {
   tok->val = getalnumstr();
 
-  if (strcmp(tok->val, keywords[CURRENT_LANG][0]) == 0)
+  if (strcmp(tok->val, keywords[current_lang][0]) == 0)
     tok->type = ALGORITHM;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][1]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][1]) == 0)
     tok->type = BEGIN;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][2]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][2]) == 0)
     tok->type = TYPES;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][3]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][3]) == 0)
     tok->type = CONST;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][4]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][4]) == 0)
     tok->type = OR;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][5]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][5]) == 0)
     tok->type = XOR;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][6]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][6]) == 0)
     tok->type = AND;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][7]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][7]) == 0)
     tok->type = DIV;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][8]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][8]) == 0)
     tok->type = MOD;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][9]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][9]) == 0)
     tok->type = NOT;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][10]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][10]) == 0)
     tok->type = WHILE;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][11]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][11]) == 0)
     tok->type = SO;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][12]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][12]) == 0)
     tok->type = DO;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][13]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][13]) == 0)
     tok->type = END;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][14]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][14]) == 0)
     tok->type = RETURN;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][15]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][15]) == 0)
     tok->type = FOR;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][16]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][16]) == 0)
     tok->type = UNTIL;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][17]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][17]) == 0)
     tok->type = DECREASING;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][18]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][18]) == 0)
     tok->type = IF;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][19]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][19]) == 0)
     tok->type = ELSE;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][20]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][20]) == 0)
     tok->type = THEN;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][21]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][21]) == 0)
     tok->type = SWITCH;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][22]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][22]) == 0)
     tok->type = OTHERWISE;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][23]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][23]) == 0)
     tok->type = PROCEDURE;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][24]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][24]) == 0)
     tok->type = VARIABLES;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][25]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][25]) == 0)
     tok->type = FUNCTION;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][26]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][26]) == 0)
     tok->type = TRUE;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][27]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][27]) == 0)
     tok->type = FALSE;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][28]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][28]) == 0)
     tok->type = PARAM;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][29]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][29]) == 0)
     tok->type = LOCAL;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][30]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][30]) == 0)
     tok->type = GLOBAL;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][31]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][31]) == 0)
     tok->type = RECORD;
-  else if (strcmp(tok->val, keywords[CURRENT_LANG][32]) == 0)
+  else if (strcmp(tok->val, keywords[current_lang][32]) == 0)
     tok->type = NULLKW;
   else
     tok->type = IDENTIFIER;
@@ -336,15 +336,15 @@ char *describe(enum tokentype toktype)
 {
   switch (toktype)
   {
-    case ALGORITHM: return keywords[CURRENT_LANG][0];
-    case AND: return keywords[CURRENT_LANG][6];
+    case ALGORITHM: return keywords[current_lang][0];
+    case AND: return keywords[current_lang][6];
     case ASSIGN: return "<-";
-    case BEGIN: return keywords[CURRENT_LANG][2];
+    case BEGIN: return keywords[current_lang][2];
     case CHAR: return "char";
     case COLON: return ":";
     case COMMA: return ",";
-    case CONST: return keywords[CURRENT_LANG][4];
-    case DECREASING: return keywords[CURRENT_LANG][18];
+    case CONST: return keywords[current_lang][4];
+    case DECREASING: return keywords[current_lang][18];
     case DEREF: return "";
     case DIV: return "div";
     case DO: return "faire";

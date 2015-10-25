@@ -219,16 +219,16 @@ instructionlist_t parse_block(void)
 struct instruction *parse_while(void)
 {
   eat(WHILE); 
-# ifdef LANG_FR
-  eat(SO);
-# endif
+  if (current_lang == LANG_FR)
+    eat(SO);
+
   struct expr *cond = parse_expression();
   eat(DO); eat(EOL);
   instructionlist_t block = parse_block();
   eat(END); eat(WHILE); 
-# ifdef LANG_FR
-  eat(SO); 
-# endif
+  if (current_lang == LANG_FR)
+    eat(SO); 
+
   eat(EOL);
   return whileblock(cond, block);
 }
@@ -246,9 +246,9 @@ struct instruction *parse_do(void)
     else // while could close the do..while or start a while..do
     {
       eat(WHILE); 
-# ifdef LANG_FR
-      eat(SO);
-# endif
+      if (current_lang == LANG_FR)
+        eat(SO);
+
       cond = parse_expression();
       if (lookahead[0]->type == EOL) // closing the do..while
       {
@@ -260,9 +260,10 @@ struct instruction *parse_do(void)
         eat(DO); eat(EOL);
         subblock = parse_block();
         eat(END); eat(WHILE); 
-# ifdef LANG_FR
-        eat(SO);
-# endif
+
+        if (current_lang == LANG_FR)
+          eat(SO);
+
         eat(EOL);
         list_push_back(block, whileblock(cond, subblock));
       }

@@ -13,7 +13,7 @@ enum e_lang
   LANG_EN   =   1
 };
 
-# define CURRENT_LANG       LANG_EN
+int current_lang;
 
 // This is needed to free the global variables allocated by the lexer.
 int yylex_destroy(void);
