@@ -1,0 +1,41 @@
+algorithm function coucou:int
+parameters local
+  boolean a
+  int b
+variables
+  char c
+  real r
+  int i, n
+  string str
+begin
+
+n <- 10
+str <- "hello world"
+
+for i <- 1 to n do
+  b <- b + 1
+end for
+
+
+if b < 10 then
+  a <- false
+else
+  b <- 1
+end if
+
+caseof n do
+  1: b <- 1
+  2: b <- 2
+end caseof
+
+return 0
+
+end algorithm function coucou
+
+variables
+  boolean variable_globale
+begin
+
+  coucou(true, 1)
+
+end
