@@ -245,7 +245,10 @@ struct instruction *parse_do(void)
       list_push_back(block, parse_instruction());
     else // while could close the do..while or start a while..do
     {
-      eat(WHILE); eat(SO);
+      eat(WHILE); 
+# ifdef LANG_FR
+      eat(SO);
+# endif
       cond = parse_expression();
       if (lookahead[0]->type == EOL) // closing the do..while
       {
@@ -256,7 +259,11 @@ struct instruction *parse_do(void)
       {
         eat(DO); eat(EOL);
         subblock = parse_block();
-        eat(END); eat(WHILE); eat(SO); eat(EOL);
+        eat(END); eat(WHILE); 
+# ifdef LANG_FR
+        eat(SO);
+# endif
+        eat(EOL);
         list_push_back(block, whileblock(cond, subblock));
       }
     }
