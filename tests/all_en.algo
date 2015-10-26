@@ -4,18 +4,22 @@ parameters local
   int b
 variables
   char c
-  real r
   int i, n
-  string str
 begin
 
 n <- 10
-str <- "hello world"
 
 for i <- 1 to n do
   b <- b + 1
 end for
 
+while b < 10 do
+  b <- b + 1
+end while
+
+do
+  a <- true
+while b < 20
 
 if b < 10 then
   a <- false
