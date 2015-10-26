@@ -292,9 +292,15 @@ struct instruction *parse_for(void)
   eat(FOR);
   struct expr *lhs = parse_expression();
   struct assignment *a = parse_assignment(lhs);
-  eat(UNTIL);
+  if (current_lang == LANG_EN && lookahead[0]->type == DECREASING)
+  {
+    decreasing = 1;
+    eat(DECREASING);
+  }
+  else
+    eat(UNTIL);
   struct expr *until = parse_expression();
-  if (lookahead[0]->type == DECREASING)
+  if (current_lang == LANG_FR && lookahead[0]->type == DECREASING)
   {
     decreasing = 1;
     eat(DECREASING);
