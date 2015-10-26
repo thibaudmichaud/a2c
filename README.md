@@ -19,6 +19,16 @@ make
 
 sudo make install
 
+## Usage
+
+To compile in french version:
+
+./a2c FILE > FILE.c
+
+To compile in english version:
+
+./a2c --en FILE > FILE.c
+
 ## MALT
 
 A group of four students at EPITA (French Engineering IT School).

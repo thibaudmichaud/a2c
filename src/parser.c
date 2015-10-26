@@ -218,11 +218,18 @@ instructionlist_t parse_block(void)
 
 struct instruction *parse_while(void)
 {
-  eat(WHILE); eat(SO);
+  eat(WHILE); 
+  if (current_lang == LANG_FR)
+    eat(SO);
+
   struct expr *cond = parse_expression();
   eat(DO); eat(EOL);
   instructionlist_t block = parse_block();
-  eat(END); eat(WHILE); eat(SO); eat(EOL);
+  eat(END); eat(WHILE); 
+  if (current_lang == LANG_FR)
+    eat(SO); 
+
+  eat(EOL);
   return whileblock(cond, block);
 }
 
@@ -238,7 +245,10 @@ struct instruction *parse_do(void)
       list_push_back(block, parse_instruction());
     else // while could close the do..while or start a while..do
     {
-      eat(WHILE); eat(SO);
+      eat(WHILE); 
+      if (current_lang == LANG_FR)
+        eat(SO);
+
       cond = parse_expression();
       if (lookahead[0]->type == EOL) // closing the do..while
       {
@@ -249,7 +259,12 @@ struct instruction *parse_do(void)
       {
         eat(DO); eat(EOL);
         subblock = parse_block();
-        eat(END); eat(WHILE); eat(SO); eat(EOL);
+        eat(END); eat(WHILE); 
+
+        if (current_lang == LANG_FR)
+          eat(SO);
+
+        eat(EOL);
         list_push_back(block, whileblock(cond, subblock));
       }
     }
@@ -277,9 +292,15 @@ struct instruction *parse_for(void)
   eat(FOR);
   struct expr *lhs = parse_expression();
   struct assignment *a = parse_assignment(lhs);
-  eat(UNTIL);
+  if (current_lang == LANG_EN && lookahead[0]->type == DECREASING)
+  {
+    decreasing = 1;
+    eat(DECREASING);
+  }
+  else
+    eat(UNTIL);
   struct expr *until = parse_expression();
-  if (lookahead[0]->type == DECREASING)
+  if (current_lang == LANG_FR && lookahead[0]->type == DECREASING)
   {
     decreasing = 1;
     eat(DECREASING);
@@ -429,7 +450,8 @@ vardecllist_t parse_vardecls()
   vardecllist_t vardecllist = empty_vardecllist();
   while (lookahead[0]->type != BEGIN && lookahead[0]->type != TYPES
       && lookahead[0]->type != CONST && lookahead[0]->type != VARIABLES
-      && lookahead[0]->type != PARAM && lookahead[0]->type != END)
+      && lookahead[0]->type != PARAM && lookahead[0]->type != END
+      && lookahead[0]->type != LOCAL && lookahead[0]->type != GLOBAL)
     list_push_back(vardecllist, parse_vardecl());
   return vardecllist;
 }
@@ -586,13 +608,21 @@ typedecllist_t parse_typedecls(void)
 
 vardecllist_t parse_lp(void)
 {
-  eat(LOCAL); eat(EOL);
+  if (current_lang == LANG_FR)
+    eat(LOCAL); 
+  else
+    eat(PARAM);
+  eat(EOL);
   return parse_vardecls();
 }
 
 vardecllist_t parse_gp(void)
 {
-  eat(GLOBAL); eat(EOL);
+  if (current_lang == LANG_FR)
+    eat(GLOBAL);
+  else
+    eat(PARAM);
+  eat(EOL);
   vardecllist_t gp = parse_vardecls();
   return gp;
 }
@@ -603,7 +633,7 @@ struct declarations *parse_decls(void)
   vardecllist_t lp;
   vardecllist_t gp;
   int local_first = 1;
-  if (lookahead[0]->type == PARAM)
+  if (current_lang == LANG_FR && lookahead[0]->type == PARAM)
   {
     eat(PARAM);
     if (lookahead[0]->type == LOCAL)
@@ -627,6 +657,34 @@ struct declarations *parse_decls(void)
         lp = parse_lp();
       }
       else list_init(lp);
+    }
+    else syntaxerror("Expected \"local\" or \"global\"");
+  }
+  else if (current_lang == LANG_EN && lookahead[1]->type == PARAM)
+  {
+    if (lookahead[0]->type == LOCAL)
+    {
+      eat(LOCAL);
+      lp = parse_lp();
+      if (lookahead[1]->type == PARAM)
+      {
+        eat(GLOBAL);
+        gp = parse_gp();
+      }
+      else
+        list_init(gp);
+    }
+    else if(lookahead[0]->type == GLOBAL)
+    {
+      eat(GLOBAL);
+      gp = parse_gp();
+      if (lookahead[1]->type == PARAM)
+      {
+        eat(LOCAL);
+        lp = parse_lp();
+      }
+      else
+        list_init(lp);
     }
     else syntaxerror("Expected \"local\" or \"global\"");
   }

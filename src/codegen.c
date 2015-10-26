@@ -5,6 +5,8 @@
 #include "lexer.h"
 #include "typecheck.h"
 #include "funtable.h"
+#include "a2c.h"
+#include "stdlibalgo.h"
 #include <assert.h>
 
 #define INDENT_WIDTH 2
@@ -59,14 +61,14 @@ char *getopstr(enum tokentype op)
 
 void print_type_format(char *t)
 {
-  if (strcmp(t, "caractere") == 0)
+  if (strcmp(t, TYPE_CHAR) == 0)
     printf("%%c");
-  else if (strcmp(t, "booleen") == 0
-      || strcmp(t, "entier") == 0)
+  else if (strcmp(t, TYPE_BOOLEAN) == 0
+      || strcmp(t, TYPE_INT) == 0)
     printf("%%d");
-  else if (strcmp(t, "chaine") == 0)
+  else if (strcmp(t, TYPE_STRING) == 0)
     printf("%%s");
-  else if (strcmp(t, "reel") == 0)
+  else if (strcmp(t, TYPE_REAL) == 0)
     printf("%%g");
   else if (strcmp(t, "nul") == 0)
     printf("%%p");

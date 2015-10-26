@@ -40,15 +40,15 @@ bool equal_identlist(identlist_t idents1, identlist_t idents2)
 
 char *algo_to_c_type(char *ident)
 {
-  if (strcmp(ident, "entier") == 0)
+  if (strcmp(ident, TYPE_INT) == 0)
     return "int";
-  else if (strcmp(ident, "caractere") == 0)
+  else if (strcmp(ident, TYPE_CHAR) == 0)
     return "char";
-  else if (strcmp(ident, "chaine") == 0)
+  else if (strcmp(ident, TYPE_STRING) == 0)
     return "char *";
-  else if (strcmp(ident, "reel") == 0)
+  else if (strcmp(ident, TYPE_REAL) == 0)
     return "double";
-  else if (strcmp(ident, "booleen") == 0)
+  else if (strcmp(ident, TYPE_BOOLEAN) == 0)
     return "int";
   // If it is none of the primary types, then it is a user-defined type
   // wich will have the same name in the c file as in the algo file.
@@ -182,7 +182,7 @@ bool add_types(struct symtable *syms, typedecllist_t typelist)
                 }
                 break;
               case identtype:
-                if(!equal_types(find_var(syms->variables, dim->val.ident)->type->name, "entier", syms))
+                if(!equal_types(find_var(syms->variables, dim->val.ident)->type->name, TYPE_INT, syms))
                 {
                   error(dim->pos, "identifier \"%s\" is not an integer", dim->val.ident);
                   correct = false;
@@ -260,11 +260,11 @@ bool add_types(struct symtable *syms, typedecllist_t typelist)
           char *pointed_type = 
             type_decl->type_def->def.pointer_def->pointed_type_ident;;
           bool pointed_type_exists = false;
-          if (strcmp(pointed_type, "entier") == 0
-              || strcmp(pointed_type, "booleen") == 0
-              || strcmp(pointed_type, "chaine") == 0
-              || strcmp(pointed_type, "reel") == 0
-              || strcmp(pointed_type, "caractere") == 0)
+          if (strcmp(pointed_type, TYPE_INT) == 0
+              || strcmp(pointed_type, TYPE_BOOLEAN) == 0
+              || strcmp(pointed_type, TYPE_STRING) == 0
+              || strcmp(pointed_type, TYPE_REAL) == 0
+              || strcmp(pointed_type, TYPE_CHAR) == 0)
             pointed_type_exists = true;
           for(unsigned i = 0; i < typelist.size && !pointed_type_exists; ++i)
           {
@@ -308,17 +308,17 @@ bool check_const(struct const_decl* cons, struct symtable* syms, bool global)
       sym->type->name = strdup("nul");
       break;
     case chartype:
-      if(equal_types(cons->type,"caractere",syms))
-        sym->type = find_type(syms->types, "caractere");
+      if(equal_types(cons->type,TYPE_CHAR,syms))
+        sym->type = find_type(syms->types, TYPE_CHAR);
       else
       {
-        error(cons->pos,"incompatible type : %s and caractere", cons->type);
+        error(cons->pos,"incompatible type : %s and TYPE_CHAR", cons->type);
         return false;
       }
       break;
     case stringtype:
-      if(equal_types(cons->type,"chaine",syms))
-        sym->type = find_type(syms->types, "chaine");
+      if(equal_types(cons->type,TYPE_STRING,syms))
+        sym->type = find_type(syms->types, TYPE_STRING);
       else
       {
         error(cons->pos,"incompatible type : %s and chaine", cons->type);
@@ -326,8 +326,8 @@ bool check_const(struct const_decl* cons, struct symtable* syms, bool global)
       }
       break;
     case inttype:
-      if(equal_types(cons->type,"entier",syms))
-        sym->type = find_type(syms->types, "entier");
+      if(equal_types(cons->type,TYPE_INT,syms))
+        sym->type = find_type(syms->types, TYPE_INT);
       else
       {
         error(cons->pos,"incompatible type : %s and entier", cons->type);
@@ -335,8 +335,8 @@ bool check_const(struct const_decl* cons, struct symtable* syms, bool global)
       }
       break;
     case realtype:
-      if(equal_types(cons->type,"reel",syms))
-        sym->type = find_type(syms->types, "reel");
+      if(equal_types(cons->type,TYPE_REAL,syms))
+        sym->type = find_type(syms->types, TYPE_REAL);
       else
       {
         error(cons->pos,"incompatible type : %s and reel", cons->type);
@@ -344,8 +344,8 @@ bool check_const(struct const_decl* cons, struct symtable* syms, bool global)
       }
       break;
     case booltype:
-      if(equal_types(cons->type,"booleen",syms))
-        sym->type = find_type(syms->types, "booleen");
+      if(equal_types(cons->type,TYPE_BOOLEAN,syms))
+        sym->type = find_type(syms->types, TYPE_BOOLEAN);
       else
       {
         error(cons->pos,"incompatible type : %s and booleen", cons->type);
@@ -384,7 +384,7 @@ bool check_prog(struct prog* prog, struct symtable *syms)
   for (unsigned i = 0; i < prog->entry_point->instructions.size; ++i)
     if (!check_inst(
           prog->entry_point->instructions.data[i],
-          find_type(syms->types, "entier"), syms))
+          find_type(syms->types, TYPE_INT), syms))
       correct = false;
   for(unsigned i = 0; i < prog->algos.size; ++i)
   {
@@ -597,7 +597,7 @@ bool check_inst(struct instruction *i, struct type *ret, struct symtable *syms)
         char *t1 = check_expr(e->cond, syms);
         if (!t1)
           return false;
-        if(strcmp(t1, "booleen") == 0)
+        if(strcmp(t1, TYPE_BOOLEAN) == 0)
         {
           for(unsigned int i =0; i < e->instructions.size; ++i)
           {
@@ -663,7 +663,7 @@ bool check_inst(struct instruction *i, struct type *ret, struct symtable *syms)
       {
         struct dowhile* e = i->instr.dowhile;
         char *t = check_expr(e->cond, syms);
-        if(strcmp(t, "booleen") == 0)
+        if(strcmp(t, TYPE_BOOLEAN) == 0)
         {
           for(unsigned int i = 0; i < e->instructions.size; ++i)
           {
@@ -680,7 +680,7 @@ bool check_inst(struct instruction *i, struct type *ret, struct symtable *syms)
     case whiledo:
       {
         struct whiledo* e = i->instr.whiledo;
-        if(strcmp(check_expr(e->cond, syms), "booleen") == 0)
+        if(strcmp(check_expr(e->cond, syms), TYPE_BOOLEAN) == 0)
         {
           for(unsigned int i = 0; i < e->instructions.size; ++i)
             if(!check_inst(list_nth(e->instructions,i), ret, syms))
@@ -698,17 +698,17 @@ bool check_inst(struct instruction *i, struct type *ret, struct symtable *syms)
         char *upto_type = check_expr(e->upto, syms);
         if(upto_type && check_assignment(e->assignment, syms))
         {
-          if (strcmp(upto_type, "entier") != 0)
+          if (strcmp(upto_type, TYPE_INT) != 0)
           {
             error(e->upto->pos, "expected int expression");
             return false;
           }
-          else if (strcmp(e->assignment->e1->type, "entier") != 0)
+          else if (strcmp(e->assignment->e1->type, TYPE_INT) != 0)
           {
             error(e->assignment->e1->pos, "expected int expression");
             return false;
           }
-          else if (strcmp(e->assignment->e2->type, "entier") != 0)
+          else if (strcmp(e->assignment->e2->type, TYPE_INT) != 0)
           {
             error(e->assignment->e2->pos, "expected int expression");
             return false;
@@ -758,19 +758,19 @@ char *check_expr(struct expr *e, struct symtable *syms)
           e->type = strdup("nul");
           break;
         case chartype:
-          e->type = strdup("caractere");
+          e->type = strdup(TYPE_CHAR);
           break;
         case stringtype:
-          e->type = strdup("chaine");
+          e->type = strdup(TYPE_STRING);
           break;
         case booltype:
-          e->type = strdup("booleen");
+          e->type = strdup(TYPE_BOOLEAN);
           break;
         case inttype:
-          e->type = strdup("entier");
+          e->type = strdup(TYPE_INT);
           break;
         case realtype:
-          e->type = strdup("reel");
+          e->type = strdup(TYPE_REAL);
           break;
       }
       break;
@@ -813,7 +813,7 @@ char *check_expr(struct expr *e, struct symtable *syms)
               || e->val.binopexpr.op == NEQ
               || e->val.binopexpr.op == GE)
           {
-            e->type = strdup("booleen");
+            e->type = strdup(TYPE_BOOLEAN);
           }
           else
           {
@@ -848,7 +848,7 @@ char *check_expr(struct expr *e, struct symtable *syms)
           for (unsigned i = 0; i < e->val.arrayexpr.indices.size; ++i)
           {
             char *tidx = check_expr(e->val.arrayexpr.indices.data[i], syms);
-            if (strcmp(tidx, "entier") != 0)
+            if (strcmp(tidx, TYPE_INT) != 0)
               error(e->val.arrayexpr.indices.data[i]->pos, "index should be an integer");
           }
           e->type = strdup(t->type_val.array_type->type->name);
