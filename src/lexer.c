@@ -67,7 +67,7 @@ static char* keywords[2][KEYWORDS_LEN] = {
   {"algorithm","begin","types","constants","or","xor","and","div","mod","not",
     "while","","do","end","return","for","to","downto","if","else","then","caseof",
     "default","procedure","variables","function","true","false","parameters","local","global",
-    "","NUL"}};
+    "record","NUL"}};
 
 void getalnum(struct token *tok)
 {
@@ -339,63 +339,63 @@ char *describe(enum tokentype toktype)
     case ALGORITHM: return keywords[current_lang][0];
     case AND: return keywords[current_lang][6];
     case ASSIGN: return "<-";
-    case BEGIN: return keywords[current_lang][2];
+    case BEGIN: return keywords[current_lang][1];
     case CHAR: return "char";
     case COLON: return ":";
     case COMMA: return ",";
-    case CONST: return keywords[current_lang][4];
-    case DECREASING: return keywords[current_lang][18];
+    case CONST: return keywords[current_lang][3];
+    case DECREASING: return keywords[current_lang][17];
     case DEREF: return "";
-    case DIV: return "div";
-    case DO: return "faire";
-    case ELSE: return "sinon";
-    case END: return "fin";
+    case DIV: return keywords[current_lang][7];
+    case DO: return keywords[current_lang][12];
+    case ELSE: return keywords[current_lang][19];
+    case END: return keywords[current_lang][13];
     case ENDOFFILE: return "EOF";
     case EOL: return "EOL";
     case EQ: return "=";
-    case FALSE: return "faux";
-    case FOR: return "pour";
-    case FUNCTION: return "fonction";
+    case FALSE: return keywords[current_lang][27];
+    case FOR: return keywords[current_lang][15];
+    case FUNCTION: return keywords[current_lang][25];
     case GE: return ">=";
-    case GLOBAL: return "globaux";
+    case GLOBAL: return keywords[current_lang][30];
     case GT: return ">";
     case IDENTIFIER: return "identifier";
-    case IF: return "si";
+    case IF: return keywords[current_lang][18];
     case INT: return "int";
     case LE: return "<";
-    case LOCAL: return "locaux";
+    case LOCAL: return keywords[current_lang][29];
     case LPAREN: return "(";
     case LSQBRACKET: return "[";
     case LT: return "<";
     case MINUS: return "-";
     case MOD: return "mod";
     case NEQ: return "<>";
-    case NOT: return "non";
-    case NULLKW: return "NUL";
-    case OR: return "ou";
-    case OTHERWISE: return "autrement";
-    case PARAM: return "parametres";
+    case NOT: return keywords[current_lang][9];
+    case NULLKW: return keywords[current_lang][32];
+    case OR: return keywords[current_lang][4];
+    case OTHERWISE: return keywords[current_lang][19];
+    case PARAM: return keywords[current_lang][28];
     case PLUS: return "+";
-    case PROCEDURE: return "procedure";
+    case PROCEDURE: return keywords[current_lang][23];
     case REAL: return "real";
-    case RECORD: return "enregistrement";
-    case RETURN: return "retourne";
+    case RECORD: return keywords[current_lang][31];
+    case RETURN: return keywords[current_lang][14];
     case RPAREN: return ")";
     case RSQBRACKET: return "]";
     case SLASH: return "/";
-    case SO: return "que";
+    case SO: return keywords[current_lang][11];
     case STAR: return "*";
     case STRING: return "string";
-    case SWITCH: return "selon";
-    case THEN: return "alors";
+    case SWITCH: return keywords[current_lang][21];
+    case THEN: return keywords[current_lang][20];
     case TRUE: return "vrai";
-    case TYPES: return "types";
+    case TYPES: return keywords[current_lang][2];
     case UMINUS: return "-";
-    case UNTIL: return "jusqu'a";
-    case VARIABLES: return "variables";
-    case WHILE: return "tant";
+    case UNTIL: return keywords[current_lang][16];
+    case VARIABLES: return keywords[current_lang][24];
+    case WHILE: return keywords[current_lang][10];
     case X: return "x";
-    case XOR: return "oue";
+    case XOR: return keywords[current_lang][5];
     default: return "";
   }
 }
